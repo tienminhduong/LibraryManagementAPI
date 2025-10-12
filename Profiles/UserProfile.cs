@@ -9,5 +9,7 @@ public class UserProfile : Profile
     public UserProfile()
     {
         CreateMap<BookCategory, BookCategoryDto>();
+        CreateMap<CreateBookCategoryDto, BookCategory>();
+        CreateMap<BookCategoryDto, BookCategory>();
     }
 }
