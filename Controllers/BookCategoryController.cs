@@ -14,7 +14,7 @@ public class BookCategoryController(
     ) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<BookCategory>>> GetAllBookCategories()
+    public async Task<ActionResult<IEnumerable<BookCategoryDto>>> GetAllBookCategories()
     {
         var categories = await bookCategoryRepository.GetAllCategories();
         return Ok(mapper.Map<IEnumerable<BookCategoryDto>>(categories));
