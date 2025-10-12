@@ -2,6 +2,7 @@ using API.Interfaces;
 using API.Repositories;
 using dotenv.net;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 DotEnv.Load();
 
@@ -18,7 +19,7 @@ builder.Services.AddOpenApi();
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
 builder.Services.AddDbContext<LibraryDbContext>(options => options.UseNpgsql(connectionString));
 
-
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IBookCategoryRepository, BookCategoryRepository>();
 
 

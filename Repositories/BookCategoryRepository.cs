@@ -1,4 +1,5 @@
 using API.Interfaces;
+using API.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories;
