@@ -1,33 +1,40 @@
+using API.Extensions;
 using API.Interfaces;
 using API.Repositories;
 using dotenv.net;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 
 DotEnv.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-builder.Services.AddDbContext<LibraryDbContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Library Management API",
+        Version = "v1"
+    });
+});
 
-
-builder.Services.AddScoped<IBookCategoryRepository, BookCategoryRepository>();
-
+builder.Services.AddLibraryServices(builder.Configuration);
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library Management API v1");
+    });
 }
 
 app.UseHttpsRedirection();
