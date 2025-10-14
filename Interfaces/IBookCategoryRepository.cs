@@ -9,4 +9,5 @@ public interface IBookCategoryRepository
     Task<bool> AddCategory(BookCategory category);
     Task<bool> UpdateCategory(BookCategory category);
     Task<bool> DeleteCategory(Guid id);
+    Task<bool> IsCategoryExistsByName(string name);
 }

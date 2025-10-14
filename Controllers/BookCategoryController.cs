@@ -1,7 +1,7 @@
 using API.Entities;
 using API.Interfaces;
-using API.Models;
 using AutoMapper;
+using LibraryManagementAPI.Models.BookCategory;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -25,14 +25,26 @@ public class BookCategoryController(
     {
         var category = await bookCategoryRepository.GetCategoryById(id);
         if (category == null) return NotFound();
-        return Ok(mapper.Map<BookCategoryDto>(category));
+        //return Ok(mapper.Map<BookCategoryDto>(category));
+        return Ok("Hello");
     }
     [HttpPost]
     public async Task<ActionResult> CreateBookCategory([FromBody] CreateBookCategoryDto categoryDto)
     {
+        //Check valid data
+        if (ModelState.IsValid == false) return BadRequest(ModelState);
+        // check existing category
+        var isExisting = await bookCategoryRepository.IsCategoryExistsByName(categoryDto.Name);
+        if (isExisting) 
+            return Conflict("Category with the same name already exists");
+        // Create new category
         var category = mapper.Map<BookCategory>(categoryDto);
+        // Save to database
         var result = await bookCategoryRepository.AddCategory(category);
-        if (!result) return BadRequest("Failed to create category");
+        // Return response if failed
+        if (!result) 
+            return BadRequest("Failed to create category");
+        // Return created response
         var createdCategoryDto = mapper.Map<BookCategoryDto>(category);
         return CreatedAtAction(nameof(GetBookCategoryById), new { id = createdCategoryDto.Id }, createdCategoryDto);
     }
@@ -46,6 +58,7 @@ public class BookCategoryController(
         //
         var existingCategory = await bookCategoryRepository.GetCategoryById(id);
         if (existingCategory == null) return NotFound();
+
         mapper.Map(categoryDto, existingCategory);
         var result = await bookCategoryRepository.UpdateCategory(existingCategory);
         if (!result) return BadRequest("Failed to update category");

@@ -48,4 +48,13 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
         dbContext.BookCategories.Remove(category);
         return await dbContext.SaveChangesAsync() > 0;
     }
+
+    public async Task<bool> IsCategoryExistsByName(string name)
+    {
+        if(String.IsNullOrEmpty(name))
+        {
+            throw new ArgumentException("Category name cannot be null or empty", nameof(name));
+        }
+        return await dbContext.BookCategories.FirstOrDefaultAsync(b => b.Name.ToLower() == name.ToLower()) != null;
+    }
 }
