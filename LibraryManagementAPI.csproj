@@ -23,6 +23,9 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Content Include=".env">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
