@@ -32,10 +32,11 @@ jobs:
             host: ${{ secrets.SSH_HOST }}
             username: ${{ secrets.SSH_USER }}
             key: ${{ secrets.SSH_KEY }}
-            script: mkdir newFolder
-          env:
-            IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
-            CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
+            script: |
+                docker pull ${{ secrets.IMAGE_NAME }}
+                docker stop ${{ secrets.CONTAINER_NAME }} || true
+                docker rm ${{ secrets.CONTAINER_NAME }} || true
+                docker run -d --name ${{ secrets.CONTAINER_NAME }} -p 8080:8080 ${{ secrets.IMAGE_NAME }}
         
 
         
