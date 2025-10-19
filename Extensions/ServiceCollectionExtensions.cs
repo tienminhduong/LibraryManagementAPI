@@ -1,5 +1,7 @@
 using API.Interfaces;
 using API.Repositories;
+using LibraryManagementAPI.Interfaces;
+using LibraryManagementAPI.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Extensions
@@ -22,6 +24,7 @@ namespace API.Extensions
         public static void AddRepository(IServiceCollection services)
         {
             services.AddScoped<IBookCategoryRepository, BookCategoryRepository>();
+            services.AddScoped<IBookRepository, BookRepository>();
         }
     }
 }
