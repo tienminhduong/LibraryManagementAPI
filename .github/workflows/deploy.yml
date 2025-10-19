@@ -23,7 +23,7 @@ jobs:
 
         - name: Build and push docker image
           run: |
-            docker build -t $IMAGE_NAME
+            docker build -t $IMAGE_NAME .
             docker push $IMAGE_NAME
         
         - name: Deploy
