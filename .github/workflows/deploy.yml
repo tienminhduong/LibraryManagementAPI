@@ -37,6 +37,9 @@ jobs:
                 docker stop $CONTAINER_NAME || true
                 docker rm $CONTAINER_NAME || true
                 docker run -d --name $CONTAINER_NAME -p 8080:8080 $IMAGE_NAME
+          env:
+            IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+            CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
         
 
         
