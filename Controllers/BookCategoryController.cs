@@ -64,13 +64,13 @@ public class BookCategoryController(
     //     if (!result) return BadRequest("Failed to update category");
     //     return NoContent();
     // }
-    [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteBookCategory(Guid id)
-    {
-        var existingCategory = await bookCategoryRepository.GetCategoryById(id);
-        if (existingCategory == null) return NotFound();
-        var result = await bookCategoryRepository.DeleteCategory(id);
-        if (!result) return BadRequest("Failed to delete category");
-        return NoContent();
-    }
+    // [HttpDelete("{id}")]
+    // public async Task<ActionResult> DeleteBookCategory(Guid id)
+    // {
+    //     var existingCategory = await bookCategoryRepository.GetCategoryById(id);
+    //     if (existingCategory == null) return NotFound();
+    //     var result = await bookCategoryRepository.DeleteCategory(id);
+    //     if (!result) return BadRequest("Failed to delete category");
+    //     return NoContent();
+    // }
 }
