@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace LibraryManagementAPI.Models.Book
+﻿namespace API.Models
 {
     public class CreateBookDTO
     {

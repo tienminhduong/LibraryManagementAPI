@@ -1,7 +1,6 @@
 using API.Entities;
+using API.Models;
 using AutoMapper;
-using LibraryManagementAPI.Models.Book;
-using LibraryManagementAPI.Models.BookCategory;
 
 namespace API.Profiles;
 

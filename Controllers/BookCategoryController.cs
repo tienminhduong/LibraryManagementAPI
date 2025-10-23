@@ -1,7 +1,7 @@
 using API.Entities;
 using API.Interfaces;
+using API.Models;
 using AutoMapper;
-using LibraryManagementAPI.Models.BookCategory;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -35,14 +35,14 @@ public class BookCategoryController(
         if (ModelState.IsValid == false) return BadRequest(ModelState);
         // check existing category
         var isExisting = await bookCategoryRepository.IsCategoryExistsByName(categoryDto.Name);
-        if (isExisting) 
+        if (isExisting)
             return Conflict("Category with the same name already exists");
         // Create new category
         var category = mapper.Map<BookCategory>(categoryDto);
         // Save to database
         var result = await bookCategoryRepository.AddCategory(category);
         // Return response if failed
-        if (!result) 
+        if (!result)
             return BadRequest("Failed to create category");
         // Return created response
         var createdCategoryDto = mapper.Map<BookCategoryDto>(category);
@@ -72,5 +72,5 @@ public class BookCategoryController(
         var result = await bookCategoryRepository.DeleteCategory(id);
         if (!result) return BadRequest("Failed to delete category");
         return NoContent();
-  }
+    }
 }
