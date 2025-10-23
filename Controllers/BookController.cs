@@ -1,7 +1,7 @@
 ﻿using API.Interfaces;
+using API.Models;
 using AutoMapper;
 using LibraryManagementAPI.Interfaces;
-using LibraryManagementAPI.Models.Book;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementAPI.Controllers

@@ -1,4 +1,4 @@
-namespace LibraryManagementAPI.Models.BookCategory;
+namespace API.Models;
 
 public class BookCategoryDto
 {
