@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LibraryManagementAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/book-categories")]
 public class BookCategoryController(IBookService bookService) : ControllerBase
 {
     [HttpGet]
