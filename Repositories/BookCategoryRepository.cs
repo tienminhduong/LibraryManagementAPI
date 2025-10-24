@@ -10,51 +10,47 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
     {
         return await dbContext.BookCategories.ToListAsync();
     }
-    public async Task<BookCategory?> GetCategoryById(Guid id)
+
+    public async Task<BookCategory?> GetCategoryByIdAsync(Guid id)
     {
-        if (id == Guid.Empty)
-        {
-            throw new ArgumentException("Invalid category ID", nameof(id));
-        }
         return await dbContext.BookCategories.FindAsync(id);
     }
-    public async Task<bool> AddCategory(BookCategory category)
+
+    public async Task<bool> AddCategoryAsync(BookCategory category)
     {
-        if (category == null)
-        {
-            throw new ArgumentNullException(nameof(category));
-        }
+        ArgumentNullException.ThrowIfNull(category);
+
         await dbContext.BookCategories.AddAsync(category);
         return await dbContext.SaveChangesAsync() > 0;
     }
+
     public async Task<bool> UpdateCategory(BookCategory category)
     {
-        if (category == null)
-        {
-            throw new ArgumentNullException(nameof(category));
-        }
+        ArgumentNullException.ThrowIfNull(category);
+
         dbContext.BookCategories.Update(category);
         return await dbContext.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> DeleteCategory(Guid id)
     {
-        if(id == Guid.Empty)
-        {
-            throw new ArgumentException("Invalid category ID", nameof(id));
-        }
         var category = await dbContext.BookCategories.FindAsync(id);
         if (category == null) return false;
+
         dbContext.BookCategories.Remove(category);
         return await dbContext.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> IsCategoryExistsByName(string name)
     {
-        if(String.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException("Category name cannot be null or empty", nameof(name));
-        }
-        return await dbContext.BookCategories.FirstOrDefaultAsync(b => b.Name.ToLower() == name.ToLower()) != null;
+        return await dbContext.BookCategories
+            .FirstOrDefaultAsync(b => b.Name.ToLower() == name.ToLower()) != null;
+    }
+
+    public async Task<int> CountBooksByCategory(Guid categoryId)
+    {
+        return await dbContext.Books
+            .Where(b => b.CategoryId == categoryId)
+            .CountAsync();
     }
 }

@@ -10,3 +10,8 @@ public class CreateBookCategoryDto
 {
     public required string Name { get; set; }
 }
+
+public class UpdateBookCategoryDto
+{
+    public required string Name { get; set; }
+}

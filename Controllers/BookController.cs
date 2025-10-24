@@ -3,56 +3,45 @@ using API.Models;
 using AutoMapper;
 using LibraryManagementAPI.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class BooksController(IBookRepository bookRepository,
-                                IMapper mapper) : ControllerBase
+    public class BooksController(
+        IBookService bookService,
+        IMapper mapper) : ControllerBase
     {
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BookDTO>>> GetAllBooks()
+        public async Task<ActionResult<IEnumerable<BookDTO>>> GetAllBooks(int pageNumber = 1, int pageSize = 20)
         {
-            var books = await bookRepository.GetAllBooks();
-            return Ok(mapper.Map<IEnumerable<BookDTO>>(books));
+            return Ok(await bookService.GetAllBooksAsync(pageNumber, pageSize));
         }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<BookDTO>> GetBookById(Guid id)
         {
-            // Validate the ID
-            if (id == Guid.Empty)
-            {
-                return BadRequest("Invalid book ID");
-            }
-            // Fetch the book from the repository
-            var book = await bookRepository.GetBookById(id);
-            if (book == null)
-            {
-                return NotFound();
-            }
-            return Ok(mapper.Map<BookDTO>(book));
+            var book = await bookService.GetBookByIdAsync(id);
+            return book == null ? NotFound() : Ok(book);
         }
+
         [HttpPost]
         public async Task<ActionResult> AddBook([FromBody] CreateBookDTO bookDto)
         {
-            // Validate the input
-            if (bookDto == null)
+            try
             {
-                return BadRequest("Book data is null");
+                var createdBook = await bookService.AddBookAsync(bookDto);
+                return CreatedAtAction(nameof(GetBookById), new { id = createdBook.Id }, createdBook);
             }
-            // Model state validation
-            if (!ModelState.IsValid)
+            catch (ArgumentNullException exception)
             {
-                return BadRequest(ModelState);
+                return BadRequest(exception.Message);
             }
-            var book = mapper.Map<API.Entities.Book>(bookDto);
-            var result = await bookRepository.AddBook(book);
-            if (!result)
+            catch (DbUpdateException exception)
             {
-                return StatusCode(500, "A problem happened while handling your request.");
+                return Problem(exception.Message);
             }
-            return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, mapper.Map<BookDTO>(book));
         }
     }
 }

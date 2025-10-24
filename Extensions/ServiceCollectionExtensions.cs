@@ -1,5 +1,6 @@
 using API.Interfaces;
 using API.Repositories;
+using API.Services;
 using LibraryManagementAPI.Interfaces;
 using LibraryManagementAPI.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -16,15 +17,21 @@ namespace API.Extensions
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-            AddRepository(services);
+            AddRepositories(services);
+            AddServices(services);
 
             return services;
         }
 
-        public static void AddRepository(IServiceCollection services)
+        public static void AddRepositories(IServiceCollection services)
         {
             services.AddScoped<IBookCategoryRepository, BookCategoryRepository>();
             services.AddScoped<IBookRepository, BookRepository>();
+        }
+
+        public static void AddServices(IServiceCollection services)
+        {
+            services.AddScoped<IBookService, BookService>();
         }
     }
 }
