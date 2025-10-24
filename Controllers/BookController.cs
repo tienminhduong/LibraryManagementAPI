@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace LibraryManagementAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class BooksController(IBookService bookService) : ControllerBase
+[Route("api/books")]
+public class BookController(IBookService bookService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BookDTO>>> GetAllBooks(int pageNumber = 1, int pageSize = 20)
