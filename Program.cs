@@ -27,7 +27,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library Management API v1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library Management API");
 });
 
 app.UseHttpsRedirection();
@@ -35,5 +35,11 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/swagger");
+    return Task.CompletedTask;
+});
 
 app.Run();
