@@ -51,7 +51,9 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
     public async Task<int> CountBooksByCategory(Guid categoryId)
     {
         return await dbContext.Books
-            .Where(b => b.CategoryId == categoryId)
-            .CountAsync();
+            .AsNoTracking()
+            .Include(b => b.BookCategories)
+                .ThenInclude(c => c.Books)
+            .CountAsync(b => b.BookCategories.Any(c => c.Id == categoryId));
     }
 }

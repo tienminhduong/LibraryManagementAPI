@@ -29,14 +29,14 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
 
     public async Task<PagedResponse<Book>> GetAllBooksAsync(int pageNumber = 1, int pageSize = 20)
     {
-        var books = dbContext.Books.Include(book => book.Category);
+        var books = dbContext.Books.Include(book => book.BookCategories);
         return await PagedResponse<Book>.FromQueryable(books, pageNumber, pageSize);
     }
 
     public async Task<Book?> GetBookByIdAsync(Guid id)
     {
         return await dbContext.Books
-            .Include(book => book.Category)
+            .Include(book => book.BookCategories)
             .FirstOrDefaultAsync(book => book.Id == id);
     }
 
