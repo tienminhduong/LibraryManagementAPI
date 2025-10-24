@@ -11,5 +11,5 @@ public class Book
     public int PublicationYear { get; set; }
     public string? Description { get; set; }
 
-    public IEnumerable<BookCategory> BookCategories { get; set; } = [];
+    public ICollection<BookCategory> BookCategories { get; set; } = [];
 }
