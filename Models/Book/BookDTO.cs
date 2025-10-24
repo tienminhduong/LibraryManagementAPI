@@ -1,4 +1,6 @@
-﻿namespace API.Models;
+﻿using LibraryManagementAPI.Models.BookCategory;
+
+namespace LibraryManagementAPI.Models.Book;
 
 public class BookDTO
 {

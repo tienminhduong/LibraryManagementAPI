@@ -1,4 +1,4 @@
-namespace API.Entities;
+namespace LibraryManagementAPI.Entities;
 
 
 public class BookCategory

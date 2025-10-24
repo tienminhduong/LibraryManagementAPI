@@ -1,4 +1,4 @@
-namespace API.Models;
+namespace LibraryManagementAPI.Models.BookCategory;
 
 public class BookCategoryDto
 {
@@ -7,6 +7,11 @@ public class BookCategoryDto
 }
 
 public class CreateBookCategoryDto
+{
+    public required string Name { get; set; }
+}
+
+public class UpdateBookCategoryDto
 {
     public required string Name { get; set; }
 }
