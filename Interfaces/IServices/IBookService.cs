@@ -1,7 +1,8 @@
-using API.Entities;
-using API.Models;
+using LibraryManagementAPI.Models.Book;
+using LibraryManagementAPI.Models.BookCategory;
+using LibraryManagementAPI.Models.Pagination;
 
-namespace API.Interfaces;
+namespace LibraryManagementAPI.Interfaces.IServices;
 
 public interface IBookService
 {

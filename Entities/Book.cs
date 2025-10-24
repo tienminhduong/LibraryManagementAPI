@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace API.Entities;
+namespace LibraryManagementAPI.Entities;
 
 public class Book
 {

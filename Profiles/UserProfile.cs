@@ -1,8 +1,9 @@
-using API.Entities;
-using API.Models;
 using AutoMapper;
+using LibraryManagementAPI.Entities;
+using LibraryManagementAPI.Models.Book;
+using LibraryManagementAPI.Models.BookCategory;
 
-namespace API.Profiles;
+namespace LibraryManagementAPI.Profiles;
 
 public class UserProfile : Profile
 {

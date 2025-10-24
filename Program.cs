@@ -1,9 +1,5 @@
-using API.Extensions;
-using API.Interfaces;
-using API.Repositories;
 using dotenv.net;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using LibraryManagementAPI.Extensions;
 using Microsoft.OpenApi.Models;
 
 DotEnv.Load();

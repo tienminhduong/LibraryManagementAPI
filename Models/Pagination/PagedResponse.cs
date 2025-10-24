@@ -1,17 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Models;
+namespace LibraryManagementAPI.Models.Pagination;
 
 public class PagedResponse<T>(int pageNumber, int pageSize, IEnumerable<T> data, int totalItems)
 {
+    public IEnumerable<T> Data { get; set; } = data;
     public int PageNumber { get; set; } = pageNumber;
     public int PageSize { get; set; } = pageSize;
     public int TotalItems { get; set; } = totalItems;
     public int TotalPages { get; set; } = pageSize > 0 ? (int)Math.Ceiling(totalItems / (double)pageSize) : 0;
-    public IEnumerable<T> Data { get; set; } = data;
 
     public static async Task<PagedResponse<T>> FromQueryable(IQueryable<T> source, int pageNumber, int pageSize)
     {

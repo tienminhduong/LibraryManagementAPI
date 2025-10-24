@@ -1,13 +1,14 @@
-using API.Entities;
-using API.Interfaces;
-using API.Models;
 using AutoMapper;
+using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
-using LibraryManagementAPI.Interfaces;
+using LibraryManagementAPI.Interfaces.IRepositories;
+using LibraryManagementAPI.Interfaces.IServices;
+using LibraryManagementAPI.Models.Book;
+using LibraryManagementAPI.Models.BookCategory;
+using LibraryManagementAPI.Models.Pagination;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace API.Services;
+namespace LibraryManagementAPI.Services;
 
 public class BookService(
     IBookCategoryRepository bookCategoryRepository,

@@ -1,8 +1,9 @@
-using API.Interfaces;
-using API.Entities;
 using Microsoft.EntityFrameworkCore;
+using LibraryManagementAPI.Context;
+using LibraryManagementAPI.Entities;
+using LibraryManagementAPI.Interfaces.IRepositories;
 
-namespace API.Repositories;
+namespace LibraryManagementAPI.Repositories;
 
 public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryRepository
 {

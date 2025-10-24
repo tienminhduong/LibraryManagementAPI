@@ -1,7 +1,6 @@
-using API.Entities;
-using API.Models;
+using LibraryManagementAPI.Entities;
 
-namespace API.Interfaces;
+namespace LibraryManagementAPI.Interfaces.IRepositories;
 
 public interface IBookCategoryRepository
 {

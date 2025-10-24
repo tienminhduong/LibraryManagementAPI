@@ -1,20 +1,13 @@
-using System.Security.Cryptography.X509Certificates;
-using API.Entities;
-using API.Interfaces;
-using API.Models;
-using AutoMapper;
 using LibraryManagementAPI.Exceptions;
-using Microsoft.AspNetCore.Http.HttpResults;
+using LibraryManagementAPI.Interfaces.IServices;
+using LibraryManagementAPI.Models.BookCategory;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers;
+namespace LibraryManagementAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BookCategoryController(
-    IBookCategoryRepository bookCategoryRepository,
-    IBookService bookService
-    ) : ControllerBase
+public class BookCategoryController(IBookService bookService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BookCategoryDto>>> GetAllBookCategories()
