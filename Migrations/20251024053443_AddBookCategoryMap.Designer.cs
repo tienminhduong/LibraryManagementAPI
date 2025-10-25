@@ -3,6 +3,7 @@ using System;
 using LibraryManagementAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryManagementAPI.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    partial class LibraryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251024053443_AddBookCategoryMap")]
+    partial class AddBookCategoryMap
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,7 +71,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Books", (string)null);
+                    b.ToTable("Books");
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BookCategory", b =>
@@ -83,7 +86,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BookCategories", (string)null);
+                    b.ToTable("BookCategories");
                 });
 
             modelBuilder.Entity("BookBookCategory", b =>

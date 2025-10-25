@@ -6,6 +6,7 @@ using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
 using LibraryManagementAPI.Models.Pagination;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Services;
@@ -15,11 +16,13 @@ public class BookService(
     IBookRepository bookRepository,
     IMapper mapper) : IBookService
 {
-    public async Task<BookDTO> AddBookAsync(CreateBookDTO bookDto)
+    public async Task<BookDto> AddBookAsync(CreateBookDto bookDto)
     {
         ArgumentNullException.ThrowIfNull(bookDto);
 
         var book = mapper.Map<Book>(bookDto);
+        book.BookCategories = [.. await bookCategoryRepository.IdListToEntity(bookDto.CategoryIds)];
+
         var result = await bookRepository.AddBookAsync(book);
 
         var createdBook = await bookRepository.GetBookByIdAsync(book.Id);
@@ -27,7 +30,7 @@ public class BookService(
         if (!result)
             throw new DbUpdateException("Saving failed");
 
-        return mapper.Map<BookDTO>(createdBook);
+        return mapper.Map<BookDto>(createdBook);
     }
 
     public async Task<BookCategoryDto> CreateBookCategoryAsync(CreateBookCategoryDto categoryDto)
@@ -60,27 +63,34 @@ public class BookService(
         return mapper.Map<IEnumerable<BookCategoryDto>>(categories);
     }
 
-    public async Task<PagedResponse<BookDTO>> GetAllBooksAsync(int pageNumber = 1, int pageSize = 20)
+    public async Task<PagedResponse<BookDto>> GetAllBooksAsync(int pageNumber = 1, int pageSize = 20)
     {
         var books = await bookRepository.GetAllBooksAsync(pageNumber, pageSize);
-        var bookDtos = new PagedResponse<BookDTO>(
+        var bookDtos = new PagedResponse<BookDto>(
             pageNumber,
             pageSize,
-            mapper.Map<IEnumerable<BookDTO>>(books.Data),
+            mapper.Map<IEnumerable<BookDto>>(books.Data),
             books.TotalItems);
 
         return bookDtos;
     }
 
-    public Task<PagedResponse<BookDTO>> GetAllBooksInCategoryAsync(string categoryName, int pageNumber = 1, int pageSize = 20)
+    public async Task<PagedResponse<BookDto>> GetAllBooksInCategoryAsync(Guid id, int pageNumber = 1, int pageSize = 20)
     {
-        throw new NotImplementedException();
+        var books = await bookCategoryRepository.SearchBookByCategory(id, pageNumber, pageSize);
+        var bookDtos = new PagedResponse<BookDto>(
+            pageNumber,
+            pageSize,
+            mapper.Map<IEnumerable<BookDto>>(books.Data),
+            books.TotalItems
+        );
+        return bookDtos;
     }
 
-    public async Task<BookDTO?> GetBookByIdAsync(Guid id)
+    public async Task<BookDto?> GetBookByIdAsync(Guid id)
     {
         var book = await bookRepository.GetBookByIdAsync(id);
-        return mapper.Map<BookDTO>(book);
+        return mapper.Map<BookDto>(book);
     }
 
     public async Task<BookCategoryDto> GetBookCategoryByIdAsync(Guid id)
@@ -96,5 +106,14 @@ public class BookService(
 
         existingCategory.Name = categoryDto.Name;
         await bookCategoryRepository.UpdateCategory(existingCategory);
+    }
+
+    public async Task UpdateCategoryOfBookAsync(Guid id, UpdateCategoryOfBookDto dto)
+    {
+        var book = await bookRepository.GetBookByIdAsync(id)
+            ?? throw new NotFoundException(nameof(Book), id);
+
+        var categories = await bookCategoryRepository.IdListToEntity(dto.CategoryIds);
+        await bookRepository.UpdateCategoryOfBookAsync(book, categories);
     }
 }

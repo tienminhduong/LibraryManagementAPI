@@ -1,5 +1,7 @@
+using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Interfaces.IServices;
+using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +22,13 @@ public class BookCategoryController(IBookService bookService) : ControllerBase
     {
         var category = await bookService.GetBookCategoryByIdAsync(id);
         return category == null ? NotFound() : Ok(category);
+    }
+
+    [HttpGet("books/{id}")]
+    public async Task<ActionResult<IEnumerable<BookDto>>> GetBooksByCategory(Guid id, int pageNumber = 1, int pageSize = 20)
+    {
+        var books = await bookService.GetAllBooksInCategoryAsync(id, pageNumber, pageSize);
+        return Ok(books);
     }
 
     [HttpPost]

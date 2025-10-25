@@ -15,7 +15,7 @@ public class UserProfile : Profile
         CreateMap<BookCategoryDto, BookCategory>();
 
         // Book mappings
-        CreateMap<Book, BookDTO>();
-        CreateMap<CreateBookDTO, Book>();
+        CreateMap<Book, BookDto>();
+        CreateMap<CreateBookDto, Book>();
     }
 }
