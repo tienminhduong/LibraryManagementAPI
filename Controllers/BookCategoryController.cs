@@ -25,7 +25,7 @@ public class BookCategoryController(IBookService bookService) : ControllerBase
     }
 
     [HttpGet("books/{id}")]
-    public async Task<ActionResult<IEnumerable<BookDTO>>> GetBooksByCategory(Guid id, int pageNumber = 1, int pageSize = 20)
+    public async Task<ActionResult<IEnumerable<BookDto>>> GetBooksByCategory(Guid id, int pageNumber = 1, int pageSize = 20)
     {
         var books = await bookService.GetAllBooksInCategoryAsync(id, pageNumber, pageSize);
         return Ok(books);

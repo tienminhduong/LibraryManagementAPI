@@ -1,6 +1,6 @@
 ﻿namespace LibraryManagementAPI.Models.Book;
 
-public class CreateBookDTO
+public class CreateBookDto
 {
     public required string ISBN { get; set; }
     public required string Title { get; set; }

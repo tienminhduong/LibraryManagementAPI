@@ -2,7 +2,7 @@
 
 namespace LibraryManagementAPI.Models.Book;
 
-public class BookDTO
+public class BookDto
 {
     public Guid Id { get; set; }
     public required string ISBN { get; set; }
