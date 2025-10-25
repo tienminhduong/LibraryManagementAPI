@@ -1,4 +1,5 @@
 using AutoMapper;
+using System.Collections.Generic;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Interfaces.IRepositories;
@@ -6,7 +7,6 @@ using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
 using LibraryManagementAPI.Models.Pagination;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Services;
@@ -21,6 +21,8 @@ public class BookService(
         ArgumentNullException.ThrowIfNull(bookDto);
 
         var book = mapper.Map<Book>(bookDto);
+        book.BookCategories = [.. await bookCategoryRepository.IdListToEntity(bookDto.CategoryIds)];
+
         var result = await bookRepository.AddBookAsync(book);
 
         var createdBook = await bookRepository.GetBookByIdAsync(book.Id);

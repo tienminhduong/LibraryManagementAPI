@@ -67,4 +67,13 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
         var books = await PagedResponse<Book>.FromQueryable(query, pageNumber, pageSize);
         return books;
     }
+
+    public async Task<IEnumerable<BookCategory>> IdListToEntity(IEnumerable<Guid> ids)
+    {
+        var categories = await dbContext.BookCategories
+            .Where(c => ids.Contains(c.Id))
+            .ToListAsync();
+
+        return categories;
+    }
 }

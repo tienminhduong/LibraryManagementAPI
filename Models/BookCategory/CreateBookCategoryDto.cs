@@ -1,7 +1,6 @@
 namespace LibraryManagementAPI.Models.BookCategory;
 
-public class BookCategoryDto
+public class CreateBookCategoryDto
 {
-    public Guid Id { get; set; }
     public required string Name { get; set; }
 }
