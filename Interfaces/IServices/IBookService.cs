@@ -9,7 +9,7 @@ public interface IBookService
     // Book categories
     Task<IEnumerable<BookCategoryDto>> GetAllBookCategoriesAsync();
     Task<BookCategoryDto> GetBookCategoryByIdAsync(Guid id);
-    Task<PagedResponse<BookDTO>> GetAllBooksInCategoryAsync(string categoryName, int pageNumber = 1, int pageSize = 20);
+    Task<PagedResponse<BookDTO>> GetAllBooksInCategoryAsync(Guid id, int pageNumber = 1, int pageSize = 20);
     Task<BookCategoryDto> CreateBookCategoryAsync(CreateBookCategoryDto categoryDto);
     Task UpdateBookCategoryAsync(Guid id, UpdateBookCategoryDto categoryDto);
     Task DeleteBookCategoryAsync(Guid id);

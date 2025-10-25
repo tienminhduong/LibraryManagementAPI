@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
+using LibraryManagementAPI.Models.Pagination;
 
 namespace LibraryManagementAPI.Repositories;
 
@@ -55,5 +56,15 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
             .Include(b => b.BookCategories)
                 .ThenInclude(c => c.Books)
             .CountAsync(b => b.BookCategories.Any(c => c.Id == categoryId));
+    }
+
+    public async Task<PagedResponse<Book>> SearchBookByCategory(Guid id, int pageNumber = 1, int pageSize = 20)
+    {
+        var query = dbContext.Books
+            .Include(b => b.BookCategories)
+            .Where(b => b.BookCategories.Any(c => c.Id == id));
+
+        var books = await PagedResponse<Book>.FromQueryable(query, pageNumber, pageSize);
+        return books;
     }
 }

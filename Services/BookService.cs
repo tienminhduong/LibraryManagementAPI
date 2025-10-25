@@ -6,6 +6,7 @@ using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
 using LibraryManagementAPI.Models.Pagination;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Services;
@@ -72,9 +73,16 @@ public class BookService(
         return bookDtos;
     }
 
-    public Task<PagedResponse<BookDTO>> GetAllBooksInCategoryAsync(string categoryName, int pageNumber = 1, int pageSize = 20)
+    public async Task<PagedResponse<BookDTO>> GetAllBooksInCategoryAsync(Guid id, int pageNumber = 1, int pageSize = 20)
     {
-        throw new NotImplementedException();
+        var books = await bookCategoryRepository.SearchBookByCategory(id, pageNumber, pageSize);
+        var bookDtos = new PagedResponse<BookDTO>(
+            pageNumber,
+            pageSize,
+            mapper.Map<IEnumerable<BookDTO>>(books.Data),
+            books.TotalItems
+        );
+        return bookDtos;
     }
 
     public async Task<BookDTO?> GetBookByIdAsync(Guid id)
