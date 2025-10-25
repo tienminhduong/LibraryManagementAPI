@@ -1,6 +1,7 @@
 ﻿using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
+using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.Pagination;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,6 +55,12 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
 
         dbContext.Books.Update(book);
         return await dbContext.SaveChangesAsync();
+    }
 
+    public async Task UpdateCategoryOfBookAsync(Book book, IEnumerable<BookCategory> categories)
+    {
+        book.BookCategories = [.. categories];
+        dbContext.Books.Update(book);
+        await dbContext.SaveChangesAsync();
     }
 }

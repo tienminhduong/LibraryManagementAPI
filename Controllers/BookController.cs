@@ -1,4 +1,5 @@
-﻿using LibraryManagementAPI.Interfaces.IServices;
+﻿using LibraryManagementAPI.Exceptions;
+using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,20 @@ public class BookController(IBookService bookService) : ControllerBase
         catch (DbUpdateException exception)
         {
             return Problem(exception.Message);
+        }
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateCategory(Guid id, [FromBody] UpdateCategoryOfBookDto dto)
+    {
+        try
+        {
+            await bookService.UpdateCategoryOfBookAsync(id, dto);
+            return NoContent();
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
         }
     }
 }

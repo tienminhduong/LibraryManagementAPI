@@ -1,5 +1,4 @@
 using AutoMapper;
-using System.Collections.Generic;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Interfaces.IRepositories;
@@ -7,6 +6,7 @@ using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
 using LibraryManagementAPI.Models.Pagination;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Services;
@@ -106,5 +106,14 @@ public class BookService(
 
         existingCategory.Name = categoryDto.Name;
         await bookCategoryRepository.UpdateCategory(existingCategory);
+    }
+
+    public async Task UpdateCategoryOfBookAsync(Guid id, UpdateCategoryOfBookDto dto)
+    {
+        var book = await bookRepository.GetBookByIdAsync(id)
+            ?? throw new NotFoundException(nameof(Book), id);
+
+        var categories = await bookCategoryRepository.IdListToEntity(dto.CategoryIds);
+        await bookRepository.UpdateCategoryOfBookAsync(book, categories);
     }
 }
