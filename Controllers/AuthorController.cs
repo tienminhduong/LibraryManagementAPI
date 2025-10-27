@@ -36,6 +36,20 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
         return Ok(await authorService.GetAllAuthorsAsync(pageNumber, pageSize));
     }
 
+    [HttpGet("{id}/books")]
+    public async Task<ActionResult> GetBooksByAuthor(Guid id, int pageNumber = 1, int pageSize = 20)
+    {
+        try
+        {
+            var books = await authorService.GetAllBooksByAuthorAsync(id, pageNumber, pageSize);
+            return Ok(books);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex);
+        }
+    }
+
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAuthor(Guid id, [FromBody] UpdateAuthorDto authorDto)
     {

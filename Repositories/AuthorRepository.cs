@@ -45,4 +45,14 @@ public class AuthorRepository(LibraryDbContext dbContext) : IAuthorRepository
         dbContext.Update(author);
         await dbContext.SaveChangesAsync();
     }
+
+    public async Task<PagedResponse<Book>> FindBooksByAuthorAsync(Guid id, int pageNumber, int pageSize)
+    {
+        var query = dbContext.Books
+            .Include(b => b.Authors)
+            .Where(b => b.Authors.Any(a => a.Id == id));
+
+        var books = await PagedResponse<Book>.FromQueryable(query, pageNumber, pageSize);
+        return books;
+    }
 }

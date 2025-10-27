@@ -4,6 +4,7 @@ using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Author;
+using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.Pagination;
 
 namespace LibraryManagementAPI.Services;
@@ -33,6 +34,15 @@ public class AuthorService(
         var authorDtos = PagedResponse<AuthorDto>.MapFrom(authors, mapper);
 
         return authorDtos;
+    }
+
+    public async Task<PagedResponse<BookDto>> GetAllBooksByAuthorAsync(Guid authorId, int pageNumber, int pageSize)
+    {
+        var author = await authorRepository.GetAuthorAsync(authorId)
+            ?? throw new NotFoundException(nameof(Author), authorId);
+
+        var books = await authorRepository.FindBooksByAuthorAsync(authorId, pageNumber, pageSize);
+        return PagedResponse<BookDto>.MapFrom(books, mapper);
     }
 
     public async Task<AuthorDto> GetAuthorAsync(Guid id)
