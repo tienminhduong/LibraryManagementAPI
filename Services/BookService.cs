@@ -7,6 +7,7 @@ using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
 using LibraryManagementAPI.Models.Pagination;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Services;
@@ -66,24 +67,14 @@ public class BookService(
     public async Task<PagedResponse<BookDto>> GetAllBooksAsync(int pageNumber = 1, int pageSize = 20)
     {
         var books = await bookRepository.GetAllBooksAsync(pageNumber, pageSize);
-        var bookDtos = new PagedResponse<BookDto>(
-            pageNumber,
-            pageSize,
-            mapper.Map<IEnumerable<BookDto>>(books.Data),
-            books.TotalItems);
-
+        var bookDtos = PagedResponse<BookDto>.MapFrom(books, mapper);
         return bookDtos;
     }
 
     public async Task<PagedResponse<BookDto>> GetAllBooksInCategoryAsync(Guid id, int pageNumber = 1, int pageSize = 20)
     {
         var books = await bookCategoryRepository.SearchBookByCategory(id, pageNumber, pageSize);
-        var bookDtos = new PagedResponse<BookDto>(
-            pageNumber,
-            pageSize,
-            mapper.Map<IEnumerable<BookDto>>(books.Data),
-            books.TotalItems
-        );
+        var bookDtos = PagedResponse<BookDto>.MapFrom(books, mapper);
         return bookDtos;
     }
 

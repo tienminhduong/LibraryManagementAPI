@@ -29,12 +29,7 @@ public class AuthorService(
     public async Task<PagedResponse<AuthorDto>> GetAllAuthorsAsync(int pageNumber, int pageSize)
     {
         var authors = await authorRepository.GetAllAuthorsAsync(pageNumber, pageSize);
-        var authorDtos = new PagedResponse<AuthorDto>(
-            pageNumber,
-            pageSize,
-            mapper.Map<IEnumerable<AuthorDto>>(authors.Data),
-            authors.TotalItems
-        );
+        var authorDtos = PagedResponse<AuthorDto>.MapFrom(authors, mapper);
 
         return authorDtos;
     }
