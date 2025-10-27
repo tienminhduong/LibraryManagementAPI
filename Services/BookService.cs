@@ -6,8 +6,6 @@ using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
 using LibraryManagementAPI.Models.Pagination;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Services;
@@ -15,6 +13,7 @@ namespace LibraryManagementAPI.Services;
 public class BookService(
     IBookCategoryRepository bookCategoryRepository,
     IBookRepository bookRepository,
+    IAuthorRepository authorRepository,
     IMapper mapper) : IBookService
 {
     public async Task<BookDto> AddBookAsync(CreateBookDto bookDto)
@@ -23,6 +22,7 @@ public class BookService(
 
         var book = mapper.Map<Book>(bookDto);
         book.BookCategories = [.. await bookCategoryRepository.IdListToEntity(bookDto.CategoryIds)];
+        book.Authors = [.. await authorRepository.IdListToEntity(bookDto.AuthorIds)];
 
         var result = await bookRepository.AddBookAsync(book);
 
@@ -88,6 +88,15 @@ public class BookService(
     {
         var catogory = await bookCategoryRepository.GetCategoryByIdAsync(id);
         return mapper.Map<BookCategoryDto>(catogory);
+    }
+
+    public async Task UpdateAuthorOfBookAsync(Guid id, UpdateAuthorOfBookDto dto)
+    {
+        var book = await bookRepository.GetBookByIdAsync(id)
+            ?? throw new NotFoundException(nameof(Book), id);
+
+        var authors = await authorRepository.IdListToEntity(dto.AuthorIds);
+        await bookRepository.UpdateAuthorOfBookAsync(book, authors);
     }
 
     public async Task UpdateBookCategoryAsync(Guid id, UpdateBookCategoryDto categoryDto)

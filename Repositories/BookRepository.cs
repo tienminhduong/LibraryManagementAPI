@@ -1,7 +1,6 @@
 ﻿using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
-using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.Pagination;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,14 +29,17 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
 
     public async Task<PagedResponse<Book>> GetAllBooksAsync(int pageNumber = 1, int pageSize = 20)
     {
-        var books = dbContext.Books.Include(book => book.BookCategories);
+        var books = dbContext.Books
+            .Include(b => b.BookCategories)
+            .Include(b => b.Authors);
         return await PagedResponse<Book>.FromQueryable(books, pageNumber, pageSize);
     }
 
     public async Task<Book?> GetBookByIdAsync(Guid id)
     {
         return await dbContext.Books
-            .Include(book => book.BookCategories)
+            .Include(b => b.BookCategories)
+            .Include(b => b.Authors)
             .FirstOrDefaultAsync(book => book.Id == id);
     }
 
@@ -45,6 +47,13 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
     {
         return await dbContext.Books
             .FirstOrDefaultAsync(b => b.ISBN == ISBN) != null;
+    }
+
+    public async Task UpdateAuthorOfBookAsync(Book book, IEnumerable<Author> authors)
+    {
+        book.Authors = [.. authors];
+        dbContext.Books.Update(book);
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task<int> UpdateBookAsync(Book book)

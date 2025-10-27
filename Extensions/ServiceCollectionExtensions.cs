@@ -3,7 +3,6 @@ using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Repositories;
 using LibraryManagementAPI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Extensions;

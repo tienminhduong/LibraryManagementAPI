@@ -41,12 +41,26 @@ public class BookController(IBookService bookService) : ControllerBase
         }
     }
 
-    [HttpPut("{id}")]
+    [HttpPatch("{id}/categories")]
     public async Task<ActionResult> UpdateCategory(Guid id, [FromBody] UpdateCategoryOfBookDto dto)
     {
         try
         {
             await bookService.UpdateCategoryOfBookAsync(id, dto);
+            return NoContent();
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
+    [HttpPatch("{id}/authors")]
+    public async Task<ActionResult> UpdateAuthor(Guid id, [FromBody] UpdateAuthorOfBookDto dto)
+    {
+        try
+        {
+            await bookService.UpdateAuthorOfBookAsync(id, dto);
             return NoContent();
         }
         catch (NotFoundException ex)
