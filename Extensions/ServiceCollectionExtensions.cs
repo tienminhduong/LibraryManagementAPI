@@ -3,6 +3,7 @@ using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Repositories;
 using LibraryManagementAPI.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Extensions;
@@ -27,10 +28,12 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IBookCategoryRepository, BookCategoryRepository>();
         services.AddScoped<IBookRepository, BookRepository>();
+        services.AddScoped<IAuthorRepository, AuthorRepository>();
     }
 
     public static void AddServices(IServiceCollection services)
     {
         services.AddScoped<IBookService, BookService>();
+        services.AddScoped<IAuthorService, AuthorService>();
     }
 }

@@ -1,0 +1,39 @@
+using LibraryManagementAPI.Exceptions;
+using LibraryManagementAPI.Interfaces.IServices;
+using LibraryManagementAPI.Models.Author;
+using LibraryManagementAPI.Models.Pagination;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace LibraryManagementAPI.Controllers;
+
+[ApiController]
+[Route("api/authors")]
+public class AuthorController(IAuthorService authorService) : ControllerBase
+{
+    [HttpPost]
+    public async Task<ActionResult> AddNewAuthor([FromBody] CreateAuthorDto authorDto)
+    {
+        var createdAuthor = await authorService.AddNewAuthor(authorDto);
+        return CreatedAtAction(nameof(GetAuthorById), new { id = createdAuthor.Id }, createdAuthor);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<AuthorDto>> GetAuthorById(Guid id)
+    {
+        try
+        {
+            return await authorService.GetAuthorAsync(id);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<PagedResponse<AuthorDto>>> GetAllAuthors(int pageNumber = 1, int pageSize = 20)
+    {
+        return Ok(await authorService.GetAllAuthorsAsync(pageNumber, pageSize));
+    }
+}
