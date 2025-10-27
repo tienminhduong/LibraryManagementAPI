@@ -1,5 +1,6 @@
 using AutoMapper;
 using LibraryManagementAPI.Entities;
+using LibraryManagementAPI.Models.Author;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
 
@@ -17,5 +18,10 @@ public class UserProfile : Profile
         // Book mappings
         CreateMap<Book, BookDto>();
         CreateMap<CreateBookDto, Book>();
+
+        // Author mappings
+        CreateMap<Author, AuthorDto>();
+        CreateMap<CreateAuthorDto, Author>();
+        CreateMap<UpdateAuthorDto, Author>();
     }
 }

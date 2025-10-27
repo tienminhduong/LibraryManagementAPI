@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Models.Pagination;
@@ -22,5 +23,16 @@ public class PagedResponse<T>(int pageNumber, int pageSize, IEnumerable<T> data,
             .ToListAsync();
 
         return new PagedResponse<T>(pageNumber, pageSize, items, total);
+    }
+
+    public static PagedResponse<T> MapFrom<TSource>(PagedResponse<TSource> source, IMapper mapper)
+    {
+        var result = new PagedResponse<T>(
+            source.PageNumber,
+            source.PageSize,
+            mapper.Map<IEnumerable<T>>(source.Data),
+            source.TotalItems);
+
+        return result;
     }
 }
