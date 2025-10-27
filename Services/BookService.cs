@@ -24,6 +24,7 @@ public class BookService(
 
         var book = mapper.Map<Book>(bookDto);
         book.BookCategories = [.. await bookCategoryRepository.IdListToEntity(bookDto.CategoryIds)];
+        book.Authors = [.. await authorRepository.IdListToEntity(bookDto.AuthorIds)];
 
         var result = await bookRepository.AddBookAsync(book);
 

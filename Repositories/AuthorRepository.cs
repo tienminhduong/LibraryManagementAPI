@@ -50,6 +50,7 @@ public class AuthorRepository(LibraryDbContext dbContext) : IAuthorRepository
     {
         var query = dbContext.Books
             .Include(b => b.Authors)
+            .Include(b => b.BookCategories)
             .Where(b => b.Authors.Any(a => a.Id == id));
 
         var books = await PagedResponse<Book>.FromQueryable(query, pageNumber, pageSize);
