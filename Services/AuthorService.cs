@@ -11,7 +11,6 @@ namespace LibraryManagementAPI.Services;
 
 public class AuthorService(
     IAuthorRepository authorRepository,
-    IBookRepository bookRepository,
     IMapper mapper
     ) : IAuthorService
 {
