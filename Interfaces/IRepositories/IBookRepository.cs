@@ -12,4 +12,5 @@ public interface IBookRepository
     Task<int> UpdateBookAsync(Book category);
     Task<bool> DeleteBookAsync(Guid id);
     Task UpdateCategoryOfBookAsync(Book book, IEnumerable<BookCategory> categories);
+    Task UpdateAuthorOfBookAsync(Book book, IEnumerable<Author> authors);
 }

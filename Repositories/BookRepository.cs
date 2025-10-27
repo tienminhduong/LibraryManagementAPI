@@ -50,6 +50,13 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
             .FirstOrDefaultAsync(b => b.ISBN == ISBN) != null;
     }
 
+    public async Task UpdateAuthorOfBookAsync(Book book, IEnumerable<Author> authors)
+    {
+        book.Authors = [.. authors];
+        dbContext.Books.Update(book);
+        await dbContext.SaveChangesAsync();
+    }
+
     public async Task<int> UpdateBookAsync(Book book)
     {
         var isExisting = await IsBookExistsByISBNAsync(book.ISBN);

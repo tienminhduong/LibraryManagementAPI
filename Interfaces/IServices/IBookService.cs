@@ -19,6 +19,7 @@ public interface IBookService
     Task<BookDto?> GetBookByIdAsync(Guid id);
     Task<BookDto> AddBookAsync(CreateBookDto bookDto);
     Task UpdateCategoryOfBookAsync(Guid id, UpdateCategoryOfBookDto dto);
+    Task UpdateAuthorOfBookAsync(Guid id, UpdateAuthorOfBookDto dto);
 
     // Book copy
 }

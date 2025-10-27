@@ -55,4 +55,13 @@ public class AuthorRepository(LibraryDbContext dbContext) : IAuthorRepository
         var books = await PagedResponse<Book>.FromQueryable(query, pageNumber, pageSize);
         return books;
     }
+
+    public async Task<IEnumerable<Author>> IdListToEntity(IEnumerable<Guid> authorIds)
+    {
+        var categories = await dbContext.Authors
+            .Where(c => authorIds.Contains(c.Id))
+            .ToListAsync();
+
+        return categories;
+    }
 }

@@ -15,6 +15,7 @@ namespace LibraryManagementAPI.Services;
 public class BookService(
     IBookCategoryRepository bookCategoryRepository,
     IBookRepository bookRepository,
+    IAuthorRepository authorRepository,
     IMapper mapper) : IBookService
 {
     public async Task<BookDto> AddBookAsync(CreateBookDto bookDto)
@@ -88,6 +89,15 @@ public class BookService(
     {
         var catogory = await bookCategoryRepository.GetCategoryByIdAsync(id);
         return mapper.Map<BookCategoryDto>(catogory);
+    }
+
+    public async Task UpdateAuthorOfBookAsync(Guid id, UpdateAuthorOfBookDto dto)
+    {
+        var book = await bookRepository.GetBookByIdAsync(id)
+            ?? throw new NotFoundException(nameof(Book), id);
+
+        var authors = await authorRepository.IdListToEntity(dto.AuthorIds);
+        await bookRepository.UpdateAuthorOfBookAsync(book, authors);
     }
 
     public async Task UpdateBookCategoryAsync(Guid id, UpdateBookCategoryDto categoryDto)

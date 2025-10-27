@@ -12,4 +12,5 @@ public interface IAuthorService
     Task UpdateAuthorAsync(Guid id, UpdateAuthorDto authorDto);
     Task DeleteAuthorAsync(Guid id);
     Task<PagedResponse<BookDto>> GetAllBooksByAuthorAsync(Guid authorId, int pageNumber, int pageSize);
+    
 }
