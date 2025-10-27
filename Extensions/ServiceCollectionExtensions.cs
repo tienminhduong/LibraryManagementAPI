@@ -29,11 +29,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBookCategoryRepository, BookCategoryRepository>();
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<IAuthorRepository, AuthorRepository>();
+        services.AddScoped<IPublisherRepository, PublisherRepository>();
     }
 
     public static void AddServices(IServiceCollection services)
     {
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IAuthorService, AuthorService>();
+        services.AddScoped<IPublisherService, PublisherService>();
     }
 }

@@ -23,5 +23,10 @@ public class UserProfile : Profile
         CreateMap<Author, AuthorDto>();
         CreateMap<CreateAuthorDto, Author>();
         CreateMap<UpdateAuthorDto, Author>();
+
+        // Publisher mappings
+        CreateMap<Publisher, PublisherDTO>();
+        CreateMap<CreatePublisherDTO, Publisher>();
+        CreateMap<UpdatePublisherDTO, Publisher>();
     }
 }
