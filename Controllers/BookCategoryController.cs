@@ -23,7 +23,7 @@ public class BookCategoryController(IBookService bookService) : ControllerBase
         return category == null ? NotFound() : Ok(category);
     }
 
-    [HttpGet("books/{id}")]
+    [HttpGet("{id}/books")]
     public async Task<ActionResult<IEnumerable<BookDto>>> GetBooksByCategory(Guid id, int pageNumber = 1, int pageSize = 20)
     {
         var books = await bookService.GetAllBooksInCategoryAsync(id, pageNumber, pageSize);
