@@ -35,4 +35,32 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
     {
         return Ok(await authorService.GetAllAuthorsAsync(pageNumber, pageSize));
     }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateAuthor(Guid id, [FromBody] UpdateAuthorDto authorDto)
+    {
+        try
+        {
+            await authorService.UpdateAuthorAsync(id, authorDto);
+            return NoContent();
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteAuthor(Guid id)
+    {
+        try
+        {
+            await authorService.DeleteAuthorAsync(id);
+            return NoContent();
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
 }

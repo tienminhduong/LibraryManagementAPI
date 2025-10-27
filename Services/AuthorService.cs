@@ -1,5 +1,6 @@
 using AutoMapper;
 using LibraryManagementAPI.Entities;
+using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Author;
@@ -21,9 +22,9 @@ public class AuthorService(
         return mapper.Map<AuthorDto>(author);
     }
 
-    public Task DeleteAuthorAsync(Guid id)
+    public async Task DeleteAuthorAsync(Guid id)
     {
-        throw new NotImplementedException();
+        await authorRepository.DeleteAuthorAsync(id);
     }
 
     public async Task<PagedResponse<AuthorDto>> GetAllAuthorsAsync(int pageNumber, int pageSize)
@@ -40,8 +41,15 @@ public class AuthorService(
         return mapper.Map<AuthorDto>(author);
     }
 
-    public Task UpdateAuthorAsync(Guid id, UpdateAuthorDto authorDto)
+    public async Task UpdateAuthorAsync(Guid id, UpdateAuthorDto authorDto)
     {
-        throw new NotImplementedException();
+        var author = await authorRepository.GetAuthorAsync(id)
+            ?? throw new NotFoundException(nameof(Author), id);
+
+        author.Name = authorDto.Name;
+        author.YearOfBirth = authorDto.YearOfBirth;
+        author.BriefDescription = authorDto.BriefDescription;
+
+        await authorRepository.UpdateAuthorAsync(author);
     }
 }

@@ -3,8 +3,6 @@ using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Models.Pagination;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Repositories;
@@ -44,9 +42,6 @@ public class AuthorRepository(LibraryDbContext dbContext) : IAuthorRepository
 
     public async Task UpdateAuthorAsync(Author author)
     {
-        var checkAuthor = await dbContext.Authors.FindAsync(author.Id)
-            ?? throw new NotFoundException(nameof(Author), author.Id);
-
         dbContext.Update(author);
         await dbContext.SaveChangesAsync();
     }
