@@ -1,4 +1,3 @@
-using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;

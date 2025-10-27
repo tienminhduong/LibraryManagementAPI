@@ -1,7 +1,6 @@
 ﻿using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
-using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.Pagination;
 using Microsoft.EntityFrameworkCore;
 

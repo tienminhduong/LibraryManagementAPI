@@ -1,5 +1,4 @@
 ﻿using LibraryManagementAPI.Entities;
-using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.Pagination;
 
 namespace LibraryManagementAPI.Interfaces.IRepositories;
