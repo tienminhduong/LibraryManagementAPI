@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/publishers")]
 public class PublisherController(IPublisherService publisherService) : ControllerBase
 {
   [HttpGet]
