@@ -9,6 +9,8 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
     public DbSet<Book> Books { get; set; }
     public DbSet<Author> Authors { get; set; }
     public DbSet<Publisher> Publishers { get; set; }
+    public DbSet<LoginInfo> LoginInfos { get; set; }
+    public DbSet<AdminInfo> AdminInfos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -17,5 +19,9 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
             .HasMany(b => b.BookCategories)
             .WithMany(c => c.Books)
             .UsingEntity(j => j.ToTable("BookCategoryMap"));
+
+        modelBuilder.Entity<AdminInfo>()
+            .HasOne(info => info.LoginInfoId)
+            .WithOne(login => login.AdminInfo);
     }
 }
