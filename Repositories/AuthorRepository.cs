@@ -3,8 +3,6 @@ using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Models.Pagination;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Repositories;
@@ -44,10 +42,27 @@ public class AuthorRepository(LibraryDbContext dbContext) : IAuthorRepository
 
     public async Task UpdateAuthorAsync(Author author)
     {
-        var checkAuthor = await dbContext.Authors.FindAsync(author.Id)
-            ?? throw new NotFoundException(nameof(Author), author.Id);
-
         dbContext.Update(author);
         await dbContext.SaveChangesAsync();
+    }
+
+    public async Task<PagedResponse<Book>> FindBooksByAuthorAsync(Guid id, int pageNumber, int pageSize)
+    {
+        var query = dbContext.Books
+            .Include(b => b.Authors)
+            .Include(b => b.BookCategories)
+            .Where(b => b.Authors.Any(a => a.Id == id));
+
+        var books = await PagedResponse<Book>.FromQueryable(query, pageNumber, pageSize);
+        return books;
+    }
+
+    public async Task<IEnumerable<Author>> IdListToEntity(IEnumerable<Guid> authorIds)
+    {
+        var categories = await dbContext.Authors
+            .Where(c => authorIds.Contains(c.Id))
+            .ToListAsync();
+
+        return categories;
     }
 }

@@ -10,4 +10,6 @@ public interface IAuthorRepository
     Task UpdateAuthorAsync(Author author);
     Task DeleteAuthorAsync(Guid id);
     Task AddAuthorAsync(Author author);
+    Task<PagedResponse<Book>> FindBooksByAuthorAsync(Guid id, int pageNumber, int pageSize);
+    Task<IEnumerable<Author>> IdListToEntity(IEnumerable<Guid> authorIds);
 }
