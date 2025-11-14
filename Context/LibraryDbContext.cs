@@ -9,7 +9,7 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
     public DbSet<Book> Books { get; set; }
     public DbSet<Author> Authors { get; set; }
     public DbSet<Publisher> Publishers { get; set; }
-    public DbSet<LoginInfo> LoginInfos { get; set; }
+    public DbSet<Account> Accounts { get; set; }
     public DbSet<AdminInfo> AdminInfos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

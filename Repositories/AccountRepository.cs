@@ -5,13 +5,13 @@ using LibraryManagementAPI.Models.Pagination;
 
 namespace LibraryManagementAPI.Repositories
 {
-    public class LoginInfoRepository(LibraryDbContext db) : ILoginInfoRepository
+    public class AccountRepository(LibraryDbContext db) : IAccountRepository
     {
-        public Task AddLoginInfoAsync(LoginInfo loginInfo)
+        public Task AddAccountAsync(Account loginInfo)
         {
             try
             {
-                db.LoginInfos.AddAsync(loginInfo);
+                db.Accounts.AddAsync(loginInfo);
                 db.SaveChangesAsync();
                 return Task.CompletedTask;
             }
@@ -21,14 +21,14 @@ namespace LibraryManagementAPI.Repositories
             }
         }
 
-        public Task DeleteLoginInfoAsync(Guid id)
+        public Task DeleteAccountAsync(Guid id)
         {
             try
             {
-                var loginInfo = db.LoginInfos.Find(id);
+                var loginInfo = db.Accounts.Find(id);
                 if (loginInfo != null)
                 {
-                    db.LoginInfos.Remove(loginInfo);
+                    db.Accounts.Remove(loginInfo);
                     db.SaveChangesAsync();
                 }
                 return Task.CompletedTask;
@@ -39,12 +39,12 @@ namespace LibraryManagementAPI.Repositories
             }
         }
 
-        public Task<PagedResponse<LoginInfo>> GetAllLoginInfosAsync(int pageNumber, int pageSize)
+        public Task<PagedResponse<Account>> GetAllAccountsAsync(int pageNumber, int pageSize)
         {
             try
             {
-                var query = db.LoginInfos.AsQueryable();
-                return PagedResponse<LoginInfo>.FromQueryable(query, pageNumber, pageSize);
+                var query = db.Accounts.AsQueryable();
+                return PagedResponse<Account>.FromQueryable(query, pageNumber, pageSize);
             }
             catch (Exception ex)
             {
@@ -52,12 +52,12 @@ namespace LibraryManagementAPI.Repositories
             }
         }
 
-        public Task<LoginInfo?> GetLoginInfoAsync(Guid id)
+        public Task<Account?> GetAccountAsync(Guid id)
         {
             // return null if not found
             try
             {
-                var loginInfo = db.LoginInfos.Find(id);
+                var loginInfo = db.Accounts.Find(id);
                 return Task.FromResult(loginInfo);
             }
             catch (Exception ex)
@@ -67,11 +67,11 @@ namespace LibraryManagementAPI.Repositories
         }
 
         // Use to login by username and password
-        public Task<LoginInfo?> GetLoginInfoAsync(string userName, string password)
+        public Task<Account?> GetAccountAsync(string userName, string password)
         {
             try
             {
-                var loginInfo = db.LoginInfos.FirstOrDefault(li => li.userName == userName && li.passwordHash == password);
+                var loginInfo = db.Accounts.FirstOrDefault(li => li.userName == userName && li.passwordHash == password);
                 return Task.FromResult(loginInfo);
             }
             catch (Exception ex)
@@ -80,11 +80,11 @@ namespace LibraryManagementAPI.Repositories
             }
         }
 
-        public Task UpdateLoginInfoAsync(LoginInfo loginInfo)
+        public Task UpdateAccountAsync(Account loginInfo)
         {
             try
             {
-                db.LoginInfos.Update(loginInfo);
+                db.Accounts.Update(loginInfo);
                 db.SaveChangesAsync();
                 return Task.CompletedTask;
             }

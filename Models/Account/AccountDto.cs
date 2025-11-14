@@ -1,19 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using LibraryManagementAPI.Entities;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace LibraryManagementAPI.Entities
+namespace LibraryManagementAPI.Models.Account
 {
-    public enum Role
+    public class AccountDto
     {
-        Admin,
-        Staff,
-        Member,
-        Guest
-    }
-    public class LoginInfo
-    {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid id { get; set; }
         public required string userName { get; set; }
         public required string passwordHash { get; set; }
@@ -23,5 +15,4 @@ namespace LibraryManagementAPI.Entities
         public bool isActive { get; set; } = true;
         public AdminInfo? AdminInfo { get; set; }
     }
-
 }
