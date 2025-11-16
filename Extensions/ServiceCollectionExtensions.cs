@@ -17,6 +17,8 @@ public static class ServiceCollectionExtensions
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+        AddCORSConfiguration(services);
+
         AddRepositories(services);
         AddServices(services);
 
@@ -36,5 +38,19 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IAuthorService, AuthorService>();
         services.AddScoped<IPublisherService, PublisherService>();
+    }
+
+    public static void AddCORSConfiguration(this IServiceCollection services)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAllOrigins",
+                builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+        });
     }
 }
