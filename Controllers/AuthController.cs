@@ -11,6 +11,10 @@ namespace LibraryManagementAPI.Controllers
         [HttpPost("register")]
         public async Task<bool> Register([FromBody] CreateAccountDto createAccountDto)
         {
+            if(ModelState.IsValid == false)
+            {
+                throw new ArgumentException("Invalid data.");
+            }
             return await accountService.Register(createAccountDto);
         }
     }

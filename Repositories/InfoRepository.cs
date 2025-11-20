@@ -10,7 +10,9 @@ namespace LibraryManagementAPI.Repositories
         {
             try
             {
-                await dbContext.BaseInfos.AddAsync(info);
+                await dbContext.AddAsync(info);
+                if (!isInTransaction)
+                    await dbContext.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -20,40 +22,55 @@ namespace LibraryManagementAPI.Repositories
 
         public Task<IEnumerable<BaseInfo>> GetAllAsync()
         {
-            try
-            {
-                return Task.FromResult(dbContext.BaseInfos.AsEnumerable());
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while retrieving infos.", ex);
-            }
+            throw new NotImplementedException();
         }
 
         public Task<BaseInfo?> GetByIdAsync(Guid id)
         {
-            try
-            {
-                var info = dbContext.BaseInfos.Find(id);
-                return Task.FromResult(info);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while retrieving the info.", ex);
-            }
+            throw new NotImplementedException();
         }
 
         public Task UpdateAsync(BaseInfo info)
         {
-            try
-            {
-                dbContext.BaseInfos.Update(info);
-                return Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while updating the info.", ex);
-            }
+            throw new NotImplementedException();
         }
+
+        //public Task<IEnumerable<BaseInfo>> GetAllAsync()
+        //{
+        //    try
+        //    {
+        //        return Task.FromResult(dbContext.AdminInfos.AsEnumerable());
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("An error occurred while retrieving infos.", ex);
+        //    }
+        //}
+
+        //public Task<BaseInfo?> GetByIdAsync(Guid id)
+        //{
+        //    try
+        //    {
+        //        var info = dbContext.AdminInfos.FindAsync(id);
+        //        return info;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("An error occurred while retrieving the info.", ex);
+        //    }
+        //}
+
+        //public Task UpdateAsync(BaseInfo info)
+        //{
+        //    try
+        //    {
+        //        dbContext.BaseInfos.Update(info);
+        //        return Task.CompletedTask;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("An error occurred while updating the info.", ex);
+        //    }
+        //}
     }
 }

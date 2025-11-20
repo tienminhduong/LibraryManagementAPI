@@ -1,6 +1,8 @@
 using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
+using LibraryManagementAPI.Interfaces.IUtility;
+using LibraryManagementAPI.Models.Utility;
 using LibraryManagementAPI.Repositories;
 using LibraryManagementAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -24,6 +26,7 @@ public static class ServiceCollectionExtensions
         AddRepositories(services);
         AddServices(services);
         AddAuthorizationServices(services, config);
+        AddUtilityServices(services);
 
         return services;
     }
@@ -44,6 +47,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorService, AuthorService>();
         services.AddScoped<IPublisherService, PublisherService>();
         services.AddScoped<IAccountService, AccountService>();
+    }
+
+    public static void AddUtilityServices(IServiceCollection services)
+    {
+        // Add utility services here if needed in the future
+        services.AddSingleton<IHasherPassword, BCryptHasherPassword>();
     }
 
     // Add Authorization Services using JWT Bearer

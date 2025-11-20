@@ -13,7 +13,6 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
     public DbSet<AdminInfo> AdminInfos { get; set; }
     public DbSet<StaffInfo> StaffInfos { get; set; }
     public DbSet<MemberInfo> MemberInfos { get; set; }
-    public DbSet<BaseInfo> BaseInfos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,9 +21,17 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
             .WithMany(c => c.Books)
             .UsingEntity(j => j.ToTable("BookCategoryMap"));
 
-        //modelBuilder.Entity<AdminInfo>()
-        //    .HasOne(info => info.LoginInfoId)
-        //    .WithOne(login => login.AdminInfo);
+        // Configure info and account relationship
+        modelBuilder.Entity<BaseInfo>()
+            .HasOne<Account>()
+            .WithOne(a => a.info)
+            .HasForeignKey<BaseInfo>(bi => bi.loginId)
+            .IsRequired();
+
+        modelBuilder.Entity<Account>()
+            .HasOne(account => account.info)
+            .WithOne(info => info.account)
+            .IsRequired(false);
 
         modelBuilder.Entity<BaseInfo>().UseTpcMappingStrategy();
         SeedData(modelBuilder);

@@ -7,14 +7,22 @@ namespace LibraryManagementAPI.Repositories
 {
     public class AccountRepository(LibraryDbContext db) : IAccountRepository
     {
-        public Task AddAccountAsync(Account loginInfo, bool isInTransaction = false)
+        public async Task AddAccountAsync(Account loginInfo, BaseInfo info)
         {
             try
             {
-                db.Accounts.AddAsync(loginInfo);
-                if(!isInTransaction)
-                    db.SaveChangesAsync();
-                return Task.CompletedTask;
+                // them account truoc
+                await db.Accounts.AddAsync(loginInfo); 
+                await db.SaveChangesAsync();
+
+                // gan id account vao info
+                info.loginId = loginInfo.id;
+                // fix lai ngay vi posgres chi chap nhan DateTimeKind.Utc
+                info.ConvertTimezone();
+
+                // them info sau
+                await db.AddAsync(info);
+                await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -93,6 +101,11 @@ namespace LibraryManagementAPI.Repositories
             {
                 throw new Exception("An error occurred while updating the login info.", ex);
             }
+        }
+
+        public LibraryDbContext GetDbContext()
+        {
+            return db;
         }
     }
 }

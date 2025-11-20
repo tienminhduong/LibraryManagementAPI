@@ -11,20 +11,29 @@ namespace LibraryManagementAPI.Entities
         public string? fullName { get; set; }
         public string? email { get; set; }
         public string? phoneNumber { get; set; }
-        public Guid? loginId { get; set; }
+        public Guid loginId { get; set; }
         [ForeignKey("loginId")]
-        public virtual Account? LoginInfoId { get; set; }
+        public virtual Account? account { get; set; }
+        public virtual void ConvertTimezone() { }
     }
     public class StaffInfo: BaseInfo
     {
-        public DateTime hireDate { get; set; } = DateTime.Today;
+        public DateTime hireDate { get; set; } = DateTime.UtcNow;
+        public override void ConvertTimezone()
+        {
+            hireDate = DateTime.SpecifyKind(hireDate, DateTimeKind.Utc);
+        }
     }
 
     public class MemberInfo: BaseInfo
     {
         public string? address { get; set; }
         public string? imageUrl { get; set; }
-        public DateTime joinDate { get; set; } = DateTime.Today;
+        public DateTime joinDate { get; set; } = DateTime.UtcNow;
+        public override void ConvertTimezone()
+        {
+            joinDate = DateTime.SpecifyKind(joinDate, DateTimeKind.Utc);
+        }
     }
     public class AdminInfo: BaseInfo
     {
