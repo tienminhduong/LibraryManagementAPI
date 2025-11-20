@@ -19,6 +19,8 @@ public static class ServiceCollectionExtensions
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+        AddCORSConfiguration(services);
+
         AddRepositories(services);
         AddServices(services);
         AddAuthorizationServices(services, config);
@@ -69,5 +71,17 @@ public static class ServiceCollectionExtensions
                                                                     .GetBytes(secretKey!))
                     };
                 });
+    }
+
+    public static void AddCORSConfiguration(this IServiceCollection services)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAllOrigins",
+                policy =>
+                {
+                    policy.AllowAnyOrigin();
+                });
+        });
     }
 }
