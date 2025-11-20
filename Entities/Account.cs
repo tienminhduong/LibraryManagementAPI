@@ -19,11 +19,9 @@ namespace LibraryManagementAPI.Entities
         public required string passwordHash { get; set; }
         public Role role { get; set; }
         public DateTime createdAt { get; set; } = DateTime.UtcNow;
-        public DateTime lastLogin { get; set; }
+        public DateTime lastLogin { get; set; } = DateTime.UtcNow;
         public bool isActive { get; set; } = true;
-        public AdminInfo? AdminInfo { get; set; }
-        public StaffInfo? StaffInfo { get; set; }
-        public MemberInfo? MemberInfo { get; set; }
+        public BaseInfo? info { get; set; }
     }
 
 }

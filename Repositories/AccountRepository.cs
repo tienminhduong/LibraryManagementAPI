@@ -7,12 +7,13 @@ namespace LibraryManagementAPI.Repositories
 {
     public class AccountRepository(LibraryDbContext db) : IAccountRepository
     {
-        public Task AddAccountAsync(Account loginInfo)
+        public Task AddAccountAsync(Account loginInfo, bool isInTransaction = false)
         {
             try
             {
                 db.Accounts.AddAsync(loginInfo);
-                db.SaveChangesAsync();
+                if(!isInTransaction)
+                    db.SaveChangesAsync();
                 return Task.CompletedTask;
             }
             catch (Exception ex)

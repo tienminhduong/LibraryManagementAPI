@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Interfaces.IUtility;
@@ -8,6 +9,7 @@ namespace LibraryManagementAPI.Services
 {
     public class AccountService(
         IAccountRepository accountRepository,
+        IInfoRepository infoRepository,
         IMapper mapper,
         IHasherPassword hasher
         ) : IAccountService
@@ -17,9 +19,25 @@ namespace LibraryManagementAPI.Services
             throw new NotImplementedException();
         }
 
-        public Task<AccountDto> Register(CreateAccountDto createAccountDto)
+        public Task<bool> Register(CreateAccountDto createAccountDto)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var account = new Account
+                {
+                    userName = createAccountDto.userName,
+                    passwordHash = hasher.HashPassword(createAccountDto.password),
+                    role = createAccountDto.role,
+                };
+                var info = mapper.Map<BaseInfo>(createAccountDto.adminInfo);
+                accountRepository.AddAccountAsync(account);
+                infoRepository.AddAsync(info);
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while registering the account.", ex);
+            }
         }
 
         //public async Task<AccountDto> Register(CreateAccountDto createAccountDto)

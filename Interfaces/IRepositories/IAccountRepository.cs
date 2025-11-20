@@ -9,7 +9,7 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task<Account?> GetAccountAsync(Guid id);
         Task UpdateAccountAsync(Account loginInfo);
         Task DeleteAccountAsync(Guid id);
-        Task AddAccountAsync(Account loginInfo);
+        Task AddAccountAsync(Account loginInfo, bool isInTransaction = false);
         Task<Account?> GetAccountAsync(string username, string password);
     }
 }

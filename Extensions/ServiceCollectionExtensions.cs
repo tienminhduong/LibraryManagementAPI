@@ -32,6 +32,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<IAuthorRepository, AuthorRepository>();
         services.AddScoped<IPublisherRepository, PublisherRepository>();
+        services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<IInfoRepository, InfoRepository>();
     }
 
     public static void AddServices(IServiceCollection services)
@@ -39,6 +41,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IAuthorService, AuthorService>();
         services.AddScoped<IPublisherService, PublisherService>();
+        services.AddScoped<IAccountService, AccountService>();
     }
 
     // Add Authorization Services using JWT Bearer
