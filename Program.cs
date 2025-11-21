@@ -23,22 +23,37 @@ builder.Services.AddLibraryServices(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseHttpsRedirection();
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        context.Response.StatusCode = 204;
+        await context.Response.CompleteAsync();
+    }
+    else
+    {
+        await next();
+    }
+});
+
+
+app.UseCors("AllowAllOrigins");
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library Management API");
 });
 
-
-app.UseHttpsRedirection();
-app.UseCors("AllowAllOrigins");
-
-app.UseAuthorization();
-
 app.MapControllers();
-
-
 
 app.MapGet("/", context =>
 {
@@ -47,3 +62,4 @@ app.MapGet("/", context =>
 });
 
 app.Run();
+

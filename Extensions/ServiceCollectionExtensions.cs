@@ -90,8 +90,8 @@ public static class ServiceCollectionExtensions
                 policy =>
                 {
                     policy.AllowAnyOrigin();
-                    policy.AllowAnyHeader();
                     policy.AllowAnyMethod();
+                    policy.AllowAnyHeader();
                 });
         });
     }
