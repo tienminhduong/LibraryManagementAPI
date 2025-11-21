@@ -3,6 +3,7 @@ using System;
 using LibraryManagementAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryManagementAPI.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    partial class LibraryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251118164904_SeedAccountAndInfoData")]
+    partial class SeedAccountAndInfoData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,29 +89,19 @@ namespace LibraryManagementAPI.Migrations
                         new
                         {
                             id = new Guid("a0000000-0000-0000-0000-000000000001"),
-                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             isActive = true,
-                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             passwordHash = "hashed_password",
                             role = 0,
                             userName = "admin"
                         },
                         new
                         {
-                            id = new Guid("a0000000-0000-0000-0000-000000000011"),
-                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            isActive = true,
-                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            passwordHash = "hashed_password1",
-                            role = 0,
-                            userName = "admin"
-                        },
-                        new
-                        {
                             id = new Guid("b0000000-0000-0000-0000-000000000002"),
-                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             isActive = true,
-                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             passwordHash = "hashed_password",
                             role = 1,
                             userName = "staff"
@@ -116,9 +109,9 @@ namespace LibraryManagementAPI.Migrations
                         new
                         {
                             id = new Guid("c0000000-0000-0000-0000-000000000003"),
-                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             isActive = true,
-                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             passwordHash = "hashed_password",
                             role = 2,
                             userName = "member"
@@ -260,14 +253,6 @@ namespace LibraryManagementAPI.Migrations
                             fullName = "Admin",
                             loginId = new Guid("a0000000-0000-0000-0000-000000000001"),
                             phoneNumber = "0321547895"
-                        },
-                        new
-                        {
-                            id = new Guid("a0000000-0000-0000-0000-000000000111"),
-                            email = "admin@gmail.com",
-                            fullName = "Admin",
-                            loginId = new Guid("a0000000-0000-0000-0000-000000000011"),
-                            phoneNumber = "0321547895"
                         });
                 });
 
@@ -296,7 +281,7 @@ namespace LibraryManagementAPI.Migrations
                             phoneNumber = "0321547897",
                             address = "123 Main St",
                             imageUrl = "http://example.com/image.jpg",
-                            joinDate = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc)
+                            joinDate = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });
 
@@ -317,7 +302,7 @@ namespace LibraryManagementAPI.Migrations
                             fullName = "Staff",
                             loginId = new Guid("b0000000-0000-0000-0000-000000000002"),
                             phoneNumber = "0321547896",
-                            hireDate = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc)
+                            hireDate = new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });
 

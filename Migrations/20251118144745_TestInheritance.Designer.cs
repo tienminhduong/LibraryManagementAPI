@@ -3,6 +3,7 @@ using System;
 using LibraryManagementAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryManagementAPI.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    partial class LibraryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251118144745_TestInheritance")]
+    partial class TestInheritance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,48 +84,6 @@ namespace LibraryManagementAPI.Migrations
                     b.HasKey("id");
 
                     b.ToTable("Accounts");
-
-                    b.HasData(
-                        new
-                        {
-                            id = new Guid("a0000000-0000-0000-0000-000000000001"),
-                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            isActive = true,
-                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            passwordHash = "hashed_password",
-                            role = 0,
-                            userName = "admin"
-                        },
-                        new
-                        {
-                            id = new Guid("a0000000-0000-0000-0000-000000000011"),
-                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            isActive = true,
-                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            passwordHash = "hashed_password1",
-                            role = 0,
-                            userName = "admin"
-                        },
-                        new
-                        {
-                            id = new Guid("b0000000-0000-0000-0000-000000000002"),
-                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            isActive = true,
-                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            passwordHash = "hashed_password",
-                            role = 1,
-                            userName = "staff"
-                        },
-                        new
-                        {
-                            id = new Guid("c0000000-0000-0000-0000-000000000003"),
-                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            isActive = true,
-                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            passwordHash = "hashed_password",
-                            role = 2,
-                            userName = "member"
-                        });
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.Author", b =>
@@ -166,9 +127,6 @@ namespace LibraryManagementAPI.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("id");
-
-                    b.HasIndex("loginId")
-                        .IsUnique();
 
                     b.ToTable((string)null);
 
@@ -250,25 +208,10 @@ namespace LibraryManagementAPI.Migrations
                 {
                     b.HasBaseType("LibraryManagementAPI.Entities.BaseInfo");
 
-                    b.ToTable("AdminInfos");
+                    b.HasIndex("loginId")
+                        .IsUnique();
 
-                    b.HasData(
-                        new
-                        {
-                            id = new Guid("a0000000-0000-0000-0000-000000000011"),
-                            email = "admin@gmail.com",
-                            fullName = "Admin",
-                            loginId = new Guid("a0000000-0000-0000-0000-000000000001"),
-                            phoneNumber = "0321547895"
-                        },
-                        new
-                        {
-                            id = new Guid("a0000000-0000-0000-0000-000000000111"),
-                            email = "admin@gmail.com",
-                            fullName = "Admin",
-                            loginId = new Guid("a0000000-0000-0000-0000-000000000011"),
-                            phoneNumber = "0321547895"
-                        });
+                    b.ToTable("AdminInfos");
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.MemberInfo", b =>
@@ -284,20 +227,10 @@ namespace LibraryManagementAPI.Migrations
                     b.Property<DateTime>("joinDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.ToTable("MemberInfos");
+                    b.HasIndex("loginId")
+                        .IsUnique();
 
-                    b.HasData(
-                        new
-                        {
-                            id = new Guid("c0000000-0000-0000-0000-000000000033"),
-                            email = "member@gmail.com",
-                            fullName = "Member",
-                            loginId = new Guid("c0000000-0000-0000-0000-000000000003"),
-                            phoneNumber = "0321547897",
-                            address = "123 Main St",
-                            imageUrl = "http://example.com/image.jpg",
-                            joinDate = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
+                    b.ToTable("MemberInfos");
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.StaffInfo", b =>
@@ -307,18 +240,10 @@ namespace LibraryManagementAPI.Migrations
                     b.Property<DateTime>("hireDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.ToTable("StaffInfos");
+                    b.HasIndex("loginId")
+                        .IsUnique();
 
-                    b.HasData(
-                        new
-                        {
-                            id = new Guid("b0000000-0000-0000-0000-000000000022"),
-                            email = "staff@gmail.com",
-                            fullName = "Staff",
-                            loginId = new Guid("b0000000-0000-0000-0000-000000000002"),
-                            phoneNumber = "0321547896",
-                            hireDate = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc)
-                        });
+                    b.ToTable("StaffInfos");
                 });
 
             modelBuilder.Entity("AuthorBook", b =>
@@ -351,15 +276,6 @@ namespace LibraryManagementAPI.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("LibraryManagementAPI.Entities.BaseInfo", b =>
-                {
-                    b.HasOne("LibraryManagementAPI.Entities.Account", "LoginInfoId")
-                        .WithOne("info")
-                        .HasForeignKey("LibraryManagementAPI.Entities.BaseInfo", "loginId");
-
-                    b.Navigation("LoginInfoId");
-                });
-
             modelBuilder.Entity("LibraryManagementAPI.Entities.Book", b =>
                 {
                     b.HasOne("LibraryManagementAPI.Entities.Publisher", "Publisher")
@@ -369,9 +285,40 @@ namespace LibraryManagementAPI.Migrations
                     b.Navigation("Publisher");
                 });
 
+            modelBuilder.Entity("LibraryManagementAPI.Entities.AdminInfo", b =>
+                {
+                    b.HasOne("LibraryManagementAPI.Entities.Account", "LoginInfoId")
+                        .WithOne("AdminInfo")
+                        .HasForeignKey("LibraryManagementAPI.Entities.AdminInfo", "loginId");
+
+                    b.Navigation("LoginInfoId");
+                });
+
+            modelBuilder.Entity("LibraryManagementAPI.Entities.MemberInfo", b =>
+                {
+                    b.HasOne("LibraryManagementAPI.Entities.Account", "LoginInfoId")
+                        .WithOne("MemberInfo")
+                        .HasForeignKey("LibraryManagementAPI.Entities.MemberInfo", "loginId");
+
+                    b.Navigation("LoginInfoId");
+                });
+
+            modelBuilder.Entity("LibraryManagementAPI.Entities.StaffInfo", b =>
+                {
+                    b.HasOne("LibraryManagementAPI.Entities.Account", "LoginInfoId")
+                        .WithOne("StaffInfo")
+                        .HasForeignKey("LibraryManagementAPI.Entities.StaffInfo", "loginId");
+
+                    b.Navigation("LoginInfoId");
+                });
+
             modelBuilder.Entity("LibraryManagementAPI.Entities.Account", b =>
                 {
-                    b.Navigation("info");
+                    b.Navigation("AdminInfo");
+
+                    b.Navigation("MemberInfo");
+
+                    b.Navigation("StaffInfo");
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.Publisher", b =>

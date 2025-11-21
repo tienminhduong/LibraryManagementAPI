@@ -3,6 +3,7 @@ using System;
 using LibraryManagementAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryManagementAPI.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    partial class LibraryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251118165528_SeedAccountAndInfoDataa")]
+    partial class SeedAccountAndInfoDataa
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -90,16 +93,6 @@ namespace LibraryManagementAPI.Migrations
                             isActive = true,
                             lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
                             passwordHash = "hashed_password",
-                            role = 0,
-                            userName = "admin"
-                        },
-                        new
-                        {
-                            id = new Guid("a0000000-0000-0000-0000-000000000011"),
-                            createdAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            isActive = true,
-                            lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            passwordHash = "hashed_password1",
                             role = 0,
                             userName = "admin"
                         },
@@ -259,14 +252,6 @@ namespace LibraryManagementAPI.Migrations
                             email = "admin@gmail.com",
                             fullName = "Admin",
                             loginId = new Guid("a0000000-0000-0000-0000-000000000001"),
-                            phoneNumber = "0321547895"
-                        },
-                        new
-                        {
-                            id = new Guid("a0000000-0000-0000-0000-000000000111"),
-                            email = "admin@gmail.com",
-                            fullName = "Admin",
-                            loginId = new Guid("a0000000-0000-0000-0000-000000000011"),
                             phoneNumber = "0321547895"
                         });
                 });
