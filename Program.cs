@@ -29,9 +29,10 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library Management API");
 });
-app.UseCors("AllowAllOrigins");
+
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAllOrigins");
 
 app.UseAuthorization();
 
