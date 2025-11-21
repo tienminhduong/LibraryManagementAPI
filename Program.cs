@@ -29,6 +29,7 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library Management API");
 });
+app.UseCors("AllowAllOrigins");
 
 app.UseHttpsRedirection();
 
@@ -36,7 +37,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseCors("AllowAllOrigins");
+
 
 app.MapGet("/", context =>
 {
