@@ -76,11 +76,11 @@ namespace LibraryManagementAPI.Repositories
         }
 
         // Use to login by username and password
-        public Task<Account?> GetAccountAsync(string userName, string password)
+        public Task<Account?> GetAccountAsync(string userName)
         {
             try
             {
-                var loginInfo = db.Accounts.FirstOrDefault(li => li.userName == userName && li.passwordHash == password);
+                var loginInfo = db.Accounts.FirstOrDefault(li => li.userName == userName);
                 return Task.FromResult(loginInfo);
             }
             catch (Exception ex)

@@ -11,7 +11,7 @@ namespace LibraryManagementAPI.Models.Utility
             return hashedPassword;
         }
 
-        public bool VerifyPassword(string hashedPassword, string providedPassword)
+        public bool VerifyPassword(string providedPassword, string hashedPassword)
         {
             bool isValid = BCrypt.Net.BCrypt.Verify(providedPassword, hashedPassword);
             return isValid;

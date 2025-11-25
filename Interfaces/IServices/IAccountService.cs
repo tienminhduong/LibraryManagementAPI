@@ -5,7 +5,7 @@ namespace LibraryManagementAPI.Interfaces.IServices
 {
     public interface IAccountService
     {
-        Task<bool> Login(string userName, string password);
-        Task<bool> Register(CreateAccountDto createAccountDto);
+        Task<Response<string>> Login(string userName, string password);
+        Task<Response<bool>> Register(CreateAccountDto createAccountDto);
     }
 }
