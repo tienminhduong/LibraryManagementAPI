@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using LibraryManagementAPI.Entities;
+using LibraryManagementAPI.Models.Utility;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
 public class JwtTokenService: ITokenService
@@ -23,8 +25,9 @@ public class JwtTokenService: ITokenService
         // claims for token
         var claims = new[]
         {
-            new System.Security.Claims.Claim(JwtRegisteredClaimNames.Name, account.userName),
-            new System.Security.Claims.Claim(ClaimTypes.Role, account.role.ToString())
+            new System.Security.Claims.Claim(CustomClaims.Name, account.userName),
+            new System.Security.Claims.Claim(CustomClaims.Role, account.role.ToString()),
+            new System.Security.Claims.Claim(CustomClaims.UserId, account.id.ToString())
         };
 
         // create the token
