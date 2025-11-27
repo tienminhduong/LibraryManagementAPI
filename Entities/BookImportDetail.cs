@@ -12,7 +12,7 @@ namespace LibraryManagementAPI.Entities
 
         // Navigation properties
         [ForeignKey("bookImportId")]
-        public bookImport? bookImport { get; set; }
+        public BookImport? bookImport { get; set; }
         [ForeignKey("bookId")]
         public Book? book { get; set; }
     }

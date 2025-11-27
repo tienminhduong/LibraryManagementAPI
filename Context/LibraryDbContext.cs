@@ -13,6 +13,10 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
     public DbSet<AdminInfo> AdminInfos { get; set; }
     public DbSet<StaffInfo> StaffInfos { get; set; }
     public DbSet<MemberInfo> MemberInfos { get; set; }
+    public DbSet<BookCopy> BookCopies { get; set; }
+    public DbSet<BookImport> BookImports { get; set; }
+    public DbSet<BookImportDetail> BookImportDetails { get; set; }
+    public DbSet<BookTransaction> BookTransactions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,7 +66,7 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
                 userName = "admin",
                 passwordHash = "hashed_password",
                 role = Role.Admin,
-                createdAt = new DateTime(2025,1,2, 0, 0, 0, DateTimeKind.Utc),
+                createdAt = new DateTime(2025, 1, 2, 0, 0, 0, DateTimeKind.Utc),
                 lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, DateTimeKind.Utc)
             },
             new Account
@@ -134,5 +138,67 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
                 imageUrl = "http://example.com/image.jpg",
                 joinDate = new DateTime(2025, 1, 2, 0, 0, 0, DateTimeKind.Utc)
             });
+
+        // seed data for supplier, book import, book import detail, book copy
+
+        modelBuilder.Entity<Supplier>().HasData(
+            new Supplier
+            {
+                id = Guid.Parse("D0000000-0000-0000-0000-000000000004"),
+                name = "Default Supplier",
+                email = "",
+                phoneNumber = "",
+                address = ""
+            }
+            );
+        modelBuilder.Entity<BookImport>().HasData(
+            new BookImport
+            {
+                id = Guid.Parse("E0000000-0000-0000-0000-000000000005"),
+                supplierId = Guid.Parse("D0000000-0000-0000-0000-000000000004"),
+                staffId = Guid.Parse("019aa216-657c-7b6d-abd5-6db1b06317ee"),
+                importDate = new DateTime(2025, 1, 2, 0, 0, 0, DateTimeKind.Utc),
+                totalAmount = 0,
+                note = "First Import"
+            },
+
+            new BookImport
+            {
+                id = Guid.Parse("E0000000-0000-0000-0000-000000000006"),
+                supplierId = Guid.Parse("D0000000-0000-0000-0000-000000000004"),
+                staffId = Guid.Parse("019aa216-657c-7b6d-abd5-6db1b06317ee"),
+                importDate = new DateTime(2025, 1, 2, 0, 0, 0, DateTimeKind.Utc),
+                totalAmount = 0,
+                note = "Second Import"
+            }
+            );
+        modelBuilder.Entity<BookImportDetail>().HasData(
+            new BookImportDetail
+            {
+                id = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                bookImportId = Guid.Parse("E0000000-0000-0000-0000-000000000005"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                quantity = 10,
+                unitPrice = 100m
+            },
+            new BookImportDetail
+            {
+                id = Guid.Parse("F0000000-0000-0000-0000-000000000008"),
+                bookImportId = Guid.Parse("E0000000-0000-0000-0000-000000000006"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                quantity = 5,
+                unitPrice = 200m
+            }
+            );
+        modelBuilder.Entity<BookCopy>().HasData(
+            // 10 copies from first import
+            Enumerable.Range(1, 10).Select(i => new BookCopy
+            {
+                id = Guid.Parse((10000000 + i).ToString("X8") + "-0000-0000-0000-000000000009"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                status = Status.Available
+            })
+        );
     }
 }

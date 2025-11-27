@@ -9,6 +9,6 @@
         public required string email { get; set; }
 
         // Navigation properties
-        public ICollection<bookImport>? bookImports { get; set; }
+        public ICollection<BookImport>? bookImports { get; set; }
     }
 }

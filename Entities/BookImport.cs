@@ -1,6 +1,6 @@
 ﻿namespace LibraryManagementAPI.Entities
 {
-    public class bookImport
+    public class BookImport
     {
         public Guid id { get; set; }
         public Guid supplierId { get; set; }
