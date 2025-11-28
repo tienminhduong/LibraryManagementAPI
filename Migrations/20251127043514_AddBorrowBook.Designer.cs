@@ -3,6 +3,7 @@ using System;
 using LibraryManagementAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryManagementAPI.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    partial class LibraryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251127043514_AddBorrowBook")]
+    partial class AddBorrowBook
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -243,78 +246,6 @@ namespace LibraryManagementAPI.Migrations
                     b.HasIndex("bookId");
 
                     b.ToTable("BookCopies");
-
-                    b.HasData(
-                        new
-                        {
-                            id = new Guid("00989681-0000-0000-0000-000000000009"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportDetailId = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            status = 0
-                        },
-                        new
-                        {
-                            id = new Guid("00989682-0000-0000-0000-000000000009"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportDetailId = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            status = 0
-                        },
-                        new
-                        {
-                            id = new Guid("00989683-0000-0000-0000-000000000009"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportDetailId = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            status = 0
-                        },
-                        new
-                        {
-                            id = new Guid("00989684-0000-0000-0000-000000000009"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportDetailId = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            status = 0
-                        },
-                        new
-                        {
-                            id = new Guid("00989685-0000-0000-0000-000000000009"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportDetailId = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            status = 0
-                        },
-                        new
-                        {
-                            id = new Guid("00989686-0000-0000-0000-000000000009"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportDetailId = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            status = 0
-                        },
-                        new
-                        {
-                            id = new Guid("00989687-0000-0000-0000-000000000009"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportDetailId = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            status = 0
-                        },
-                        new
-                        {
-                            id = new Guid("00989688-0000-0000-0000-000000000009"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportDetailId = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            status = 0
-                        },
-                        new
-                        {
-                            id = new Guid("00989689-0000-0000-0000-000000000009"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportDetailId = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            status = 0
-                        },
-                        new
-                        {
-                            id = new Guid("0098968a-0000-0000-0000-000000000009"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportDetailId = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            status = 0
-                        });
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BookImport", b =>
@@ -345,26 +276,6 @@ namespace LibraryManagementAPI.Migrations
                     b.HasIndex("supplierId");
 
                     b.ToTable("BookImports");
-
-                    b.HasData(
-                        new
-                        {
-                            id = new Guid("e0000000-0000-0000-0000-000000000005"),
-                            importDate = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            note = "First Import",
-                            staffId = new Guid("019aa216-657c-7b6d-abd5-6db1b06317ee"),
-                            supplierId = new Guid("d0000000-0000-0000-0000-000000000004"),
-                            totalAmount = 0m
-                        },
-                        new
-                        {
-                            id = new Guid("e0000000-0000-0000-0000-000000000006"),
-                            importDate = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Utc),
-                            note = "Second Import",
-                            staffId = new Guid("019aa216-657c-7b6d-abd5-6db1b06317ee"),
-                            supplierId = new Guid("d0000000-0000-0000-0000-000000000004"),
-                            totalAmount = 0m
-                        });
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BookImportDetail", b =>
@@ -392,24 +303,6 @@ namespace LibraryManagementAPI.Migrations
                     b.HasIndex("bookImportId");
 
                     b.ToTable("BookImportDetails");
-
-                    b.HasData(
-                        new
-                        {
-                            id = new Guid("f0000000-0000-0000-0000-000000000007"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportId = new Guid("e0000000-0000-0000-0000-000000000005"),
-                            quantity = 10,
-                            unitPrice = 100m
-                        },
-                        new
-                        {
-                            id = new Guid("f0000000-0000-0000-0000-000000000008"),
-                            bookId = new Guid("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
-                            bookImportId = new Guid("e0000000-0000-0000-0000-000000000006"),
-                            quantity = 5,
-                            unitPrice = 200m
-                        });
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BookTransaction", b =>
@@ -497,16 +390,6 @@ namespace LibraryManagementAPI.Migrations
                     b.HasKey("id");
 
                     b.ToTable("Supplier");
-
-                    b.HasData(
-                        new
-                        {
-                            id = new Guid("d0000000-0000-0000-0000-000000000004"),
-                            address = "",
-                            email = "",
-                            name = "Default Supplier",
-                            phoneNumber = ""
-                        });
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.AdminInfo", b =>
@@ -683,7 +566,7 @@ namespace LibraryManagementAPI.Migrations
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BookTransaction", b =>
                 {
-                    b.HasOne("LibraryManagementAPI.Entities.BookCopy", "book")
+                    b.HasOne("LibraryManagementAPI.Entities.Book", "book")
                         .WithMany()
                         .HasForeignKey("copyId")
                         .OnDelete(DeleteBehavior.Cascade)
