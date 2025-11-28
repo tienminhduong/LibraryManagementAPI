@@ -11,7 +11,7 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task UpdateAccountAsync(Account loginInfo);
         Task DeleteAccountAsync(Guid id);
         Task AddAccountAsync(Account loginInfo, BaseInfo info);
-        Task<Account?> GetAccountAsync(string username, string password);
+        Task<Account?> GetAccountAsync(string username);
         LibraryDbContext GetDbContext();
     }
 }

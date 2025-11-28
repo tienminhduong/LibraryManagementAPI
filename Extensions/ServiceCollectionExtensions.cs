@@ -50,7 +50,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorService, AuthorService>();
         services.AddScoped<IPublisherService, PublisherService>();
         services.AddScoped<IAccountService, AccountService>();
+        services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddScoped<IBorrowBookService, BorrowBookService>();
+
     }
 
     public static void AddUtilityServices(IServiceCollection services)

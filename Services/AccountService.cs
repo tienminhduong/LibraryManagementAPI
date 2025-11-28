@@ -10,15 +10,40 @@ namespace LibraryManagementAPI.Services
 {
     public class AccountService(
         IAccountRepository accountRepository,
-        IHasherPassword hasher
+        IHasherPassword hasher,
+        ITokenService jwtTokenService
         ) : IAccountService
     {
-        public Task<bool> Login(string userName, string password)
+        public async Task<Response<string>> Login(string userName, string password)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var account = await accountRepository.GetAccountAsync(userName);
+
+                // not found account
+                if (account == null)
+                {
+                    return Response<string>.Failure("Account not found.");
+                }
+                
+                // invalid password
+                var isPasswordValid = hasher.VerifyPassword(password, account.passwordHash);
+                if (!isPasswordValid)
+                {
+                    return Response<string>.Failure("Invalid password.");
+                }
+
+                // success
+                var token = jwtTokenService.GenerateToken(account);
+                return Response<string>.Success(token);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while logging in.", ex);
+            }
         }
 
-        public async Task<bool> Register(CreateAccountDto createAccountDto)
+        public async Task<Response<bool>> Register(CreateAccountDto createAccountDto)
         {
             var db = accountRepository.GetDbContext();
             await using var transaction = await db.Database.BeginTransactionAsync();
@@ -35,12 +60,13 @@ namespace LibraryManagementAPI.Services
 
                 await accountRepository.AddAccountAsync(account, infoEntity);
                 await transaction.CommitAsync();
-                return true;
+                return Response<bool>.Success(true);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw new Exception("An error occurred while registering the account.", ex);
+                return Response<bool>.Failure("Registration failed: " + ex.Message);
+                //throw new Exception("An error occurred while registering the account.", ex);
             }
         }
 

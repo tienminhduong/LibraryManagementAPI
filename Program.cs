@@ -6,6 +6,19 @@ DotEnv.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowAllPolicy = "AllowAllOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(allowAllPolicy, policy =>
+    {
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowAnyOrigin();
+    });
+});
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -25,24 +38,8 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.Use(async (context, next) =>
-{
-    if (context.Request.Method == "OPTIONS")
-    {
-        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        context.Response.StatusCode = 204;
-        await context.Response.CompleteAsync();
-    }
-    else
-    {
-        await next();
-    }
-});
 
-
-app.UseCors("AllowAllOrigins");
+app.UseCors(allowAllPolicy);
 
 app.UseAuthentication();
 app.UseAuthorization();
