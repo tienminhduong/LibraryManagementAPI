@@ -1,6 +1,97 @@
 @LibraryManagementAPI_HostAddress = http://localhost:5024
 
+# ========================================
+# SETUP INSTRUCTIONS
+# ========================================
+# Before running these requests:
+# 1. Create .env file from .env.example
+# 2. Configure DATABASE_URL with your Neon credentials
+# 3. Configure JWT_SECRET_KEY
+# 4. Run: dotnet ef database update
+# 5. Run: dotnet run
+# See ENVIRONMENT_SETUP.md for detailed instructions
+
+###
+
 GET {{LibraryManagementAPI_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+# ========================================
+# BORROW REQUEST VIA QR CODE - NEW FLOW
+# ========================================
+
+### Step 1: User creates a borrow request with books in cart
+POST {{LibraryManagementAPI_HostAddress}}/api/borrow-requests
+Content-Type: application/json
+
+{
+  "memberId": "c0000000-0000-0000-0000-000000000033",
+  "bookIds": [
+    "019a1a78-7b67-7f6c-9d63-f2d13554c669"
+  ],
+  "notes": "Need these books for my research project"
+}
+
+### Step 2: Admin scans QR code to get request details
+# Use the QR code returned from Step 1 (e.g., BORROW-{requestId})
+GET {{LibraryManagementAPI_HostAddress}}/api/borrow-requests/qr/BORROW-{PASTE_REQUEST_ID_HERE}
+Accept: application/json
+
+### Step 3: Get request by ID
+GET {{LibraryManagementAPI_HostAddress}}/api/borrow-requests/{PASTE_REQUEST_ID_HERE}
+Accept: application/json
+
+### Step 4: Admin confirms borrow request with book copy assignments
+POST {{LibraryManagementAPI_HostAddress}}/api/borrow-requests/confirm
+Content-Type: application/json
+
+{
+  "requestId": "{PASTE_REQUEST_ID_HERE}",
+  "staffId": "b0000000-0000-0000-0000-000000000022",
+  "bookCopyAssignments": [
+    {
+      "bookId": "019a1a78-7b67-7f6c-9d63-f2d13554c669",
+      "bookCopyId": "00989681-0000-0000-0000-000000000009"
+    }
+  ]
+}
+
+### Step 5: Return a single book (not the whole request)
+POST {{LibraryManagementAPI_HostAddress}}/api/borrow-requests/return
+Content-Type: application/json
+
+{
+  "bookCopyId": "00989681-0000-0000-0000-000000000009",
+  "staffId": "b0000000-0000-0000-0000-000000000022"
+}
+
+### Get all pending requests (Admin)
+GET {{LibraryManagementAPI_HostAddress}}/api/borrow-requests/pending
+Accept: application/json
+
+### Get member's borrow requests
+GET {{LibraryManagementAPI_HostAddress}}/api/borrow-requests/member/c0000000-0000-0000-0000-000000000033
+Accept: application/json
+
+### Reject a borrow request (Admin)
+POST {{LibraryManagementAPI_HostAddress}}/api/borrow-requests/{PASTE_REQUEST_ID_HERE}/reject
+Content-Type: application/json
+
+{
+  "staffId": "b0000000-0000-0000-0000-000000000022",
+  "reason": "Books are currently reserved for another event"
+}
+
+### Cancel a borrow request (User)
+POST {{LibraryManagementAPI_HostAddress}}/api/borrow-requests/{PASTE_REQUEST_ID_HERE}/cancel
+Content-Type: application/json
+
+{
+  "memberId": "c0000000-0000-0000-0000-000000000033"
+}
+
+###
+
+# Response

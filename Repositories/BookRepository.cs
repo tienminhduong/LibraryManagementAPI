@@ -49,6 +49,12 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
             .FirstOrDefaultAsync(b => b.ISBN == ISBN) != null;
     }
 
+    public async Task<bool> IsBookExistsByIdAsync(Guid id)
+    {
+        return await dbContext.Books
+            .AnyAsync(b => b.Id == id);
+    }
+
     public async Task UpdateAuthorOfBookAsync(Book book, IEnumerable<Author> authors)
     {
         book.Authors = [.. authors];

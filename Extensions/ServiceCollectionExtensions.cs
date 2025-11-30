@@ -41,6 +41,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInfoRepository, InfoRepository>();
         services.AddScoped<IBookCopyRepository, BookCopyRepository>();
         services.AddScoped<IBookTransactionRepository, BookTransactionRepository>();
+        services.AddScoped<IBorrowRequestRepository, BorrowRequestRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 
@@ -52,7 +53,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAccountService, AccountService>();
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddScoped<IBorrowBookService, BorrowBookService>();
-
+        services.AddScoped<IBorrowRequestService, BorrowRequestService>();
     }
 
     public static void AddUtilityServices(IServiceCollection services)

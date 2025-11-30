@@ -1,6 +1,7 @@
 ﻿using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Repositories
 {
@@ -62,6 +63,33 @@ namespace LibraryManagementAPI.Repositories
             }
         }
 
+        public async Task<bool> HasAvailableCopiesForBook(Guid bookId)
+        {
+            try
+            {
+                return await db.BookCopies
+                    .AnyAsync(bc => bc.bookId == bookId && bc.status == Status.Available);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while checking book availability.", ex);
+            }
+        }
+
+        public async Task<IEnumerable<BookCopy>> GetAvailableCopiesByBookId(Guid bookId)
+        {
+            try
+            {
+                return await db.BookCopies
+                    .Where(bc => bc.bookId == bookId && bc.status == Status.Available)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while retrieving available book copies.", ex);
+            }
+        }
+
         public Task Update(BookCopy bookCopy)
         {
             try
@@ -73,6 +101,39 @@ namespace LibraryManagementAPI.Repositories
             catch (Exception ex)
             {
                 throw new Exception("An error occurred while updating the book copy.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Generates a permanent QR code for a BookCopy.
+        /// Format: COPY-{BookCopyId}
+        /// </summary>
+        public string GenerateQrCode(Guid bookCopyId)
+        {
+            return $"COPY-{bookCopyId}";
+        }
+
+        /// <summary>
+        /// Gets a BookCopy by its QR code.
+        /// </summary>
+        public async Task<BookCopy?> GetByQrCode(string qrCode)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(qrCode) || !qrCode.StartsWith("COPY-"))
+                    return null;
+
+                var idString = qrCode.Substring(5);
+                if (!Guid.TryParse(idString, out var bookCopyId))
+                    return null;
+
+                return await db.BookCopies
+                    .Include(bc => bc.book)
+                    .FirstOrDefaultAsync(bc => bc.id == bookCopyId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while retrieving book copy by QR code.", ex);
             }
         }
     }
