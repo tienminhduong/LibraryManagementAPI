@@ -55,6 +55,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBorrowBookService, BorrowBookService>();
         services.AddScoped<IBorrowRequestService, BorrowRequestService>();
         services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<IProfileService, ProfileService>();
     }
 
     public static void AddUtilityServices(IServiceCollection services)

@@ -15,5 +15,6 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task AddAsync(BaseInfo info, bool isInTransaction = false);
         Task UpdateAsync(BaseInfo info);
         Task<bool> IsInfoIdExist(Guid id, InfoType type);
+        Task<BaseInfo?> GetByAccountIdAsync(Guid accountId, InfoType type);
     }
 }

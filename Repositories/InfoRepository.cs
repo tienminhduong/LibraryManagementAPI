@@ -68,5 +68,35 @@ namespace LibraryManagementAPI.Repositories
                 throw new Exception("An error occurred while checking the info id existence.", ex);
             }
         }
+
+        public Task<BaseInfo?> GetByAccountIdAsync(Guid accountId, InfoType type)
+        {
+            try
+            {
+                switch(type)
+                {
+                    case InfoType.Staff:
+                        {
+                            var info = dbContext.StaffInfos.FirstOrDefault(i => i.loginId == accountId);
+                            return Task.FromResult<BaseInfo?>(info);
+                        }
+                    case InfoType.Member:
+                    {
+                        var info = dbContext.MemberInfos.FirstOrDefault(i => i.loginId == accountId);
+                        return Task.FromResult<BaseInfo?>(info);
+                    }
+                    case InfoType.Admin:
+                    {
+                        var info = dbContext.AdminInfos.FirstOrDefault(i => i.loginId == accountId);
+                        return Task.FromResult<BaseInfo?>(info);
+                    }
+                }    
+                return Task.FromResult<BaseInfo?>(null);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("An error occurred while retrieving the info by account id.", ex);
+            }
+        }
     }
 }

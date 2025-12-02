@@ -27,7 +27,7 @@ public class JwtTokenService: ITokenService
         {
             new System.Security.Claims.Claim(CustomClaims.Name, account.userName),
             new System.Security.Claims.Claim(CustomClaims.Role, account.role.ToString()),
-            new System.Security.Claims.Claim(CustomClaims.UserId, account.id.ToString())
+            new System.Security.Claims.Claim(CustomClaims.AccountId, account.id.ToString())
         };
 
         // create the token
