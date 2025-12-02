@@ -7,8 +7,6 @@
         public string? address { get; set; }
         public required string phoneNumber { get; set; }
         public required string email { get; set; }
-
-        // Navigation properties
         public ICollection<BookImport>? bookImports { get; set; }
     }
 }
