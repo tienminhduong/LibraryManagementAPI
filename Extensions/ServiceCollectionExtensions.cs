@@ -54,6 +54,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddScoped<IBorrowBookService, BorrowBookService>();
         services.AddScoped<IBorrowRequestService, BorrowRequestService>();
+        services.AddScoped<IPhotoService, PhotoService>();
     }
 
     public static void AddUtilityServices(IServiceCollection services)
