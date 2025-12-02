@@ -9,13 +9,18 @@ namespace LibraryManagementAPI.Controllers
     public class AuthController(IAccountService accountService) : ControllerBase
     {
         [HttpPost("register")]
-        public async Task<Response<bool>> Register([FromBody] CreateAccountDto createAccountDto)
+        public async Task<IActionResult> Register([FromBody] CreateAccountDto createAccountDto)
         {
             if(ModelState.IsValid == false)
             {
                 throw new ArgumentException("Invalid data.");
             }
-            return await accountService.Register(createAccountDto);
+            var response = await accountService.Register(createAccountDto);
+            if (response.isSuccess == false)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
         }
 
         [HttpPost("login")]
