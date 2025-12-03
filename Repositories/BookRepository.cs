@@ -78,4 +78,11 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
         dbContext.Books.Update(book);
         await dbContext.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<Guid>> GetAllBookIdsAsync()
+    {
+        return await dbContext.Books
+            .Select(b => b.Id)
+            .ToListAsync();
+    }
 }

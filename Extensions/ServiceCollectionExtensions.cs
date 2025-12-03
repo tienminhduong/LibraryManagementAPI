@@ -2,11 +2,13 @@ using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Interfaces.IUtility;
+using LibraryManagementAPI.Models.Train;
 using LibraryManagementAPI.Models.Utility;
 using LibraryManagementAPI.Repositories;
 using LibraryManagementAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.ML;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LibraryManagementAPI.Extensions;
@@ -55,6 +57,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBorrowBookService, BorrowBookService>();
         services.AddScoped<IBorrowRequestService, BorrowRequestService>();
         services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<IRecommendationService, RecommendationService>();
+        services.AddMemoryCache();
+        var modelPath = "D:\\Nam3\\Net\\DataTrainModel\\BookRecommendationModel.zip";
+        services.AddPredictionEnginePool<BookRating, BookRatingPrediction>()
+            .FromFile(filePath: modelPath, watchForChanges: true);
     }
 
     public static void AddUtilityServices(IServiceCollection services)
