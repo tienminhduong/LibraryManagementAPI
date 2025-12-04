@@ -11,7 +11,8 @@ namespace LibraryManagementAPI.Services
     public class AccountService(
         IAccountRepository accountRepository,
         IHasherPassword hasher,
-        ITokenService jwtTokenService
+        ITokenService jwtTokenService,
+        IInfoRepository infoRepository
         ) : IAccountService
     {
         public async Task<Response<string>> Login(string userName, string password)
@@ -33,8 +34,14 @@ namespace LibraryManagementAPI.Services
                     return Response<string>.Failure("Invalid password.");
                 }
 
+                // get info
+                var info = await infoRepository.GetInfoByAccountIdAsync(account.id, account.role);
+                if (info == null)
+                {
+                    return Response<string>.Failure("Associated user info not found.");
+                }
                 // success
-                var token = jwtTokenService.GenerateToken(account);
+                var token = jwtTokenService.GenerateToken(account, info);
                 return Response<string>.Success(token);
             }
             catch (Exception ex)
@@ -43,9 +50,16 @@ namespace LibraryManagementAPI.Services
             }
         }
 
-        public async Task<Response<bool>> Register(CreateAccountDto createAccountDto)
+        public async Task<Response<string>> Register(CreateAccountDto createAccountDto)
         {
             var db = accountRepository.GetDbContext();
+
+            var existingUserName = db.Accounts.Any(a => a.userName == createAccountDto.userName);
+            if (existingUserName)
+            {
+                return Response<string>.Failure("Username already exists.");
+            }
+
             await using var transaction = await db.Database.BeginTransactionAsync();
             try
             {
@@ -60,19 +74,19 @@ namespace LibraryManagementAPI.Services
 
                 await accountRepository.AddAccountAsync(account, infoEntity);
                 await transaction.CommitAsync();
-                return Response<bool>.Success(true);
+                return Response<string>.Success("Register Success");
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return Response<bool>.Failure("Registration failed: " + ex.Message);
+                return Response<string>.Failure("Registration failed: " + ex.Message);
                 //throw new Exception("An error occurred while registering the account.", ex);
             }
         }
 
-        private BaseInfo MapInfoDtoToEntity(BaseInfoDto infoDto, Role role)
+        private BaseInfo? MapInfoDtoToEntity(BaseInfoDto infoDto, Role role)
         {
-            BaseInfo infoEntity = null;
+            BaseInfo? infoEntity = null;
             if(CheckRoleWithType(infoDto, role) == false)
             {
                 throw new ArgumentException("Info DTO type does not match the specified role.");

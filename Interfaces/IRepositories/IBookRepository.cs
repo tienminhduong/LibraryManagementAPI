@@ -5,7 +5,7 @@ namespace LibraryManagementAPI.Interfaces.IRepositories;
 
 public interface IBookRepository
 {
-    Task<PagedResponse<Book>> GetAllBooksAsync(int pageNumber = 1, int pageSize = 20);
+    Task<PagedResponse<Book>> GetAllBooksAsync(Guid? categoryId, int pageNumber = 1, int pageSize = 20);
     Task<Book?> GetBookByIdAsync(Guid id);
     Task<bool> AddBookAsync(Book category);
     Task<int> UpdateBookAsync(Book category);
@@ -14,4 +14,6 @@ public interface IBookRepository
     Task UpdateAuthorOfBookAsync(Book book, IEnumerable<Author> authors);
     Task<bool> IsBookExistsByISBNAsync(string ISBN);
     Task<bool> IsBookExistsByIdAsync(Guid id);
+    Task<IEnumerable<Guid>> GetAllBookIdsAsync();
+    Task<IEnumerable<Book>> GetBooksAsync(IEnumerable<Guid> bookIds);
 }
