@@ -11,7 +11,7 @@ namespace LibraryManagementAPI.Services
         {
             try
             {
-                var res = await infoRepository.GetByAccountIdAsync(accountId, InfoType.Admin);
+                var res = await infoRepository.GetInfoByAccountIdAsync(accountId, Role.Admin);
                 if (res == null)
                 {
                     return Response<ReturnAdminInfoDto>.Failure("Profile not found");
@@ -36,7 +36,7 @@ namespace LibraryManagementAPI.Services
         {
             try
             {
-                var res = await infoRepository.GetByAccountIdAsync(accountId, InfoType.Member);
+                var res = await infoRepository.GetInfoByAccountIdAsync(accountId, Role.Member);
                 if (res == null)
                 {
                     return Response<ReturnMemberInfoDto>.Failure("Profile not found");
@@ -63,7 +63,7 @@ namespace LibraryManagementAPI.Services
         {   
             try
             {
-                var res = await infoRepository.GetByAccountIdAsync(accountId, InfoType.Staff);
+                var res = await infoRepository.GetInfoByAccountIdAsync(accountId, Role.Staff);
                 if (res == null)
                 {
                     return Response<ReturnStaffInfoDto>.Failure("Profile not found");

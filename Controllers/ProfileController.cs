@@ -13,7 +13,7 @@ namespace LibraryManagementAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserProfile(Guid userId)
         {
-            var accountId = Utility.GetClaim(HttpContext, CustomClaims.AccountId);
+            var accountId = Utility.GetClaim(HttpContext, CustomClaims.MemberId);
             var role = Utility.GetClaim(HttpContext, CustomClaims.Role);
             if (string.IsNullOrEmpty(accountId) || !Guid.TryParse(accountId, out var parsedAccountId))
             {
