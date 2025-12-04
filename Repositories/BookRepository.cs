@@ -31,7 +31,8 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
     {
         var books = dbContext.Books
             .Include(b => b.BookCategories)
-            .Include(b => b.Authors);
+            .Include(b => b.Authors)
+            .AsSplitQuery();
         return await PagedResponse<Book>.FromQueryable(books, pageNumber, pageSize);
     }
 
@@ -40,6 +41,7 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
         return await dbContext.Books
             .Include(b => b.BookCategories)
             .Include(b => b.Authors)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(book => book.Id == id);
     }
 
@@ -77,5 +79,19 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
         book.BookCategories = [.. categories];
         dbContext.Books.Update(book);
         await dbContext.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<Guid>> GetAllBookIdsAsync()
+    {
+        return await dbContext.Books
+            .Select(b => b.Id)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Book>> GetBooksAsync(IEnumerable<Guid> bookIds)
+    {
+        return await dbContext.Books
+            .Where(b => bookIds.Contains(b.Id))
+            .ToListAsync();
     }
 }

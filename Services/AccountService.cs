@@ -11,7 +11,8 @@ namespace LibraryManagementAPI.Services
     public class AccountService(
         IAccountRepository accountRepository,
         IHasherPassword hasher,
-        ITokenService jwtTokenService
+        ITokenService jwtTokenService,
+        IInfoRepository infoRepository
         ) : IAccountService
     {
         public async Task<Response<string>> Login(string userName, string password)
@@ -33,8 +34,14 @@ namespace LibraryManagementAPI.Services
                     return Response<string>.Failure("Invalid password.");
                 }
 
+                // get info
+                var info = await infoRepository.GetInfoByAccountIdAsync(account.id, account.role);
+                if (info == null)
+                {
+                    return Response<string>.Failure("Associated user info not found.");
+                }
                 // success
-                var token = jwtTokenService.GenerateToken(account);
+                var token = jwtTokenService.GenerateToken(account, info);
                 return Response<string>.Success(token);
             }
             catch (Exception ex)
@@ -77,9 +84,9 @@ namespace LibraryManagementAPI.Services
             }
         }
 
-        private BaseInfo MapInfoDtoToEntity(BaseInfoDto infoDto, Role role)
+        private BaseInfo? MapInfoDtoToEntity(BaseInfoDto infoDto, Role role)
         {
-            BaseInfo infoEntity = null;
+            BaseInfo? infoEntity = null;
             if(CheckRoleWithType(infoDto, role) == false)
             {
                 throw new ArgumentException("Info DTO type does not match the specified role.");
