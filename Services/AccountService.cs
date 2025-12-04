@@ -50,9 +50,16 @@ namespace LibraryManagementAPI.Services
             }
         }
 
-        public async Task<Response<bool>> Register(CreateAccountDto createAccountDto)
+        public async Task<Response<string>> Register(CreateAccountDto createAccountDto)
         {
             var db = accountRepository.GetDbContext();
+
+            var existingUserName = db.Accounts.Any(a => a.userName == createAccountDto.userName);
+            if (existingUserName)
+            {
+                return Response<string>.Failure("Username already exists.");
+            }
+
             await using var transaction = await db.Database.BeginTransactionAsync();
             try
             {
@@ -67,12 +74,12 @@ namespace LibraryManagementAPI.Services
 
                 await accountRepository.AddAccountAsync(account, infoEntity);
                 await transaction.CommitAsync();
-                return Response<bool>.Success(true);
+                return Response<string>.Success("Register Success");
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return Response<bool>.Failure("Registration failed: " + ex.Message);
+                return Response<string>.Failure("Registration failed: " + ex.Message);
                 //throw new Exception("An error occurred while registering the account.", ex);
             }
         }

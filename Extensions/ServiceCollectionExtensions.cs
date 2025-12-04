@@ -57,6 +57,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBorrowBookService, BorrowBookService>();
         services.AddScoped<IBorrowRequestService, BorrowRequestService>();
         services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IRecommendationService, RecommendationService>();
         services.AddMemoryCache();
         var modelPath = "RecommendModel\\BookRecommendationModel.zip";
