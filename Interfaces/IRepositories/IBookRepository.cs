@@ -15,4 +15,5 @@ public interface IBookRepository
     Task<bool> IsBookExistsByISBNAsync(string ISBN);
     Task<bool> IsBookExistsByIdAsync(Guid id);
     Task<IEnumerable<Guid>> GetAllBookIdsAsync();
+    Task<IEnumerable<Book>> GetBooksAsync(IEnumerable<Guid> bookIds);
 }

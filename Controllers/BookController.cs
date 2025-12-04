@@ -2,6 +2,7 @@
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.Utility;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -72,10 +73,11 @@ public class BookController(IBookService bookService,
         }
     }
 
+    [Authorize]
     [HttpGet("recommend")]
     public async Task<ActionResult> GetRecommendBooks(int pageNumber = 1, int pageSize = 20)
     {
-        var userIdClaim = User.FindFirst(CustomClaims.UserId);
+        var userIdClaim = User.FindFirst(CustomClaims.MemberId);
         var userId = userIdClaim?.Value;
         var userIdGuid = Guid.Parse(userId!);
         var res = await recommendationService.GetRecommendedBooksForUser(userIdGuid, pageNumber, pageSize);

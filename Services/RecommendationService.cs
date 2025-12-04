@@ -38,19 +38,22 @@ namespace LibraryManagementAPI.Services
         {
             // check cache first
             var cacheKey = $"RecommendedBooks_{memberId}_{pageNumber}_{pageSize}";
-            if (_cache.TryGetValue(cacheKey, out Response<List<BookDto>> cachedResponse))
+            if (_cache.TryGetValue(cacheKey, out Response<List<BookDto>>? cachedResponse))
             {
-                return cachedResponse;
+                if(cachedResponse != null)
+                    return cachedResponse;
             }
 
             GetAllBookIds();
             var recommendations = new List<BookIdAndPrediction>();
+
             // danh gia rating cua moi cuon sach
             foreach (var bookId in bookIds)
             {
+
                 var input = new BookRating
                 {
-                    MemberId = "019aa219-3693-7c67-9575-f820cd2a37ec",//memberId.ToString(),
+                    MemberId = memberId.ToString(),
                     BookId = bookId.ToString()
                 };
 
@@ -74,24 +77,33 @@ namespace LibraryManagementAPI.Services
             var toIndex = pageNumber * pageSize;
             var numberOfBook = bookIds.Count;
 
-            var result = new List<BookDto>();
-            for(int i = fromIndex; i <= Math.Min(toIndex, numberOfBook); i++)
+
+            var bookIdsPage = new List<Guid>();
+            for (int i = fromIndex; i < Math.Min(toIndex, numberOfBook); i++)
             {
                 var id = recommendations[i].bookId;
-                var book = await repository.GetBookByIdAsync(id);
-                result.Add(_mapper.Map<BookDto>(book));
+                bookIdsPage.Add(id);
             }
-            return Response<List<BookDto>>.Success(result);
+
+            // lay thong tin sach
+            var books = await repository.GetBooksAsync(bookIdsPage);
+            var result = _mapper.Map<List<BookDto>>(books);
+            // cache trong 30 phut
+            var response = Response<List<BookDto>>.Success(result);
+            _cache.Set(cacheKey, response, TimeSpan.FromMinutes(30));
+            return response;
         }
 
         private void GetAllBookIds()
         {
             // lay id cua tat ca sach
             // kiem tra cache truoc
-            if (_cache.TryGetValue(CACHE_IDs_KEY, out List<Guid> bookIds))
+            if (_cache.TryGetValue(CACHE_IDs_KEY, out List<Guid>? bookIds))
             {
-                this.bookIds = bookIds;
-                _cache.Set(CACHE_IDs_KEY, bookIds);
+                if(bookIds != null)
+                {
+                    this.bookIds = bookIds;
+                }    
             }
             // cache khong co thi goi cua repo
             else

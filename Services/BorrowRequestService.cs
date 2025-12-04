@@ -18,7 +18,7 @@ namespace LibraryManagementAPI.Services
         public async Task<BorrowRequestResponseDto> CreateBorrowRequestAsync(CreateBorrowRequestDto dto)
         {
             // 1. Validate member exists
-            var memberExists = await infoRepo.IsInfoIdExist(dto.MemberId, InfoType.Member);
+            var memberExists = await infoRepo.IsInfoIdExist(dto.MemberId, Role.Member);
             if (!memberExists)
                 throw new Exception("Member not found.");
 
@@ -107,7 +107,7 @@ namespace LibraryManagementAPI.Services
         public async Task<bool> ConfirmBorrowRequestAsync(ConfirmBorrowRequestDto dto)
         {
             // 1. Validate staff exists
-            var staffExists = await infoRepo.IsInfoIdExist(dto.StaffId, InfoType.Staff);
+            var staffExists = await infoRepo.IsInfoIdExist(dto.StaffId, Role.Staff);
             if (!staffExists)
                 throw new Exception("Staff not found.");
 
@@ -177,7 +177,7 @@ namespace LibraryManagementAPI.Services
         public async Task<bool> RejectBorrowRequestAsync(Guid requestId, Guid staffId, string reason)
         {
             // 1. Validate staff exists
-            var staffExists = await infoRepo.IsInfoIdExist(staffId, InfoType.Staff);
+            var staffExists = await infoRepo.IsInfoIdExist(staffId, Role.Staff);
             if (!staffExists)
                 throw new Exception("Staff not found.");
 
@@ -253,7 +253,7 @@ namespace LibraryManagementAPI.Services
         public async Task<bool> ReturnBookAsync(ReturnBookDto dto)
         {
             // 1. Validate staff exists
-            var staffExists = await infoRepo.IsInfoIdExist(dto.StaffId, InfoType.Staff);
+            var staffExists = await infoRepo.IsInfoIdExist(dto.StaffId, Role.Staff);
             if (!staffExists)
                 throw new Exception("Staff not found.");
 

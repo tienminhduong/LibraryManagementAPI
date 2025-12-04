@@ -18,12 +18,12 @@ namespace LibraryManagementAPI.Services
             var staffId = borrow.StaffId;
             var bookId = borrow.BookId;
             // 1. Check exist member
-            var member = await infoRepo.IsInfoIdExist(memberId, InfoType.Member);
+            var member = await infoRepo.IsInfoIdExist(memberId, Role.Member);
             if (!member)
                 throw new Exception("Member not found.");
 
             // 2. Check exist staff
-            var staff = await infoRepo.IsInfoIdExist(staffId, InfoType.Staff);
+            var staff = await infoRepo.IsInfoIdExist(staffId, Role.Staff);
             if (!staff)
                 throw new Exception("Staff not found.");
 

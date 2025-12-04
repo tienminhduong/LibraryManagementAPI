@@ -15,7 +15,7 @@ public class JwtTokenService: ITokenService
         _configuration = configuration;
     }
 
-    public string GenerateToken(Account account)
+    public string GenerateToken(Account account, BaseInfo info)
     {
         // secret key, signing credentials, and security algorithms
         var secret_key = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "";
@@ -27,7 +27,7 @@ public class JwtTokenService: ITokenService
         {
             new System.Security.Claims.Claim(CustomClaims.Name, account.userName),
             new System.Security.Claims.Claim(CustomClaims.Role, account.role.ToString()),
-            new System.Security.Claims.Claim(CustomClaims.UserId, account.id.ToString())
+            new System.Security.Claims.Claim(CustomClaims.MemberId, info.id.ToString())
         };
 
         // create the token
