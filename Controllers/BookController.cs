@@ -15,9 +15,9 @@ public class BookController(IBookService bookService,
                             IRecommendationService recommendationService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<BookDto>>> GetAllBooks(int pageNumber = 1, int pageSize = 20)
+    public async Task<ActionResult<IEnumerable<BookDto>>> GetAllBooks([FromQuery] Guid? categoryId ,int pageNumber = 1, int pageSize = 20)
     {
-        return Ok(await bookService.GetAllBooksAsync(pageNumber, pageSize));
+        return Ok(await bookService.GetAllBooksAsync(categoryId, pageNumber, pageSize));
     }
 
     [HttpGet("{id}")]

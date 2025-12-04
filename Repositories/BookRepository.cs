@@ -27,12 +27,14 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
         return await dbContext.SaveChangesAsync() > 0;
     }
 
-    public async Task<PagedResponse<Book>> GetAllBooksAsync(int pageNumber = 1, int pageSize = 20)
+    public async Task<PagedResponse<Book>> GetAllBooksAsync(Guid? categoryId, int pageNumber = 1, int pageSize = 20)
     {
         var books = dbContext.Books
-            .Include(b => b.BookCategories)
-            .Include(b => b.Authors)
-            .AsSplitQuery();
+                    .Where(b => categoryId == null || b.BookCategories.Any(c => c.Id == categoryId))
+                    .OrderBy(b => b.Title)               // Phân trang cần OrderBy
+                    .Include(b => b.BookCategories)      // Include sau khi lọc
+                    .Include(b => b.Authors)
+                    .AsSplitQuery();
         return await PagedResponse<Book>.FromQueryable(books, pageNumber, pageSize);
     }
 
