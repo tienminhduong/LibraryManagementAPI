@@ -21,5 +21,9 @@ namespace LibraryManagementAPI.Entities
         // Navigation properties
         [ForeignKey("bookId")]
         public Book? book { get; set; }
+        
+        // Computed property - not stored in database
+        [NotMapped]
+        public string QrCode => $"COPY-{id}";
     }
 }

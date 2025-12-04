@@ -10,5 +10,9 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task Update(BookCopy bookCopy);
         Task Delete(Guid id);
         Task<bool> IsBookCopyAvailable(Guid bookCopyId);
+        Task<bool> HasAvailableCopiesForBook(Guid bookId);
+        Task<IEnumerable<BookCopy>> GetAvailableCopiesByBookId(Guid bookId);
+        Task<BookCopy?> GetByQrCode(string qrCode);
+        string GenerateQrCode(Guid bookCopyId);
     }
 }

@@ -17,6 +17,8 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
     public DbSet<BookImport> BookImports { get; set; }
     public DbSet<BookImportDetail> BookImportDetails { get; set; }
     public DbSet<BookTransaction> BookTransactions { get; set; }
+    public DbSet<BorrowRequest> BorrowRequests { get; set; }
+    public DbSet<BorrowRequestItem> BorrowRequestItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,7 +64,7 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
         modelBuilder.Entity<Account>().HasData(
             new Account
             {
-                id = adminGuid, // <<< PHẢI CÓ
+                id = adminGuid,
                 userName = "admin",
                 passwordHash = "hashed_password",
                 role = Role.Admin,
@@ -71,7 +73,7 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
             },
             new Account
             {
-                id = adminGuid1, // <<< PHẢI CÓ
+                id = adminGuid1,
                 userName = "admin",
                 passwordHash = "hashed_password1",
                 role = Role.Admin,
@@ -80,7 +82,7 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
             },
             new Account
             {
-                id = staffGuid, // <<< PHẢI CÓ
+                id = staffGuid,
                 userName = "staff",
                 passwordHash = "hashed_password",
                 role = Role.Staff,
@@ -89,7 +91,7 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
             },
             new Account
             {
-                id = memberGuid, // <<< PHẢI CÓ
+                id = memberGuid,
                 userName = "member",
                 passwordHash = "hashed_password",
                 role = Role.Member,
@@ -97,9 +99,8 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
                 lastLogin = new DateTime(2025, 1, 2, 0, 0, 0, DateTimeKind.Utc)
             }
         );
+        
         modelBuilder.Entity<AdminInfo>().HasData(
-            // Seed AdminInfo
-
             new AdminInfo
             {
                 id = adminGuidInfo,
@@ -116,6 +117,7 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
                 phoneNumber = "0321547895",
                 loginId = adminGuid1
             });
+        
         modelBuilder.Entity<StaffInfo>().HasData(
             new StaffInfo
             {
@@ -126,6 +128,7 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
                 loginId = staffGuid,
                 hireDate = new DateTime(2025, 1, 2, 0, 0, 0, DateTimeKind.Utc)
             });
+        
         modelBuilder.Entity<MemberInfo>().HasData(
             new MemberInfo
             {
@@ -139,8 +142,7 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
                 joinDate = new DateTime(2025, 1, 2, 0, 0, 0, DateTimeKind.Utc)
             });
 
-        // seed data for supplier, book import, book import detail, book copy
-
+        // Seed data for supplier, book import, book import detail, book copy
         modelBuilder.Entity<Supplier>().HasData(
             new Supplier
             {
@@ -150,7 +152,8 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
                 phoneNumber = "",
                 address = ""
             }
-            );
+        );
+        
         modelBuilder.Entity<BookImport>().HasData(
             new BookImport
             {
@@ -161,7 +164,6 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
                 totalAmount = 0,
                 note = "First Import"
             },
-
             new BookImport
             {
                 id = Guid.Parse("E0000000-0000-0000-0000-000000000006"),
@@ -171,7 +173,8 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
                 totalAmount = 0,
                 note = "Second Import"
             }
-            );
+        );
+        
         modelBuilder.Entity<BookImportDetail>().HasData(
             new BookImportDetail
             {
@@ -189,16 +192,80 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
                 quantity = 5,
                 unitPrice = 200m
             }
-            );
+        );
+
+        // Seed BookCopy data - 10 copies from first import
         modelBuilder.Entity<BookCopy>().HasData(
-            // 10 copies from first import
-            Enumerable.Range(1, 10).Select(i => new BookCopy
+            new BookCopy
             {
-                id = Guid.Parse((10000000 + i).ToString("X8") + "-0000-0000-0000-000000000009"),
+                id = Guid.Parse("00989681-0000-0000-0000-000000000009"),
                 bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
                 bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
                 status = Status.Available
-            })
+            },
+            new BookCopy
+            {
+                id = Guid.Parse("00989682-0000-0000-0000-000000000009"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                status = Status.Available
+            },
+            new BookCopy
+            {
+                id = Guid.Parse("00989683-0000-0000-0000-000000000009"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                status = Status.Available
+            },
+            new BookCopy
+            {
+                id = Guid.Parse("00989684-0000-0000-0000-000000000009"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                status = Status.Available
+            },
+            new BookCopy
+            {
+                id = Guid.Parse("00989685-0000-0000-0000-000000000009"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                status = Status.Available
+            },
+            new BookCopy
+            {
+                id = Guid.Parse("00989686-0000-0000-0000-000000000009"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                status = Status.Available
+            },
+            new BookCopy
+            {
+                id = Guid.Parse("00989687-0000-0000-0000-000000000009"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                status = Status.Available
+            },
+            new BookCopy
+            {
+                id = Guid.Parse("00989688-0000-0000-0000-000000000009"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                status = Status.Available
+            },
+            new BookCopy
+            {
+                id = Guid.Parse("00989689-0000-0000-0000-000000000009"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                status = Status.Available
+            },
+            new BookCopy
+            {
+                id = Guid.Parse("0098968a-0000-0000-0000-000000000009"),
+                bookId = Guid.Parse("019a1a78-7b67-7f6c-9d63-f2d13554c669"),
+                bookImportDetailId = Guid.Parse("F0000000-0000-0000-0000-000000000007"),
+                status = Status.Available
+            }
         );
     }
 }

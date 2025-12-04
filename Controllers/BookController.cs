@@ -1,14 +1,18 @@
 ﻿using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
+using LibraryManagementAPI.Models.Utility;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LibraryManagementAPI.Controllers;
 
 [ApiController]
 [Route("api/books")]
-public class BookController(IBookService bookService) : ControllerBase
+public class BookController(IBookService bookService,
+                            IRecommendationService recommendationService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BookDto>>> GetAllBooks(int pageNumber = 1, int pageSize = 20)
@@ -67,5 +71,20 @@ public class BookController(IBookService bookService) : ControllerBase
         {
             return NotFound(ex.Message);
         }
+    }
+
+    [Authorize]
+    [HttpGet("recommend")]
+    public async Task<ActionResult> GetRecommendBooks(int pageNumber = 1, int pageSize = 20)
+    {
+        var userIdClaim = User.FindFirst(CustomClaims.MemberId);
+        var userId = userIdClaim?.Value;
+        var userIdGuid = Guid.Parse(userId!);
+        var res = await recommendationService.GetRecommendedBooksForUser(userIdGuid, pageNumber, pageSize);
+        if(res.isSuccess)
+        {
+            return Ok(res);
+        }
+        return BadRequest(res);
     }
 }
