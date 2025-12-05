@@ -15,12 +15,14 @@ namespace LibraryManagementAPI.Services
         IInfoRepository infoRepo,
         IUnitOfWork uow) : IBorrowRequestService
     {
-        public async Task<BorrowRequestResponseDto> CreateBorrowRequestAsync(CreateBorrowRequestDto dto)
+        public async Task<BorrowRequestResponseDto> CreateBorrowRequestAsync(CreateBorrowRequestDto dto, Guid accountId)
         {
-            // 1. Validate member exists
-            var memberExists = await infoRepo.IsInfoIdExist(dto.MemberId, InfoType.Member);
-            if (!memberExists)
-                throw new Exception("Member not found.");
+            // 1. Get member info from account ID
+            var memberInfo = await infoRepo.GetByAccountIdAsync(accountId);
+            if (memberInfo == null || memberInfo is not MemberInfo)
+                throw new Exception("Member information not found.");
+
+            var memberId = memberInfo.id;
 
             // 2. Validate all books exist and have available copies
             foreach (var bookId in dto.BookIds)
@@ -44,7 +46,7 @@ namespace LibraryManagementAPI.Services
             var borrowRequest = new BorrowRequest
             {
                 Id = requestId,
-                MemberId = dto.MemberId,
+                MemberId = memberId,
                 QrCode = qrCode,
                 Notes = dto.Notes,
                 Status = BorrowRequestStatus.Pending,
@@ -84,11 +86,19 @@ namespace LibraryManagementAPI.Services
             }
         }
 
-        public async Task<BorrowRequestDto?> GetBorrowRequestByIdAsync(Guid id)
+        public async Task<BorrowRequestDto?> GetBorrowRequestByIdAsync(Guid id, Guid accountId, string userRole)
         {
             var request = await borrowRequestRepo.GetByIdWithDetails(id);
             if (request == null)
                 return null;
+
+            // Members can only view their own requests
+            if (userRole.Equals("Member", StringComparison.OrdinalIgnoreCase))
+            {
+                var memberInfo = await infoRepo.GetByAccountIdAsync(accountId);
+                if (memberInfo == null || request.MemberId != memberInfo.id)
+                    return null; // Access denied
+            }
 
             return MapToDto(request);
         }
@@ -104,12 +114,14 @@ namespace LibraryManagementAPI.Services
             return MapToDto(request);
         }
 
-        public async Task<bool> ConfirmBorrowRequestAsync(ConfirmBorrowRequestDto dto)
+        public async Task<bool> ConfirmBorrowRequestAsync(ConfirmBorrowRequestDto dto, Guid staffAccountId)
         {
-            // 1. Validate staff exists
-            var staffExists = await infoRepo.IsInfoIdExist(dto.StaffId, InfoType.Staff);
-            if (!staffExists)
-                throw new Exception("Staff not found.");
+            // 1. Get staff info from account ID
+            var staffInfo = await infoRepo.GetByAccountIdAsync(staffAccountId);
+            if (staffInfo == null || (staffInfo is not StaffInfo && staffInfo is not AdminInfo))
+                throw new Exception("Staff information not found.");
+
+            var staffId = staffInfo.id;
 
             // 2. Get borrow request
             var request = await borrowRequestRepo.GetByIdWithDetails(dto.RequestId);
@@ -148,7 +160,7 @@ namespace LibraryManagementAPI.Services
                         id = Guid.NewGuid(),
                         copyId = assignment.BookCopyId,
                         memberId = request.MemberId,
-                        staffId = dto.StaffId,
+                        staffId = staffId,
                         borrowDate = DateTime.UtcNow,
                         dueDate = DateTime.UtcNow.AddDays(30),
                         status = StatusTransaction.BORROWED
@@ -159,7 +171,7 @@ namespace LibraryManagementAPI.Services
 
                 // 4. Update borrow request status
                 request.Status = BorrowRequestStatus.Confirmed;
-                request.StaffId = dto.StaffId;
+                request.StaffId = staffId;
                 request.ConfirmedAt = DateTime.UtcNow;
                 await borrowRequestRepo.Update(request);
 
@@ -174,12 +186,14 @@ namespace LibraryManagementAPI.Services
             }
         }
 
-        public async Task<bool> RejectBorrowRequestAsync(Guid requestId, Guid staffId, string reason)
+        public async Task<bool> RejectBorrowRequestAsync(Guid requestId, Guid staffAccountId, string reason)
         {
-            // 1. Validate staff exists
-            var staffExists = await infoRepo.IsInfoIdExist(staffId, InfoType.Staff);
-            if (!staffExists)
-                throw new Exception("Staff not found.");
+            // 1. Get staff info from account ID
+            var staffInfo = await infoRepo.GetByAccountIdAsync(staffAccountId);
+            if (staffInfo == null || (staffInfo is not StaffInfo && staffInfo is not AdminInfo))
+                throw new Exception("Staff information not found.");
+
+            var staffId = staffInfo.id;
 
             // 2. Get borrow request
             var request = await borrowRequestRepo.GetById(requestId);
@@ -209,13 +223,18 @@ namespace LibraryManagementAPI.Services
             }
         }
 
-        public async Task<bool> CancelBorrowRequestAsync(Guid requestId, Guid memberId)
+        public async Task<bool> CancelBorrowRequestAsync(Guid requestId, Guid memberAccountId)
         {
+            // 1. Get member info from account ID
+            var memberInfo = await infoRepo.GetByAccountIdAsync(memberAccountId);
+            if (memberInfo == null || memberInfo is not MemberInfo)
+                throw new Exception("Member information not found.");
+
             var request = await borrowRequestRepo.GetById(requestId);
             if (request == null)
                 throw new Exception("Borrow request not found.");
 
-            if (request.MemberId != memberId)
+            if (request.MemberId != memberInfo.id)
                 throw new Exception("You are not authorized to cancel this request.");
 
             if (request.Status != BorrowRequestStatus.Pending)
@@ -244,18 +263,29 @@ namespace LibraryManagementAPI.Services
             return requests.Select(MapToDto);
         }
 
-        public async Task<IEnumerable<BorrowRequestDto>> GetMemberRequestsAsync(Guid memberId)
+        public async Task<IEnumerable<BorrowRequestDto>> GetMemberRequestsAsync(Guid memberAccountId)
         {
-            var requests = await borrowRequestRepo.GetByMemberId(memberId);
+            // Get member info from account ID
+            var memberInfo = await infoRepo.GetByAccountIdAsync(memberAccountId);
+            if (memberInfo == null || memberInfo is not MemberInfo)
+                return Enumerable.Empty<BorrowRequestDto>();
+
+            var requests = await borrowRequestRepo.GetByMemberId(memberInfo.id);
             return requests.Select(MapToDto);
         }
 
-        public async Task<bool> ReturnBookAsync(ReturnBookDto dto)
+        public async Task<IEnumerable<BorrowRequestDto>> GetMemberRequestsByInfoIdAsync(Guid memberInfoId)
         {
-            // 1. Validate staff exists
-            var staffExists = await infoRepo.IsInfoIdExist(dto.StaffId, InfoType.Staff);
-            if (!staffExists)
-                throw new Exception("Staff not found.");
+            var requests = await borrowRequestRepo.GetByMemberId(memberInfoId);
+            return requests.Select(MapToDto);
+        }
+
+        public async Task<bool> ReturnBookAsync(ReturnBookDto dto, Guid staffAccountId)
+        {
+            // 1. Get staff info from account ID
+            var staffInfo = await infoRepo.GetByAccountIdAsync(staffAccountId);
+            if (staffInfo == null || (staffInfo is not StaffInfo && staffInfo is not AdminInfo))
+                throw new Exception("Staff information not found.");
 
             // 2. Get book copy
             var bookCopy = await bookCopyRepo.GetById(dto.BookCopyId);

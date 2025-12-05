@@ -1,3 +1,4 @@
+using LibraryManagementAPI.Authorization;
 using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
@@ -25,7 +26,7 @@ public static class ServiceCollectionExtensions
 
         AddRepositories(services);
         AddServices(services);
-        AddAuthorizationServices(services, config);
+        AddAuthenticationAndAuthorizationServices(services, config);
         AddUtilityServices(services);
 
         return services;
@@ -55,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBorrowBookService, BorrowBookService>();
         services.AddScoped<IBorrowRequestService, BorrowRequestService>();
         services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<ICartService, CartService>();
     }
 
     public static void AddUtilityServices(IServiceCollection services)
@@ -63,13 +65,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IHasherPassword, BCryptHasherPassword>();
     }
 
-    // Add Authorization Services using JWT Bearer
-    // using validate issuer, audience, and lifetime
-    public static void AddAuthorizationServices(IServiceCollection services, IConfiguration configuration)
+    // Add Authentication and Authorization Services using JWT Bearer
+    public static void AddAuthenticationAndAuthorizationServices(IServiceCollection services, IConfiguration configuration)
     {
         var audience = configuration.GetSection("Jwt:Audience").Value;
         var issuer = configuration.GetSection("Jwt:Issuer").Value;
         var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+        
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(jwtOptions =>
                 {
@@ -88,6 +90,22 @@ public static class ServiceCollectionExtensions
                                                                     .GetBytes(secretKey!))
                     };
                 });
+
+        // Add Authorization Policies
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(Policies.AdminOnly, policy => 
+                policy.RequireClaim(CustomClaims.Role, Roles.Admin));
+            
+            options.AddPolicy(Policies.StaffOrAdmin, policy =>
+                policy.RequireClaim(CustomClaims.Role, Roles.Staff, Roles.Admin));
+            
+            options.AddPolicy(Policies.MemberOnly, policy =>
+                policy.RequireClaim(CustomClaims.Role, Roles.Member));
+            
+            options.AddPolicy(Policies.Authenticated, policy =>
+                policy.RequireAuthenticatedUser());
+        });
     }
 
     public static void AddCORSConfiguration(this IServiceCollection services)

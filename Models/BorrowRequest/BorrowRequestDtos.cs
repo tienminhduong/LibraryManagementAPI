@@ -2,7 +2,7 @@ namespace LibraryManagementAPI.Models.BorrowRequest
 {
     public class CreateBorrowRequestDto
     {
-        public Guid MemberId { get; set; }
+        // MemberId removed - will be retrieved from JWT
         public List<Guid> BookIds { get; set; } = new List<Guid>();
         public string? Notes { get; set; }
     }
@@ -43,7 +43,7 @@ namespace LibraryManagementAPI.Models.BorrowRequest
     public class ConfirmBorrowRequestDto
     {
         public Guid RequestId { get; set; }
-        public Guid StaffId { get; set; }
+        // StaffId removed - will be retrieved from JWT
         public List<BookCopyAssignmentDto> BookCopyAssignments { get; set; } = new List<BookCopyAssignmentDto>();
     }
 
@@ -56,6 +56,6 @@ namespace LibraryManagementAPI.Models.BorrowRequest
     public class ReturnBookDto
     {
         public Guid BookCopyId { get; set; }
-        public Guid StaffId { get; set; }
+        // StaffId removed - will be retrieved from JWT
     }
 }

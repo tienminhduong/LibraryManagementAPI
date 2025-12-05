@@ -1,6 +1,7 @@
 ﻿using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
+using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 namespace LibraryManagementAPI.Repositories
@@ -36,6 +37,31 @@ namespace LibraryManagementAPI.Repositories
             catch (Exception ex)
             {
                 throw new Exception("An error occurred while find the info", ex);
+            }
+        }
+
+        public async Task<BaseInfo?> GetByAccountIdAsync(Guid accountId)
+        {
+            try
+            {
+                // Try to find in each info table
+                var staffInfo = await dbContext.StaffInfos
+                    .FirstOrDefaultAsync(i => i.loginId == accountId);
+                if (staffInfo != null) return staffInfo;
+
+                var memberInfo = await dbContext.MemberInfos
+                    .FirstOrDefaultAsync(i => i.loginId == accountId);
+                if (memberInfo != null) return memberInfo;
+
+                var adminInfo = await dbContext.AdminInfos
+                    .FirstOrDefaultAsync(i => i.loginId == accountId);
+                if (adminInfo != null) return adminInfo;
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while finding the info by account ID.", ex);
             }
         }
 

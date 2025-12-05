@@ -34,7 +34,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasIndex("BooksId");
 
-                    b.ToTable("AuthorBook");
+                    b.ToTable("AuthorBook", (string)null);
                 });
 
             modelBuilder.Entity("BookBookCategory", b =>
@@ -80,7 +80,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasKey("id");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Accounts", (string)null);
 
                     b.HasData(
                         new
@@ -144,7 +144,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Authors");
+                    b.ToTable("Authors", (string)null);
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BaseInfo", b =>
@@ -205,7 +205,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasIndex("PublisherId");
 
-                    b.ToTable("Books");
+                    b.ToTable("Books", (string)null);
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BookCategory", b =>
@@ -220,7 +220,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BookCategories");
+                    b.ToTable("BookCategories", (string)null);
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BookCopy", b =>
@@ -242,7 +242,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasIndex("bookId");
 
-                    b.ToTable("BookCopies");
+                    b.ToTable("BookCopies", (string)null);
 
                     b.HasData(
                         new
@@ -344,7 +344,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasIndex("supplierId");
 
-                    b.ToTable("BookImports");
+                    b.ToTable("BookImports", (string)null);
 
                     b.HasData(
                         new
@@ -391,7 +391,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasIndex("bookImportId");
 
-                    b.ToTable("BookImportDetails");
+                    b.ToTable("BookImportDetails", (string)null);
 
                     b.HasData(
                         new
@@ -447,7 +447,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasIndex("staffId");
 
-                    b.ToTable("BookTransactions");
+                    b.ToTable("BookTransactions", (string)null);
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BorrowRequest", b =>
@@ -483,7 +483,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("BorrowRequests");
+                    b.ToTable("BorrowRequests", (string)null);
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BorrowRequestItem", b =>
@@ -512,7 +512,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasIndex("BorrowRequestId");
 
-                    b.ToTable("BorrowRequestItems");
+                    b.ToTable("BorrowRequestItems", (string)null);
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.Publisher", b =>
@@ -535,7 +535,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Publishers");
+                    b.ToTable("Publishers", (string)null);
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.Supplier", b =>
@@ -561,7 +561,7 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasKey("id");
 
-                    b.ToTable("Supplier");
+                    b.ToTable("Supplier", (string)null);
 
                     b.HasData(
                         new
@@ -578,7 +578,7 @@ namespace LibraryManagementAPI.Migrations
                 {
                     b.HasBaseType("LibraryManagementAPI.Entities.BaseInfo");
 
-                    b.ToTable("AdminInfos");
+                    b.ToTable("AdminInfos", (string)null);
 
                     b.HasData(
                         new
@@ -612,7 +612,7 @@ namespace LibraryManagementAPI.Migrations
                     b.Property<DateTime>("joinDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.ToTable("MemberInfos");
+                    b.ToTable("MemberInfos", (string)null);
 
                     b.HasData(
                         new
@@ -635,7 +635,7 @@ namespace LibraryManagementAPI.Migrations
                     b.Property<DateTime>("hireDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.ToTable("StaffInfos");
+                    b.ToTable("StaffInfos", (string)null);
 
                     b.HasData(
                         new
