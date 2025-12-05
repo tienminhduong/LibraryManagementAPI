@@ -15,19 +15,19 @@ public class JwtTokenService: ITokenService
         _configuration = configuration;
     }
 
-    public string GenerateToken(Account account)
+    public string GenerateToken(Account account, BaseInfo info)
     {
         // secret key, signing credentials, and security algorithms
         var secret_key = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "";
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret_key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // claims for token
+        // claims for token - UserId is the Account ID (not Info ID)
         var claims = new[]
         {
             new System.Security.Claims.Claim(CustomClaims.Name, account.userName),
             new System.Security.Claims.Claim(CustomClaims.Role, account.role.ToString()),
-            new System.Security.Claims.Claim(CustomClaims.UserId, account.id.ToString())
+            new System.Security.Claims.Claim(CustomClaims.UserId, account.id.ToString()) // Use Account ID
         };
 
         // create the token
@@ -35,7 +35,7 @@ public class JwtTokenService: ITokenService
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddHours(2),
+            expires: DateTime.UtcNow.AddHours(2), // Use UtcNow instead of Now
             signingCredentials: creds
         );
 

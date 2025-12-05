@@ -17,14 +17,14 @@ namespace LibraryManagementAPI.Services
             var memberId = borrow.MemberId;
             var staffId = borrow.StaffId;
             var bookId = borrow.BookId;
-            // 1. Check exist member
-            var member = await infoRepo.IsInfoIdExist(memberId, InfoType.Member);
-            if (!member)
+            // 1. Check exist member (these are account IDs, need to check differently)
+            var member = await infoRepo.GetByAccountIdAsync(memberId);
+            if (member == null || member is not MemberInfo)
                 throw new Exception("Member not found.");
 
             // 2. Check exist staff
-            var staff = await infoRepo.IsInfoIdExist(staffId, InfoType.Staff);
-            if (!staff)
+            var staff = await infoRepo.GetByAccountIdAsync(staffId);
+            if (staff == null || (staff is not StaffInfo && staff is not AdminInfo))
                 throw new Exception("Staff not found.");
 
             // 3. Get available book copy
@@ -42,13 +42,13 @@ namespace LibraryManagementAPI.Services
                 bookCopy.status = Status.Borrowed;
                 await bookCopyRepo.Update(bookCopy);
 
-                // 6. Create book transaction
+                // 6. Create book transaction with Info IDs
                 var bookTransaction = new BookTransaction
                 {
                     id = Guid.NewGuid(),
                     copyId = bookCopy.id,
-                    memberId = memberId,
-                    staffId = staffId,
+                    memberId = member.id,  // Use Info ID
+                    staffId = staff.id,     // Use Info ID
                 };
 
                 await transactionRepo.Add(bookTransaction);

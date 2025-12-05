@@ -70,28 +70,56 @@ namespace LibraryManagementAPI.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<bool> IsInfoIdExist(Guid id, InfoType type)
+        public async Task<bool> IsAccountIdExist(Guid accountId, Role type = Role.Member)
         {
             try
             {
                 BaseInfo? info = null;
                 switch (type)
                 {
-                    case InfoType.Staff:
-                        info = await dbContext.StaffInfos.FindAsync(id);
+                    case Role.Staff:
+                        info = await dbContext.StaffInfos.FirstOrDefaultAsync(i => i.loginId == accountId);
                         break;
-                    case InfoType.Member:
-                        info = await dbContext.MemberInfos.FindAsync(id);
+                    case Role.Member:
+                        info = await dbContext.MemberInfos.FirstOrDefaultAsync(i => i.loginId == accountId);
                         break;
-                    case InfoType.Admin:
-                        info = await dbContext.AdminInfos.FindAsync(id);
+                    case Role.Admin:
+                        info = await dbContext.AdminInfos.FirstOrDefaultAsync(i => i.loginId == accountId);
                         break;
                 }
                 return info != null;
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while checking the info id existence.", ex);
+                throw new Exception("An error occurred while checking the account id existence.", ex);
+            }
+        }
+
+        public async Task<BaseInfo?> GetInfoByAccountIdAsync(Guid accountId, Role type)
+        {
+            try
+            {
+                switch (type)
+                {
+                    case Role.Staff:
+                        return await dbContext.StaffInfos
+                                     .Where(info => info.loginId == accountId)
+                                     .FirstOrDefaultAsync();
+                    case Role.Member:
+                        return await dbContext.MemberInfos
+                            .Where(info => info.loginId == accountId)
+                            .FirstOrDefaultAsync();
+                    case Role.Admin:
+                        return await dbContext.AdminInfos
+                            .Where(info => info.loginId == accountId)
+                            .FirstOrDefaultAsync();
+                    default:
+                        throw new ArgumentException("Invalid Role type provided.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while getting the info by account id.", ex);
             }
         }
     }

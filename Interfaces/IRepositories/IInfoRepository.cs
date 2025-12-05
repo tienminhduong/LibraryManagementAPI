@@ -2,12 +2,6 @@
 
 namespace LibraryManagementAPI.Interfaces.IRepositories
 {
-    public enum InfoType
-    {
-        Admin,
-        Staff,
-        Member
-    }
     public interface IInfoRepository
     {
         Task<IEnumerable<BaseInfo>> GetAllAsync();
@@ -15,6 +9,7 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task<BaseInfo?> GetByAccountIdAsync(Guid accountId);
         Task AddAsync(BaseInfo info, bool isInTransaction = false);
         Task UpdateAsync(BaseInfo info);
-        Task<bool> IsInfoIdExist(Guid id, InfoType type);
+        Task<bool> IsAccountIdExist(Guid accountId, Role type);
+        Task<BaseInfo?> GetInfoByAccountIdAsync(Guid accountId, Role type = Role.Member);
     }
 }

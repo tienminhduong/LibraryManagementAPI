@@ -19,6 +19,8 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
     public DbSet<BookTransaction> BookTransactions { get; set; }
     public DbSet<BorrowRequest> BorrowRequests { get; set; }
     public DbSet<BorrowRequestItem> BorrowRequestItems { get; set; }
+    public DbSet<Cart> Carts { get; set; }
+    public DbSet<CartItem> CartItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +42,25 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
             .IsRequired(false);
 
         modelBuilder.Entity<BaseInfo>().UseTpcMappingStrategy();
+        
+        // Configure Cart relationships
+        modelBuilder.Entity<Cart>()
+            .HasMany(c => c.Items)
+            .WithOne(i => i.Cart)
+            .HasForeignKey(i => i.CartId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CartItem>()
+            .HasOne(ci => ci.Book)
+            .WithMany()
+            .HasForeignKey(ci => ci.BookId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Create unique index on Cart.AccountId to ensure one cart per account
+        modelBuilder.Entity<Cart>()
+            .HasIndex(c => c.AccountId)
+            .IsUnique();
+
         SeedData(modelBuilder);
         base.OnModelCreating(modelBuilder);
     }

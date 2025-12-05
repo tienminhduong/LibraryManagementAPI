@@ -1,29 +1,6 @@
 namespace LibraryManagementAPI.Models.Cart;
 
 /// <summary>
-/// Represents a member's shopping cart for books they want to borrow
-/// </summary>
-public class Cart
-{
-    public Guid Id { get; set; }
-    public Guid MemberId { get; set; } // MemberInfo ID
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    public List<CartItem> Items { get; set; } = new List<CartItem>();
-}
-
-/// <summary>
-/// Represents a single book in the cart
-/// </summary>
-public class CartItem
-{
-    public Guid Id { get; set; }
-    public Guid CartId { get; set; }
-    public Guid BookId { get; set; }
-    public DateTime AddedAt { get; set; } = DateTime.UtcNow;
-}
-
-/// <summary>
 /// DTO for adding a book to cart
 /// </summary>
 public class AddToCartDto
@@ -37,7 +14,7 @@ public class AddToCartDto
 public class CartDto
 {
     public Guid Id { get; set; }
-    public Guid MemberId { get; set; }
+    public Guid AccountId { get; set; }  // Changed from MemberId to AccountId
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public List<CartItemDto> Items { get; set; } = new List<CartItemDto>();

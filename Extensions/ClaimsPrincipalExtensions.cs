@@ -3,7 +3,7 @@ namespace LibraryManagementAPI.Extensions;
 public static class ClaimsPrincipalExtensions
 {
     /// <summary>
-    /// Gets the user ID from JWT claims
+    /// Gets the user ID (Account ID) from JWT claims
     /// </summary>
     public static Guid GetUserId(this System.Security.Claims.ClaimsPrincipal user)
     {

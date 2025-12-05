@@ -23,6 +23,7 @@ namespace LibraryManagementAPI.Controllers
         /// ALTERNATIVE FLOW (direct, without Cart):
         /// - Member can still directly create borrow request with book IDs (this endpoint)
         /// - Useful for quick single-book borrowing
+        /// - Books will be automatically removed from cart if they exist there
         /// </summary>
         [HttpPost]
         [Authorize(Policy = Policies.MemberOnly)]
@@ -34,7 +35,7 @@ namespace LibraryManagementAPI.Controllers
                 var accountId = User.GetUserId();
                 
                 // Create borrow request directly with book IDs
-                // This bypasses the cart system
+                // Books will be automatically removed from cart if present
                 var result = await service.CreateBorrowRequestAsync(dto, accountId);
                 return Ok(result);
             }

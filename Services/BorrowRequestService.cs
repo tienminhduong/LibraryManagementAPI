@@ -13,6 +13,7 @@ namespace LibraryManagementAPI.Services
         IBookRepository bookRepo,
         IBookTransactionRepository transactionRepo,
         IInfoRepository infoRepo,
+        ICartRepository cartRepo,
         IUnitOfWork uow) : IBorrowRequestService
     {
         public async Task<BorrowRequestResponseDto> CreateBorrowRequestAsync(CreateBorrowRequestDto dto, Guid accountId)
@@ -64,11 +65,35 @@ namespace LibraryManagementAPI.Services
                 });
             }
 
-            // 6. Save to database
+            // 6. Save to database and remove books from cart
             await uow.BeginTransactionAsync();
             try
             {
                 await borrowRequestRepo.Add(borrowRequest);
+                
+                // Remove the requested books from the cart
+                var cart = await cartRepo.GetByAccountIdAsync(accountId);
+                if (cart != null)
+                {
+                    // Find cart items that match the requested books
+                    var cartItemsToRemove = cart.Items
+                        .Where(ci => dto.BookIds.Contains(ci.BookId))
+                        .ToList();
+
+                    // Remove each matching cart item
+                    foreach (var cartItem in cartItemsToRemove)
+                    {
+                        await cartRepo.RemoveItemAsync(cartItem.Id);
+                    }
+
+                    // Update cart timestamp if items were removed
+                    if (cartItemsToRemove.Any())
+                    {
+                        cart.UpdatedAt = DateTime.UtcNow;
+                        await cartRepo.UpdateAsync(cart);
+                    }
+                }
+                
                 await uow.SaveChangesAsync();
                 await uow.CommitAsync();
 
@@ -330,8 +355,6 @@ namespace LibraryManagementAPI.Services
         private string GenerateQrCode(Guid requestId)
         {
             // Generate a QR code data string
-            // In a real implementation, you would use a QR code library
-            // For now, we'll just encode the request ID
             return $"BORROW-{requestId}";
         }
 

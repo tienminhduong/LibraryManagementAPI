@@ -64,9 +64,9 @@ public class BookService(
         return mapper.Map<IEnumerable<BookCategoryDto>>(categories);
     }
 
-    public async Task<PagedResponse<BookDto>> GetAllBooksAsync(int pageNumber = 1, int pageSize = 20)
+    public async Task<PagedResponse<BookDto>> GetAllBooksAsync(Guid? categoryId, int pageNumber = 1, int pageSize = 20)
     {
-        var books = await bookRepository.GetAllBooksAsync(pageNumber, pageSize);
+        var books = await bookRepository.GetAllBooksAsync(categoryId, pageNumber, pageSize);
         var bookDtos = PagedResponse<BookDto>.MapFrom(books, mapper);
         return bookDtos;
     }

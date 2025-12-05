@@ -2,7 +2,6 @@ namespace LibraryManagementAPI.Models.BorrowRequest
 {
     public class CreateBorrowRequestDto
     {
-        // MemberId removed - will be retrieved from JWT
         public List<Guid> BookIds { get; set; } = new List<Guid>();
         public string? Notes { get; set; }
     }
