@@ -62,7 +62,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IRecommendationService, RecommendationService>();
         services.AddMemoryCache();
-        var modelPath = "RecommendModel\\BookRecommendationModel.zip";
+        var modelPath = "RecommendModel/BookRecommendationModel.zip";
         services.AddPredictionEnginePool<BookRating, BookRatingPrediction>()
             .FromFile(filePath: modelPath, watchForChanges: true);
         services.AddScoped<ICartService, CartService>();
