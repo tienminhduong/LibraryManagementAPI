@@ -3,6 +3,7 @@ using LibraryManagementAPI.Extensions;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.Utility;
+using LibraryManagementAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,8 @@ namespace LibraryManagementAPI.Controllers;
 [ApiController]
 [Route("api/books")]
 public class BookController(IBookService bookService,
-                            IRecommendationService recommendationService) : ControllerBase
+                            IRecommendationService recommendationService,
+                            ILogger logger) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BookDto>>> GetAllBooks([FromQuery] Guid? categoryId ,int pageNumber = 1, int pageSize = 20)
@@ -87,5 +89,63 @@ public class BookController(IBookService bookService,
             return Ok(res);
         }
         return BadRequest(res);
+    }
+
+    /// <summary>
+    /// Tìm kiếm sách theo tên
+    /// </summary>
+    [HttpGet("search/title")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> SearchByTitle(
+        [FromQuery] string title,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            return BadRequest("Title cannot be empty");
+
+        if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+            return BadRequest("Invalid pagination parameters");
+
+        try
+        {
+            var result = await bookService.SearchByTitleAsync(title, pageNumber, pageSize);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error searching books by title: {Title}", title);
+            return StatusCode(500, "An error occurred while searching");
+        }
+    }
+
+    /// <summary>
+    /// Tìm kiếm sách theo tác giả
+    /// </summary>
+    [HttpGet("search/author")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> SearchByAuthor(
+        [FromQuery] string author,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        if (string.IsNullOrWhiteSpace(author))
+            return BadRequest("Author cannot be empty");
+
+        if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+            return BadRequest("Invalid pagination parameters");
+
+        try
+        {
+            var result = await bookService.SearchByAuthorAsync(author, pageNumber, pageSize);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error searching books by author: {Author}", author);
+            return StatusCode(500, "An error occurred while searching");
+        }
     }
 }

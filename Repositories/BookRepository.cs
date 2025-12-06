@@ -3,6 +3,7 @@ using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Models.Pagination;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.ML;
 
 namespace LibraryManagementAPI.Repositories;
 
@@ -95,5 +96,34 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
         return await dbContext.Books
             .Where(b => bookIds.Contains(b.Id))
             .ToListAsync();
+    }
+
+    public async Task<PagedResponse<Book>> SearchByTitleAsync(string title, int pageNumber = 1, int pageSize = 20)
+    {
+        // create query
+        var query = dbContext.Books
+            .OrderBy(b => b.Title)
+            .AsNoTracking()
+            .AsSplitQuery() // Tách thành 2 queries: 1 cho Books, 1 cho Authors
+            .Include(b => b.Authors) // Join với Authors qua bookAuthor
+            .Where(b => EF.Functions.Like(b.Title, $"%{title}%"));
+
+        // get paged result
+        var pagedResult = await PagedResponse<Book>.FromQueryable(query, pageNumber, pageSize);
+        return pagedResult;
+    }
+
+    public Task<PagedResponse<Book>> SearchByAuthorAsync(string authorName, int pageNumber, int pageSize)
+    {
+        // create query
+        var query = dbContext.Books
+            .OrderBy(b => b.Title)
+            .AsNoTracking()
+            .AsSplitQuery() // Tối ưu cho Many-to-Many
+            .Include(b => b.Authors) // Join Authors
+            .Where(b => b.Authors.Any(a => EF.Functions.Like(a.Name, $"%{authorName}%")));
+
+        // get paged result
+        return PagedResponse<Book>.FromQueryable(query, pageNumber, pageSize);
     }
 }

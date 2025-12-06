@@ -20,6 +20,8 @@ public interface IBookService
     Task<BookDto> AddBookAsync(CreateBookDto bookDto);
     Task UpdateCategoryOfBookAsync(Guid id, UpdateCategoryOfBookDto dto);
     Task UpdateAuthorOfBookAsync(Guid id, UpdateAuthorOfBookDto dto);
+    Task<PagedResponse<BookDto>> SearchByTitleAsync(string title, int pageNumber = 1, int pageSize = 20);
+    Task<PagedResponse<BookDto>> SearchByAuthorAsync(string authorName, int pageNumber = 1, int pageSize = 20);
 
     // Book copy
 }

@@ -6,7 +6,9 @@ using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
 using LibraryManagementAPI.Models.Pagination;
+using LibraryManagementAPI.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LibraryManagementAPI.Services;
 
@@ -14,8 +16,11 @@ public class BookService(
     IBookCategoryRepository bookCategoryRepository,
     IBookRepository bookRepository,
     IAuthorRepository authorRepository,
-    IMapper mapper) : IBookService
+    IMapper mapper,
+    IMemoryCache _cache,
+    ILogger _logger) : IBookService
 {
+    private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(10);
     public async Task<BookDto> AddBookAsync(CreateBookDto bookDto)
     {
         ArgumentNullException.ThrowIfNull(bookDto);
@@ -115,5 +120,41 @@ public class BookService(
 
         var categories = await bookCategoryRepository.IdListToEntity(dto.CategoryIds);
         await bookRepository.UpdateCategoryOfBookAsync(book, categories);
+    }
+
+    public async Task<PagedResponse<BookDto>> SearchByTitleAsync(string title, int pageNumber = 1, int pageSize = 20)
+    {
+        var cacheKey = $"books_title_{title.ToLower()}_{pageNumber}_{pageSize}";
+
+        if (_cache.TryGetValue(cacheKey, out PagedResponse<BookDto>? cachedResult))
+        {
+            _logger.LogInformation("Cache hit for title search: {Title}", title);
+            return cachedResult;
+        }
+
+        var books = await bookRepository.SearchByTitleAsync(title, pageNumber, pageSize);
+        var result = PagedResponse<BookDto>.MapFrom(books, mapper);
+
+        _cache.Set(cacheKey, result, _cacheDuration);
+
+        return result;
+    }
+
+    public async Task<PagedResponse<BookDto>> SearchByAuthorAsync(string author, int pageNumber = 1, int pageSize = 20)
+    {
+        var cacheKey = $"books_author_{author.ToLower()}_{pageNumber}_{pageSize}";
+
+        if (_cache.TryGetValue(cacheKey, out PagedResponse<BookDto>? cachedResult))
+        {
+            _logger.LogInformation("Cache hit for author search: {Author}", author);
+            return cachedResult;
+        }
+
+        var books = await bookRepository.SearchByAuthorAsync(author, pageNumber, pageSize);
+        var result = PagedResponse<BookDto>.MapFrom(books, mapper);
+
+        _cache.Set(cacheKey, result, _cacheDuration);
+
+        return result;
     }
 }
