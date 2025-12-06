@@ -1,5 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
+
 namespace LibraryManagementAPI.Entities;
 
+[Index(nameof(Name), Name = "IX_Author_Name")]
 public class Author
 {
     public Guid Id { get; set; }
