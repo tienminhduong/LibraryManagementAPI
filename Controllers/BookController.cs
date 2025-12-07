@@ -32,10 +32,21 @@ public class BookController(IBookService bookService,
     }
 
     [HttpPost]
-    public async Task<ActionResult> AddBook([FromBody] CreateBookDto bookDto)
+    public async Task<ActionResult> AddBook([FromForm] CreateBookDto bookDto)
     {
         try
         {
+            if(String.IsNullOrEmpty(bookDto.ImgUrl) && bookDto.Image == null)
+            {
+                return BadRequest("The image is require");
+            }
+
+            var photoUrl = bookDto.ImgUrl;
+            if(bookDto.Image != null)
+            {
+                photoUrl = (await photoService.UploadPhotoAsync(bookDto.Image)).Url.ToString();
+            }
+            bookDto.ImgUrl = photoUrl;
             var res = await bookService.AddBookAsync(bookDto);
             if (res.isSuccess)
             {
