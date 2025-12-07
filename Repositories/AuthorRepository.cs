@@ -65,4 +65,15 @@ public class AuthorRepository(LibraryDbContext dbContext) : IAuthorRepository
 
         return categories;
     }
+
+    public async Task<HashSet<Guid>> GetExistingIdsAsync(
+        IEnumerable<Guid> ids,
+        CancellationToken ct = default)
+    {
+        return await dbContext.Authors
+            .AsNoTracking()
+            .Where(a => ids.Contains(a.Id))
+            .Select(a => a.Id)
+            .ToHashSetAsync(ct);
+    }
 }

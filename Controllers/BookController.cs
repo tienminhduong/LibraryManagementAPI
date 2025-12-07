@@ -15,6 +15,7 @@ namespace LibraryManagementAPI.Controllers;
 [Route("api/books")]
 public class BookController(IBookService bookService,
                             IRecommendationService recommendationService,
+                            IPhotoService photoService,
                             ILogger logger) : ControllerBase
 {
     [HttpGet]
@@ -35,8 +36,12 @@ public class BookController(IBookService bookService,
     {
         try
         {
-            var createdBook = await bookService.AddBookAsync(bookDto);
-            return CreatedAtAction(nameof(GetBookById), new { id = createdBook.Id }, createdBook);
+            var res = await bookService.AddBookAsync(bookDto);
+            if (res.isSuccess)
+            {
+                return Ok(res);
+            }
+            return BadRequest(res);
         }
         catch (ArgumentNullException exception)
         {
@@ -146,6 +151,26 @@ public class BookController(IBookService bookService,
         {
             logger.LogError(ex, "Error searching books by author: {Author}", author);
             return StatusCode(500, "An error occurred while searching");
+        }
+    }
+
+    [HttpPost("{id}/photo")]
+    public async Task<ActionResult> UploadBookPhoto(Guid id, IFormFile file)
+    {
+        try
+        {
+            var book = await bookService.GetBookByIdAsync(id);
+            if (book == null)
+                return NotFound("Book not found");
+            var photoUploadResult = await photoService.UploadPhotoAsync(file);
+            book.ImgUrl = photoUploadResult.Url.ToString();
+            //await bookService.UpdateBook(book);
+            return Ok(book);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error uploading photo for book ID: {BookId}", id);
+            return StatusCode(500, "An error occurred while uploading the photo");
         }
     }
 }

@@ -76,4 +76,15 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
 
         return categories;
     }
+
+    public async Task<HashSet<Guid>> GetExistingIdsAsync(
+        IEnumerable<Guid> ids,
+        CancellationToken ct = default)
+    {
+        return await dbContext.BookCategories
+            .AsNoTracking()
+            .Where(c => ids.Contains(c.Id))
+            .Select(c => c.Id)
+            .ToHashSetAsync(ct);
+    }
 }

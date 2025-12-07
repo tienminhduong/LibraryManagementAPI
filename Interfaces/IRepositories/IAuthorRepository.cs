@@ -12,4 +12,5 @@ public interface IAuthorRepository
     Task AddAuthorAsync(Author author);
     Task<PagedResponse<Book>> FindBooksByAuthorAsync(Guid id, int pageNumber, int pageSize);
     Task<IEnumerable<Author>> IdListToEntity(IEnumerable<Guid> authorIds);
+    Task<HashSet<Guid>> GetExistingIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default);
 }

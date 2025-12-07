@@ -9,12 +9,12 @@ namespace LibraryManagementAPI.Repositories;
 
 public class BookRepository(LibraryDbContext dbContext) : IBookRepository
 {
-    public async Task<bool> AddBookAsync(Book book)
+    public async Task AddBookAsync(Book book, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(book);
 
         await dbContext.Books.AddAsync(book);
-        return await dbContext.SaveChangesAsync() > 0;
+        //return await dbContext.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> DeleteBookAsync(Guid id)
@@ -125,5 +125,12 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
 
         // get paged result
         return PagedResponse<Book>.FromQueryable(query, pageNumber, pageSize);
+    }
+
+    public async Task<bool> IsbnExistsAsync(string ISBN, CancellationToken ct = default)
+    {
+        return await dbContext.Books
+                              .AsNoTracking()
+                              .AnyAsync(b => b.ISBN == ISBN, ct);
     }
 }

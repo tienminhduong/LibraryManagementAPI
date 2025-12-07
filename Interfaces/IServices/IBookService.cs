@@ -17,7 +17,7 @@ public interface IBookService
     // Books
     Task<PagedResponse<BookDto>> GetAllBooksAsync(Guid? categoryId, int pageNumber = 1, int pageSize = 20);
     Task<BookDto?> GetBookByIdAsync(Guid id);
-    Task<BookDto> AddBookAsync(CreateBookDto bookDto);
+    Task<Response<BookDto>> AddBookAsync(CreateBookDto bookDto, CancellationToken ct = default);
     Task UpdateCategoryOfBookAsync(Guid id, UpdateCategoryOfBookDto dto);
     Task UpdateAuthorOfBookAsync(Guid id, UpdateAuthorOfBookDto dto);
     Task<PagedResponse<BookDto>> SearchByTitleAsync(string title, int pageNumber = 1, int pageSize = 20);
