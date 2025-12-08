@@ -1,3 +1,4 @@
+using System.Net.Quic;
 using AutoMapper;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
@@ -197,5 +198,11 @@ public class BookService(
             }
         }
         return bookImport.id;
+    }
+
+    public async Task<PagedResponse<BookCategoryDto>> SearchBookCategories(string query, int pageNumber = 1, int pageSize = 20)
+    {
+        var categories = await bookCategoryRepository.GetBookCategoriesByName(query, pageNumber, pageSize);
+        return PagedResponse<BookCategoryDto>.MapFrom(categories, mapper);
     }
 }

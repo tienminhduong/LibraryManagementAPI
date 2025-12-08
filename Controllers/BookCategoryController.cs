@@ -30,6 +30,13 @@ public class BookCategoryController(IBookService bookService) : ControllerBase
         return Ok(books);
     }
 
+    [HttpGet("/search")]
+    public async Task<ActionResult> SearchBookCategories(string query, int pageNumber = 1, int pageSize = 20)
+    {
+        var bookCategories = await bookService.SearchBookCategories(query, pageNumber, pageSize);
+        return Ok(bookCategories);
+    }
+
     [HttpPost]
     public async Task<ActionResult> CreateBookCategory([FromBody] CreateBookCategoryDto categoryDto)
     {
