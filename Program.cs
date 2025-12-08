@@ -66,6 +66,8 @@ app.UseCors(allowAllPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseResponseCaching();
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {

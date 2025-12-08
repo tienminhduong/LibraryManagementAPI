@@ -22,6 +22,7 @@ public interface IBookService
     Task UpdateAuthorOfBookAsync(Guid id, UpdateAuthorOfBookDto dto);
     Task<PagedResponse<BookDto>> SearchByTitleAsync(string title, int pageNumber = 1, int pageSize = 20);
     Task<PagedResponse<BookDto>> SearchByAuthorAsync(string authorName, int pageNumber = 1, int pageSize = 20);
+    Task<PagedResponse<BookDto>?> SearchByKeywordAsync(string keyword, int pageNumber = 1, int pageSize = 20);
 
     // Book copy
 }

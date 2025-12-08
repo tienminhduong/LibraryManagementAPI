@@ -133,4 +133,18 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
                               .AsNoTracking()
                               .AnyAsync(b => b.ISBN == ISBN, ct);
     }
+
+    public Task<PagedResponse<Book>> SearchByKeywordAsync(string keyword, int pageNumber = 1, int pageSize = 20)
+    {
+        var baseQuery = dbContext.Books
+            .AsNoTracking()
+            .OrderBy(b => b.ISBN)
+            .Where(b => EF.Functions.Like(b.Title, $"%{keyword}%") ||
+                       b.Authors.Any(a => EF.Functions.Like(a.Name, $"%{keyword}%")))
+            .Include(b => b.Authors)
+            .Include(b => b.BookCategories)
+            .AsSplitQuery();
+
+        return PagedResponse<Book>.FromQueryable(baseQuery, pageNumber, pageSize);
+    }
 }

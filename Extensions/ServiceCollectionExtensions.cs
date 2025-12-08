@@ -66,6 +66,7 @@ public static class ServiceCollectionExtensions
         services.AddPredictionEnginePool<BookRating, BookRatingPrediction>()
             .FromFile(filePath: modelPath, watchForChanges: true);
         services.AddScoped<ICartService, CartService>();
+        services.AddResponseCaching();
     }
 
     public static void AddUtilityServices(IServiceCollection services)

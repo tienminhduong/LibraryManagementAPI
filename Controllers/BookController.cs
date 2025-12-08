@@ -2,6 +2,7 @@
 using LibraryManagementAPI.Extensions;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
+using LibraryManagementAPI.Models.Pagination;
 using LibraryManagementAPI.Models.Utility;
 using LibraryManagementAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -182,6 +183,37 @@ public class BookController(IBookService bookService,
         {
             logger.LogError(ex, "Error uploading photo for book ID: {BookId}", id);
             return StatusCode(500, "An error occurred while uploading the photo");
+        }
+    }
+
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "keyword", "pageNumber", "pageSize" })]
+    public async Task<ActionResult> SearchByKeyword(
+        [FromQuery] string keyword,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+            return BadRequest(new { error = "Keyword không được để trống" });
+
+        if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+            return BadRequest(new { error = "Tham số phân trang không hợp lệ" });
+
+        try
+        {
+            var result = await bookService.SearchByKeywordAsync(keyword, pageNumber, pageSize);
+            if(result == null)
+            {
+                return BadRequest(Response<PagedResponse<BookDto>>.Failure("Bad request"));
+            }
+            return Ok(Response<PagedResponse<BookDto>>.Success(result));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Lỗi khi tìm sách theo keyword: {Keyword}", keyword);
+            return StatusCode(500, new { error = "Có lỗi xảy ra khi tìm kiếm" });
         }
     }
 }

@@ -19,4 +19,5 @@ public interface IBookRepository
     Task<PagedResponse<Book>> SearchByTitleAsync(string title, int pageNumber = 1, int pageSize = 20);
     Task<PagedResponse<Book>> SearchByAuthorAsync(string author, int pageNumber, int pageSize);
     Task<bool> IsbnExistsAsync(string ISBN, CancellationToken ct = default);
+    Task<PagedResponse<Book>> SearchByKeywordAsync(string keyword, int pageNumber = 1, int pageSize = 20);
 }

@@ -225,4 +225,28 @@ public class BookService(
             throw;
         }
     }
+
+    public async Task<PagedResponse<BookDto>?> SearchByKeywordAsync(string keyword, int pageNumber = 1, int pageSize = 20)
+    {
+        var cacheKey = $"books_keyword_{keyword.Trim().ToLowerInvariant()}_{pageNumber}_{pageSize}";
+
+        if (_cache.TryGetValue(cacheKey, out PagedResponse<BookDto>? cachedResult))
+        {
+            _logger.LogInformation("Cache hit for keyword search: {Keyword}", keyword);
+            return cachedResult;
+        }
+
+        _logger.LogInformation("Cache miss for keyword search: {Keyword}", keyword);
+        var books = await bookRepository.SearchByKeywordAsync(keyword.Trim(), pageNumber, pageSize);
+        var result = PagedResponse<BookDto>.MapFrom(books, mapper);
+
+        var cacheOptions = new MemoryCacheEntryOptions()
+            .SetSlidingExpiration(_cacheDuration)
+            .SetAbsoluteExpiration(TimeSpan.FromHours(1))
+            .SetPriority(CacheItemPriority.Normal);
+
+        _cache.Set(cacheKey, result, cacheOptions);
+
+        return result;
+    }
 }
