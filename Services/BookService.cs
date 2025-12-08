@@ -15,6 +15,8 @@ namespace LibraryManagementAPI.Services;
 public class BookService(
     IBookCategoryRepository bookCategoryRepository,
     IBookRepository bookRepository,
+    IBookImportRepository bookImportRepository,
+    IBookCopyRepository bookCopyRepository,
     IAuthorRepository authorRepository,
     IMapper mapper,
     IMemoryCache _cache,
@@ -156,5 +158,44 @@ public class BookService(
         _cache.Set(cacheKey, result, _cacheDuration);
 
         return result;
+    }
+
+    public async Task<Guid> ImportBooks(BookImportDto bookImportDto)
+    {
+        BookImport bookImport = new()
+        {
+            staffId = bookImportDto.StaffId,
+            supplierId = bookImportDto.SupplierId,
+            importDate = DateTime.UtcNow,
+            note = bookImportDto.Notes,
+            totalAmount = bookImportDto.Details.Sum(detail => detail.Quantity)
+        };
+
+        await bookImportRepository.AddBookImportAsync(bookImport);
+
+        foreach (var detail in bookImportDto.Details)
+        {
+            var bookImportDetail = new BookImportDetail
+            {
+                bookId = detail.BookId,
+                quantity = detail.Quantity,
+                unitPrice = detail.UnitPrice,
+                bookImportId = bookImport.id
+            };
+            await bookImportRepository.AddImportDetailAsync(bookImportDetail);
+
+            for (int i = 0; i < detail.Quantity; ++i)
+            {
+                var bookCopy = new BookCopy
+                {
+                    bookId = detail.BookId,
+                    bookImportDetailId = bookImportDetail.id,
+                    status = Status.Available,
+                };
+
+                await bookCopyRepository.Add(bookCopy);
+            }
+        }
+        return bookImport.id;
     }
 }

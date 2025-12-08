@@ -24,4 +24,5 @@ public interface IBookService
     Task<PagedResponse<BookDto>> SearchByAuthorAsync(string authorName, int pageNumber = 1, int pageSize = 20);
 
     // Book copy
+    Task<Guid> ImportBooks(BookImportDto bookImportDto);
 }

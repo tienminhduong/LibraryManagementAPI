@@ -47,6 +47,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBorrowRequestRepository, BorrowRequestRepository>();
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IBookImportRepository, BookImportRepository>();
     }
 
     public static void AddServices(IServiceCollection services)
@@ -81,7 +82,7 @@ public static class ServiceCollectionExtensions
         var audience = configuration.GetSection("Jwt:Audience").Value;
         var issuer = configuration.GetSection("Jwt:Issuer").Value;
         var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
-        
+
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(jwtOptions =>
                 {
@@ -104,15 +105,15 @@ public static class ServiceCollectionExtensions
         // Add Authorization Policies
         services.AddAuthorization(options =>
         {
-            options.AddPolicy(Policies.AdminOnly, policy => 
+            options.AddPolicy(Policies.AdminOnly, policy =>
                 policy.RequireClaim(CustomClaims.Role, Roles.Admin));
-            
+
             options.AddPolicy(Policies.StaffOrAdmin, policy =>
                 policy.RequireClaim(CustomClaims.Role, Roles.Staff, Roles.Admin));
-            
+
             options.AddPolicy(Policies.MemberOnly, policy =>
                 policy.RequireClaim(CustomClaims.Role, Roles.Member));
-            
+
             options.AddPolicy(Policies.Authenticated, policy =>
                 policy.RequireAuthenticatedUser());
         });
