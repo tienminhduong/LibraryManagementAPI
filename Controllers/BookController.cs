@@ -1,4 +1,5 @@
-﻿using LibraryManagementAPI.Exceptions;
+﻿using LibraryManagementAPI.Authorization;
+using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Extensions;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
@@ -49,11 +50,13 @@ public class BookController(IBookService bookService,
     }
 
     [HttpPost("import")]
+    [Authorize(Policy = Policies.StaffOrAdmin)]
     public async Task<ActionResult> ImportBooks([FromBody] BookImportDto bookImportDto)
     {
         try
         {
-            var id = await bookService.ImportBooks(bookImportDto);
+            var staffId = User.GetUserId();
+            var id = await bookService.ImportBooks(bookImportDto, staffId);
             return CreatedAtAction(nameof(GetBookImportById), new { id });
         }
         catch (ArgumentNullException exception)
@@ -69,7 +72,7 @@ public class BookController(IBookService bookService,
     [HttpGet("import")]
     public async Task<ActionResult> GetBookImportById(Guid id)
     {
-        return Ok();
+        return NotFound("Not implemented yet");
     }
 
     [HttpPatch("{id}/categories")]

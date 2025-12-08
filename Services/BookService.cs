@@ -160,11 +160,11 @@ public class BookService(
         return result;
     }
 
-    public async Task<Guid> ImportBooks(BookImportDto bookImportDto)
+    public async Task<Guid> ImportBooks(BookImportDto bookImportDto, Guid staffId)
     {
         BookImport bookImport = new()
         {
-            staffId = bookImportDto.StaffId,
+            staffId = staffId,
             supplierId = bookImportDto.SupplierId,
             importDate = DateTime.UtcNow,
             note = bookImportDto.Notes,
