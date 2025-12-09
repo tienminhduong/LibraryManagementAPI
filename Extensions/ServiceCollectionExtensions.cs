@@ -72,6 +72,7 @@ public static class ServiceCollectionExtensions
     {
         // Add utility services here if needed in the future
         services.AddSingleton<IHasherPassword, BCryptHasherPassword>();
+        services.AddScoped<ILogger, Logger<Program>>();
     }
 
     // Add Authentication and Authorization Services using JWT Bearer

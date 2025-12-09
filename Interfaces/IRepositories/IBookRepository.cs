@@ -16,4 +16,6 @@ public interface IBookRepository
     Task<bool> IsBookExistsByIdAsync(Guid id);
     Task<IEnumerable<Guid>> GetAllBookIdsAsync();
     Task<IEnumerable<Book>> GetBooksAsync(IEnumerable<Guid> bookIds);
+    Task<PagedResponse<Book>> SearchByTitleAsync(string title, int pageNumber = 1, int pageSize = 20);
+    Task<PagedResponse<Book>> SearchByAuthorAsync(string author, int pageNumber, int pageSize);
 }
