@@ -12,4 +12,12 @@ public interface IAuthorRepository
     Task AddAuthorAsync(Author author);
     Task<PagedResponse<Book>> FindBooksByAuthorAsync(Guid id, int pageNumber, int pageSize);
     Task<IEnumerable<Author>> IdListToEntity(IEnumerable<Guid> authorIds);
+    Task<PagedResponse<Author>> SearchAuthor(
+        string? nameQuery = null,
+        int? yearOfBirth = null,
+        int? yearOfBirthBefore = null,
+        int? yearOfBirthAfter = null,
+        string? briefDescriptionContains = null,
+        int pageNumber = 1,
+        int pageSize = 20);
 }

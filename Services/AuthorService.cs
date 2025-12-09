@@ -50,6 +50,12 @@ public class AuthorService(
         return mapper.Map<AuthorDto>(author);
     }
 
+    public async Task<PagedResponse<AuthorDto>> SearchAuthor(string? nameQuery = null, int? yearOfBirth = null, int? yearOfBirthBefore = null, int? yearOfBirthAfter = null, string? briefDescriptionContains = null, int pageNumber = 1, int pageSize = 20)
+    {
+        var authors = await authorRepository.SearchAuthor(nameQuery, yearOfBirth, yearOfBirthBefore, yearOfBirthAfter, briefDescriptionContains, pageNumber, pageSize);
+        return PagedResponse<AuthorDto>.MapFrom(authors, mapper);
+    }
+
     public async Task UpdateAuthorAsync(Guid id, UpdateAuthorDto authorDto)
     {
         var author = await authorRepository.GetAuthorAsync(id)

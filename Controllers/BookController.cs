@@ -1,4 +1,5 @@
-﻿using LibraryManagementAPI.Exceptions;
+﻿using LibraryManagementAPI.Authorization;
+using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Extensions;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
@@ -18,7 +19,7 @@ public class BookController(IBookService bookService,
                             ILogger logger) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<BookDto>>> GetAllBooks([FromQuery] Guid? categoryId ,int pageNumber = 1, int pageSize = 20)
+    public async Task<ActionResult<IEnumerable<BookDto>>> GetAllBooks([FromQuery] Guid? categoryId, int pageNumber = 1, int pageSize = 20)
     {
         return Ok(await bookService.GetAllBooksAsync(categoryId, pageNumber, pageSize));
     }
@@ -46,6 +47,32 @@ public class BookController(IBookService bookService,
         {
             return Problem(exception.Message);
         }
+    }
+
+    [HttpPost("import")]
+    [Authorize(Policy = Policies.StaffOrAdmin)]
+    public async Task<ActionResult> ImportBooks([FromBody] BookImportDto bookImportDto)
+    {
+        try
+        {
+            var staffId = User.GetUserId();
+            var id = await bookService.ImportBooks(bookImportDto, staffId);
+            return CreatedAtAction(nameof(GetBookImportById), new { id });
+        }
+        catch (ArgumentNullException exception)
+        {
+            return BadRequest(exception.Message);
+        }
+        catch (DbUpdateException exception)
+        {
+            return Problem(exception.Message);
+        }
+    }
+
+    [HttpGet("import")]
+    public async Task<ActionResult> GetBookImportById(Guid id)
+    {
+        return NotFound("Not implemented yet");
     }
 
     [HttpPatch("{id}/categories")]
@@ -82,9 +109,9 @@ public class BookController(IBookService bookService,
     {
         // Get Account ID from JWT
         var accountId = User.GetUserId();
-        
+
         var res = await recommendationService.GetRecommendedBooksForUser(accountId, pageNumber, pageSize);
-        if(res.isSuccess)
+        if (res.isSuccess)
         {
             return Ok(res);
         }

@@ -1,3 +1,4 @@
+using System.Net.Quic;
 using AutoMapper;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
@@ -15,6 +16,8 @@ namespace LibraryManagementAPI.Services;
 public class BookService(
     IBookCategoryRepository bookCategoryRepository,
     IBookRepository bookRepository,
+    IBookImportRepository bookImportRepository,
+    IBookCopyRepository bookCopyRepository,
     IAuthorRepository authorRepository,
     IMapper mapper,
     IMemoryCache _cache,
@@ -156,5 +159,50 @@ public class BookService(
         _cache.Set(cacheKey, result, _cacheDuration);
 
         return result;
+    }
+
+    public async Task<Guid> ImportBooks(BookImportDto bookImportDto, Guid staffId)
+    {
+        BookImport bookImport = new()
+        {
+            staffId = staffId,
+            supplierId = bookImportDto.SupplierId,
+            importDate = DateTime.UtcNow,
+            note = bookImportDto.Notes,
+            totalAmount = bookImportDto.Details.Sum(detail => detail.Quantity)
+        };
+
+        await bookImportRepository.AddBookImportAsync(bookImport);
+
+        foreach (var detail in bookImportDto.Details)
+        {
+            var bookImportDetail = new BookImportDetail
+            {
+                bookId = detail.BookId,
+                quantity = detail.Quantity,
+                unitPrice = detail.UnitPrice,
+                bookImportId = bookImport.id
+            };
+            await bookImportRepository.AddImportDetailAsync(bookImportDetail);
+
+            for (int i = 0; i < detail.Quantity; ++i)
+            {
+                var bookCopy = new BookCopy
+                {
+                    bookId = detail.BookId,
+                    bookImportDetailId = bookImportDetail.id,
+                    status = Status.Available,
+                };
+
+                await bookCopyRepository.Add(bookCopy);
+            }
+        }
+        return bookImport.id;
+    }
+
+    public async Task<PagedResponse<BookCategoryDto>> SearchBookCategories(string query, int pageNumber = 1, int pageSize = 20)
+    {
+        var categories = await bookCategoryRepository.GetBookCategoriesByName(query, pageNumber, pageSize);
+        return PagedResponse<BookCategoryDto>.MapFrom(categories, mapper);
     }
 }

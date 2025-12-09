@@ -1,6 +1,7 @@
 using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
+using LibraryManagementAPI.Extensions;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Models.Pagination;
 using Microsoft.EntityFrameworkCore;
@@ -64,5 +65,27 @@ public class AuthorRepository(LibraryDbContext dbContext) : IAuthorRepository
             .ToListAsync();
 
         return categories;
+    }
+
+    public async Task<PagedResponse<Author>> SearchAuthor(string? nameQuery = null, int? yearOfBirth = null, int? yearOfBirthBefore = null, int? yearOfBirthAfter = null, string? briefDescriptionContains = null, int pageNumber = 1, int pageSize = 20)
+    {
+        var query = dbContext.Authors.AsQueryable();
+
+        if (nameQuery != null)
+            query = query.Where(a => a.Name.ToLower().Contains(nameQuery.ToLower()));
+
+        if (yearOfBirth != null)
+            query = query.Where(a => a.YearOfBirth == yearOfBirth);
+
+        if (yearOfBirthBefore != null)
+            query = query.Where(a => a.YearOfBirth < yearOfBirthBefore);
+
+        if (yearOfBirthAfter != null)
+            query = query.Where(a => a.YearOfBirth > yearOfBirthAfter);
+
+        if (briefDescriptionContains != null)
+            query = query.Where(a => a.BriefDescription == null || a.BriefDescription.ToLower().Contains(briefDescriptionContains.ToLower()));
+
+        return await PagedResponse<Author>.FromQueryable(query, pageNumber, pageSize);
     }
 }

@@ -43,6 +43,20 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
         return Ok(await authorService.GetAllAuthorsAsync(pageNumber, pageSize));
     }
 
+    [HttpGet("search")]
+    public async Task<ActionResult> SearchAuthor(
+        string? nameQuery = null,
+        int? yearOfBirth = null,
+        int? yearOfBirthBefore = null,
+        int? yearOfBirthAfter = null,
+        string? briefDescriptionContains = null,
+        int pageNumber = 1,
+        int pageSize = 20)
+    {
+        var authors = await authorService.SearchAuthor(nameQuery, yearOfBirth, yearOfBirthBefore, yearOfBirthAfter, briefDescriptionContains, pageNumber, pageSize);
+        return Ok(authors);
+    }
+
     [HttpGet("{id}/books")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

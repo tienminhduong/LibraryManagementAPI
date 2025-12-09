@@ -14,4 +14,5 @@ public interface IBookCategoryRepository
     Task<int> CountBooksByCategory(Guid categoryId);
     Task<PagedResponse<Book>> SearchBookByCategory(Guid id, int pageNumber = 1, int pageSize = 20);
     Task<IEnumerable<BookCategory>> IdListToEntity(IEnumerable<Guid> ids);
+    Task<PagedResponse<BookCategory>> GetBookCategoriesByName(string query, int pageNumber = 1, int pageSize = 20);
 }
