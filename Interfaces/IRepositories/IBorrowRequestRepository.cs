@@ -1,4 +1,5 @@
 using LibraryManagementAPI.Entities;
+using LibraryManagementAPI.Models.Pagination;
 
 namespace LibraryManagementAPI.Interfaces.IRepositories
 {
@@ -8,7 +9,9 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task<BorrowRequest?> GetByIdWithDetails(Guid id);
         Task<IEnumerable<BorrowRequest>> GetAll();
         Task<IEnumerable<BorrowRequest>> GetByMemberId(Guid memberId);
+        Task<PagedResponse<BorrowRequest>> GetByMemberIdPaged(Guid memberId, int pageNumber = 1, int pageSize = 20);
         Task<IEnumerable<BorrowRequest>> GetByStatus(BorrowRequestStatus status);
+        Task<PagedResponse<BorrowRequest>> GetByStatusPaged(BorrowRequestStatus status, int pageNumber = 1, int pageSize = 20);
         Task Add(BorrowRequest borrowRequest);
         Task Update(BorrowRequest borrowRequest);
         Task Delete(Guid id);

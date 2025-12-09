@@ -16,6 +16,7 @@ namespace LibraryManagementAPI.Models.BorrowRequest
         public string? StaffName { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? ConfirmedAt { get; set; }
+        public DateTime? DueDate { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? QrCode { get; set; }
         public string? Notes { get; set; }

@@ -3,6 +3,7 @@ using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Interfaces.IUtility;
 using LibraryManagementAPI.Models.BorrowRequest;
+using LibraryManagementAPI.Models.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Services
@@ -198,6 +199,7 @@ namespace LibraryManagementAPI.Services
                 request.Status = BorrowRequestStatus.Confirmed;
                 request.StaffId = staffId;
                 request.ConfirmedAt = DateTime.UtcNow;
+                request.DueDate = DateTime.UtcNow.AddDays(30); // Set due date to 30 days from confirmation
                 await borrowRequestRepo.Update(request);
 
                 await uow.SaveChangesAsync();
@@ -282,27 +284,30 @@ namespace LibraryManagementAPI.Services
             }
         }
 
-        public async Task<IEnumerable<BorrowRequestDto>> GetPendingRequestsAsync()
+        public async Task<PagedResponse<BorrowRequestDto>> GetPendingRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
         {
-            var requests = await borrowRequestRepo.GetByStatus(BorrowRequestStatus.Pending);
-            return requests.Select(MapToDto);
+            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Pending, pageNumber, pageSize);
+            var dtoList = paged.Data.Select(MapToDto);
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
-        public async Task<IEnumerable<BorrowRequestDto>> GetMemberRequestsAsync(Guid memberAccountId)
+        public async Task<PagedResponse<BorrowRequestDto>> GetMemberRequestsPagedAsync(Guid memberAccountId, int pageNumber = 1, int pageSize = 20)
         {
             // Get member info from account ID
             var memberInfo = await infoRepo.GetByAccountIdAsync(memberAccountId);
             if (memberInfo == null || memberInfo is not MemberInfo)
-                return Enumerable.Empty<BorrowRequestDto>();
+                return new PagedResponse<BorrowRequestDto>(pageNumber, pageSize, Enumerable.Empty<BorrowRequestDto>(), 0);
 
-            var requests = await borrowRequestRepo.GetByMemberId(memberInfo.id);
-            return requests.Select(MapToDto);
+            var paged = await borrowRequestRepo.GetByMemberIdPaged(memberInfo.id, pageNumber, pageSize);
+            var dtoList = paged.Data.Select(MapToDto);
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
-        public async Task<IEnumerable<BorrowRequestDto>> GetMemberRequestsByInfoIdAsync(Guid memberInfoId)
+        public async Task<PagedResponse<BorrowRequestDto>> GetMemberRequestsByInfoIdPagedAsync(Guid memberInfoId, int pageNumber = 1, int pageSize = 20)
         {
-            var requests = await borrowRequestRepo.GetByMemberId(memberInfoId);
-            return requests.Select(MapToDto);
+            var paged = await borrowRequestRepo.GetByMemberIdPaged(memberInfoId, pageNumber, pageSize);
+            var dtoList = paged.Data.Select(MapToDto);
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
         public async Task<bool> ReturnBookAsync(ReturnBookDto dto, Guid staffAccountId)
@@ -352,6 +357,38 @@ namespace LibraryManagementAPI.Services
             }
         }
 
+        public async Task<PagedResponse<BorrowRequestDto>> GetBorrowedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            // Get all confirmed requests that are currently borrowed (not overdue)
+            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Confirmed, pageNumber, pageSize);
+            var currentTime = DateTime.UtcNow;
+            
+            // Filter to only borrowed (not overdue) requests
+            var borrowedRequests = paged.Data
+                .Where(r => r.DueDate.HasValue && r.DueDate.Value >= currentTime)
+                .ToList();
+            
+            var dtoList = borrowedRequests.Select(MapToDto);
+            // Recalculate total based on filtered results
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, borrowedRequests.Count);
+        }
+
+        public async Task<PagedResponse<BorrowRequestDto>> GetOverdueRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            // Get all confirmed requests that are overdue
+            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Confirmed, pageNumber, pageSize);
+            var currentTime = DateTime.UtcNow;
+            
+            // Filter to only overdue requests
+            var overdueRequests = paged.Data
+                .Where(r => r.DueDate.HasValue && r.DueDate.Value < currentTime)
+                .ToList();
+            
+            var dtoList = overdueRequests.Select(MapToDto);
+            // Recalculate total based on filtered results
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, overdueRequests.Count);
+        }
+
         private string GenerateQrCode(Guid requestId)
         {
             // Generate a QR code data string
@@ -370,6 +407,7 @@ namespace LibraryManagementAPI.Services
                 StaffName = request.Staff?.fullName,
                 CreatedAt = request.CreatedAt,
                 ConfirmedAt = request.ConfirmedAt,
+                DueDate = request.DueDate,
                 Status = request.Status.ToString(),
                 QrCode = request.QrCode,
                 Notes = request.Notes,

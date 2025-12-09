@@ -1,6 +1,7 @@
 using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
+using LibraryManagementAPI.Models.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Repositories
@@ -46,6 +47,20 @@ namespace LibraryManagementAPI.Repositories
                 .ToListAsync();
         }
 
+        public async Task<PagedResponse<BorrowRequest>> GetByMemberIdPaged(Guid memberId, int pageNumber = 1, int pageSize = 20)
+        {
+            var query = db.BorrowRequests
+                .Include(br => br.Member)
+                .Include(br => br.Staff)
+                .Include(br => br.Items)
+                    .ThenInclude(i => i.Book)
+                .Where(br => br.MemberId == memberId)
+                .OrderByDescending(br => br.CreatedAt)
+                .AsQueryable();
+
+            return await PagedResponse<BorrowRequest>.FromQueryable(query, pageNumber, pageSize);
+        }
+
         public async Task<IEnumerable<BorrowRequest>> GetByStatus(BorrowRequestStatus status)
         {
             return await db.BorrowRequests
@@ -56,6 +71,20 @@ namespace LibraryManagementAPI.Repositories
                 .Where(br => br.Status == status)
                 .OrderByDescending(br => br.CreatedAt)
                 .ToListAsync();
+        }
+
+        public async Task<PagedResponse<BorrowRequest>> GetByStatusPaged(BorrowRequestStatus status, int pageNumber = 1, int pageSize = 20)
+        {
+            var query = db.BorrowRequests
+                .Include(br => br.Member)
+                .Include(br => br.Staff)
+                .Include(br => br.Items)
+                    .ThenInclude(i => i.Book)
+                .Where(br => br.Status == status)
+                .OrderByDescending(br => br.CreatedAt)
+                .AsQueryable();
+
+            return await PagedResponse<BorrowRequest>.FromQueryable(query, pageNumber, pageSize);
         }
 
         public async Task Add(BorrowRequest borrowRequest)

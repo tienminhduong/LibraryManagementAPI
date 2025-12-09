@@ -198,7 +198,7 @@ namespace LibraryManagementAPI.Controllers
         }
 
         /// <summary>
-        /// Get all pending borrow requests (for admin/staff)
+        /// Get all pending borrow requests (paged) for admin/staff
         /// 
         /// STAFF DASHBOARD:
         /// - Shows all requests waiting to be processed
@@ -206,11 +206,11 @@ namespace LibraryManagementAPI.Controllers
         /// </summary>
         [HttpGet("pending")]
         [Authorize(Policy = Policies.StaffOrAdmin)]
-        public async Task<IActionResult> GetPendingRequests()
+        public async Task<IActionResult> GetPendingRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
         {
             try
             {
-                var result = await service.GetPendingRequestsAsync();
+                var result = await service.GetPendingRequestsPagedAsync(pageNumber, pageSize);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -220,7 +220,51 @@ namespace LibraryManagementAPI.Controllers
         }
 
         /// <summary>
-        /// Get borrow requests for the authenticated member
+        /// Get all borrowed borrow requests (paged) for admin/staff
+        /// 
+        /// STAFF DASHBOARD:
+        /// - Shows all confirmed requests that are currently borrowed and not yet overdue
+        /// - Staff can track active borrows
+        /// </summary>
+        [HttpGet("borrowed")]
+        [Authorize(Policy = Policies.StaffOrAdmin)]
+        public async Task<IActionResult> GetBorrowedRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            try
+            {   
+                var result = await service.GetBorrowedRequestsPagedAsync(pageNumber, pageSize);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Get all overdue borrow requests (paged) for admin/staff
+        /// 
+        /// STAFF DASHBOARD:
+        /// - Shows all confirmed requests that are past their due date
+        /// - Staff can follow up with members who have overdue books
+        /// </summary>
+        [HttpGet("overdue")]
+        [Authorize(Policy = Policies.StaffOrAdmin)]
+        public async Task<IActionResult> GetOverdueRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                var result = await service.GetOverdueRequestsPagedAsync(pageNumber, pageSize);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Get borrow requests for the authenticated member (paged)
         /// 
         /// MEMBER VIEW:
         /// - Member can see all their borrow requests
@@ -230,14 +274,14 @@ namespace LibraryManagementAPI.Controllers
         /// </summary>
         [HttpGet("my-requests")]
         [Authorize(Policy = Policies.MemberOnly)]
-        public async Task<IActionResult> GetMyRequests()
+        public async Task<IActionResult> GetMyRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
         {
             try
             {
                 // Get the authenticated member's account ID from JWT
                 var accountId = User.GetUserId();
                 
-                var result = await service.GetMemberRequestsAsync(accountId);
+                var result = await service.GetMemberRequestsPagedAsync(accountId, pageNumber, pageSize);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -247,7 +291,7 @@ namespace LibraryManagementAPI.Controllers
         }
 
         /// <summary>
-        /// Admin/Staff gets borrow requests for a specific member
+        /// Admin/Staff gets borrow requests for a specific member (paged)
         /// 
         /// STAFF VIEW:
         /// - View all requests for any member
@@ -255,11 +299,11 @@ namespace LibraryManagementAPI.Controllers
         /// </summary>
         [HttpGet("member/{memberId}")]
         [Authorize(Policy = Policies.StaffOrAdmin)]
-        public async Task<IActionResult> GetMemberRequests(Guid memberId)
+        public async Task<IActionResult> GetMemberRequests(Guid memberId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
         {
             try
             {
-                var result = await service.GetMemberRequestsByInfoIdAsync(memberId);
+                var result = await service.GetMemberRequestsByInfoIdPagedAsync(memberId, pageNumber, pageSize);
                 return Ok(result);
             }
             catch (Exception ex)
