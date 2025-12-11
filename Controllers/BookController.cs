@@ -33,6 +33,7 @@ public class BookController(IBookService bookService,
 
     [HttpGet("search")]
     public async Task<ActionResult> SearchBooks(
+        string? isbn = null,
         string? titleQuery = null,
         string? categoryName = null,
         string? authorName = null,
@@ -42,7 +43,7 @@ public class BookController(IBookService bookService,
         int pageNumber = 1,
         int pageSize = 20)
     {
-        var books = await bookService.SearchBooks(titleQuery, categoryName, authorName, publisherName, publishedYear, descriptionContains, pageNumber, pageSize);
+        var books = await bookService.SearchBooks(isbn, titleQuery, categoryName, authorName, publisherName, publishedYear, descriptionContains, pageNumber, pageSize);
         return Ok(books);
     }
 
