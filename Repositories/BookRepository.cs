@@ -126,4 +126,37 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
         // get paged result
         return PagedResponse<Book>.FromQueryable(query, pageNumber, pageSize);
     }
+
+    public async Task<PagedResponse<Book>> SearchBooks(
+        string? titleQuery = null,
+        string? categoryName = null,
+        string? authorName = null,
+        string? publisherName = null,
+        int? publishedYear = null,
+        string? descriptionContains = null,
+        int pageNumber = 1,
+        int pageSize = 20)
+    {
+        var books = dbContext.Books
+            .AsNoTracking()
+            .Include(b => b.Authors)
+            .Include(b => b.BookCategories)
+            .Include(b => b.Publisher)
+            .AsQueryable();
+        if (titleQuery != null)
+            books = books.Where(b => b.Title.ToLower().Contains(titleQuery.ToLower()));
+        if (categoryName != null)
+            books = books.Where(b => b.BookCategories.Any(c => c.Name.ToLower().Contains(categoryName.ToLower())));
+        if (authorName != null)
+            books = books
+                .Where(b => b.Authors.Any(a => a.Name.ToLower().Contains(authorName.ToLower())));
+        if (publisherName != null)
+            books = books
+                .Where(b => b.Publisher != null && b.Publisher.Name.ToLower().Contains(publisherName.ToLower()));
+        if (publishedYear != null)
+            books = books.Where(b => b.PublicationYear == publishedYear);
+        if (descriptionContains != null)
+            books = books.Where(b => b.Description != null && b.Description.ToLower().Contains(descriptionContains.ToLower()));
+        return await PagedResponse<Book>.FromQueryable(books, pageNumber, pageSize);
+    }
 }
