@@ -205,4 +205,10 @@ public class BookService(
         var categories = await bookCategoryRepository.GetBookCategoriesByName(query, pageNumber, pageSize);
         return PagedResponse<BookCategoryDto>.MapFrom(categories, mapper);
     }
+
+    public async Task<PagedResponse<BookDto>> SearchBooks(string? titleQuery = null, string? categoryName = null, string? authorName = null, string? publisherName = null, int? publishedYear = null, string? descriptionContains = null, int pageNumber = 1, int pageSize = 20)
+    {
+        var books = await bookRepository.SearchBooks(titleQuery, categoryName, authorName, publisherName, publishedYear, descriptionContains, pageNumber, pageSize);
+        return PagedResponse<BookDto>.MapFrom(books, mapper);
+    }
 }

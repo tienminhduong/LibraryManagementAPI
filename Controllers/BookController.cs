@@ -31,6 +31,21 @@ public class BookController(IBookService bookService,
         return book == null ? NotFound() : Ok(book);
     }
 
+    [HttpGet("search")]
+    public async Task<ActionResult> SearchBooks(
+        string? titleQuery = null,
+        string? categoryName = null,
+        string? authorName = null,
+        string? publisherName = null,
+        int? publishedYear = null,
+        string? descriptionContains = null,
+        int pageNumber = 1,
+        int pageSize = 20)
+    {
+        var books = await bookService.SearchBooks(titleQuery, categoryName, authorName, publisherName, publishedYear, descriptionContains, pageNumber, pageSize);
+        return Ok(books);
+    }
+
     [HttpPost]
     public async Task<ActionResult> AddBook([FromBody] CreateBookDto bookDto)
     {
