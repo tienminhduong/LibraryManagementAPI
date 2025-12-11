@@ -1,6 +1,7 @@
 ﻿using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Repositories
 {
@@ -24,9 +25,21 @@ namespace LibraryManagementAPI.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<BookTransaction>> GetAll()
+        public async Task<IEnumerable<BookTransaction>> GetAll()
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await db.BookTransactions
+                    .Include(t => t.book)
+                        .ThenInclude(bc => bc.book)
+                    .Include(t => t.member)
+                    .Include(t => t.staff)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while retrieving book transactions.", ex);
+            }
         }
 
         public Task<BookTransaction> GetById(Guid id)
@@ -34,9 +47,17 @@ namespace LibraryManagementAPI.Repositories
             throw new NotImplementedException();
         }
 
-        public Task Update(BookTransaction bookTransaction)
+        public async Task Update(BookTransaction bookTransaction)
         {
-            throw new NotImplementedException();
+            try
+            {
+                db.BookTransactions.Update(bookTransaction);
+                await db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while updating the book transaction.", ex);
+            }
         }
     }
 }

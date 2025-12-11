@@ -8,4 +8,5 @@ public interface IPublisherRepository
     Task UpdatePublisherAsync(Publisher publisher);
     Task DeletePublisherAsync(Guid id);
     Task AddPublisherAsync(Publisher publisher);
+    Task<PagedResponse<Publisher>> SearchPublishersAsync(string searchTerm, int pageNumber, int pageSize);
 }

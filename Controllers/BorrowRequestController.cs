@@ -46,6 +46,62 @@ namespace LibraryManagementAPI.Controllers
         }
 
         /// <summary>
+        /// Admin/Staff creates a borrow request for a member with specific book copies
+        /// 
+        /// ADMIN FLOW:
+        /// 1. Admin searches for member: GET /api/borrow-requests/search-members?searchTerm={term}
+        /// 2. Admin scans book copy QR codes to get BookCopyIds
+        /// 3. Admin creates request with member ID and book copy IDs (this endpoint)
+        /// 4. Request is created and immediately confirmed
+        /// 5. Book copies are marked as borrowed
+        /// 6. Book transactions are created
+        /// </summary>
+        [HttpPost("admin-create")]
+        [Authorize(Policy = Policies.StaffOrAdmin)]
+        public async Task<IActionResult> AdminCreateBorrowRequest([FromBody] AdminCreateBorrowRequestDto dto)
+        {
+            try
+            {
+                // Get the authenticated staff/admin's account ID from JWT
+                var accountId = User.GetUserId();
+                
+                // Create and confirm borrow request with specific book copies
+                var result = await service.AdminCreateBorrowRequestAsync(dto, accountId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Admin/Staff searches for members by name, email, or phone number
+        /// 
+        /// SEARCH FLOW:
+        /// - Used in admin borrow request creation flow
+        /// - Returns up to 20 matching members
+        /// - Search is case-insensitive and matches partial text
+        /// </summary>
+        [HttpGet("search-members")]
+        [Authorize(Policy = Policies.StaffOrAdmin)]
+        public async Task<IActionResult> SearchMembers([FromQuery] string searchTerm)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(searchTerm))
+                    return BadRequest(new { message = "Search term is required." });
+
+                var result = await service.SearchMembersAsync(searchTerm);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Get borrow request by ID
         /// 
         /// MEMBER FLOW:
@@ -264,6 +320,29 @@ namespace LibraryManagementAPI.Controllers
         }
 
         /// <summary>
+        /// Get all returned borrow requests (borrow history) (paged) for admin/staff
+        /// 
+        /// STAFF DASHBOARD:
+        /// - Shows all confirmed requests where all books have been returned
+        /// - Provides complete borrow history with return dates
+        /// - Indicates if books were returned late
+        /// </summary>
+        [HttpGet("returned")]
+        [Authorize(Policy = Policies.StaffOrAdmin)]
+        public async Task<IActionResult> GetReturnedRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                var result = await service.GetReturnedRequestsPagedAsync(pageNumber, pageSize);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Get borrow requests for the authenticated member (paged)
         /// 
         /// MEMBER VIEW:
@@ -282,6 +361,33 @@ namespace LibraryManagementAPI.Controllers
                 var accountId = User.GetUserId();
                 
                 var result = await service.GetMemberRequestsPagedAsync(accountId, pageNumber, pageSize);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Get borrow history for the authenticated member (paged)
+        /// 
+        /// MEMBER HISTORY VIEW:
+        /// - Member can see all their completed borrow requests
+        /// - Shows only requests where all books have been returned
+        /// - Includes borrow dates, return dates, and due dates
+        /// - Indicates if books were returned late
+        /// </summary>
+        [HttpGet("my-history")]
+        [Authorize(Policy = Policies.MemberOnly)]
+        public async Task<IActionResult> GetMyHistory([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                // Get the authenticated member's account ID from JWT
+                var accountId = User.GetUserId();
+                
+                var result = await service.GetMemberReturnedRequestsPagedAsync(accountId, pageNumber, pageSize);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -333,10 +439,10 @@ namespace LibraryManagementAPI.Controllers
                 var accountId = User.GetUserId();
                 
                 var result = await service.ReturnBookAsync(dto, accountId);
-                if (result)
-                    return Ok(new { message = "Book returned successfully." });
+                if (result.Success)
+                    return Ok(new { message = result.Message, studentName = result.StudentName, bookTitle = result.BookTitle });
                 else
-                    return BadRequest(new { message = "Failed to return book." });
+                    return BadRequest(new { message = result.Message });
             }
             catch (Exception ex)
             {

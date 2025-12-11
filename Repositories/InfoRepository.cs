@@ -122,5 +122,27 @@ namespace LibraryManagementAPI.Repositories
                 throw new Exception("An error occurred while getting the info by account id.", ex);
             }
         }
+
+        public async Task<IEnumerable<Entities.MemberInfo>> SearchMembersAsync(string searchTerm)
+        {
+            try
+            {
+                var normalizedSearch = searchTerm.ToLower().Trim();
+                
+                var members = await dbContext.MemberInfos
+                    .Where(m => 
+                        (m.fullName != null && m.fullName.ToLower().Contains(normalizedSearch)) ||
+                        (m.email != null && m.email.ToLower().Contains(normalizedSearch)) ||
+                        (m.phoneNumber != null && m.phoneNumber.ToLower().Contains(normalizedSearch)))
+                    .Take(20) // Limit results
+                    .ToListAsync();
+                
+                return members;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while searching for members.", ex);
+            }
+        }
     }
 }
