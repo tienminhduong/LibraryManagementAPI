@@ -18,4 +18,5 @@ public interface IBookRepository
     Task<IEnumerable<Book>> GetBooksAsync(IEnumerable<Guid> bookIds);
     Task<PagedResponse<Book>> SearchByTitleAsync(string title, int pageNumber = 1, int pageSize = 20);
     Task<PagedResponse<Book>> SearchByAuthorAsync(string author, int pageNumber, int pageSize);
+    Task<PagedResponse<Book>> SearchBooks(string? titleQuery = null, string? categoryName = null, string? authorName = null, string? publisherName = null, int? publishedYear = null, string? descriptionContains = null, int pageNumber = 1, int pageSize = 20);
 }
