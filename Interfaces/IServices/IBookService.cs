@@ -8,7 +8,7 @@ namespace LibraryManagementAPI.Interfaces.IServices;
 public interface IBookService
 {
     // Book categories
-    Task<IEnumerable<BookCategoryDto>> GetAllBookCategoriesAsync();
+    Task<PagedResponse<BookCategoryDto>> GetAllBookCategoriesAsync(int pageNumber = 1, int pageSize = 20);
     Task<BookCategoryDto> GetBookCategoryByIdAsync(Guid id);
     Task<PagedResponse<BookDto>> GetAllBooksInCategoryAsync(Guid id, int pageNumber = 1, int pageSize = 20);
     Task<BookCategoryDto> CreateBookCategoryAsync(CreateBookCategoryDto categoryDto);
