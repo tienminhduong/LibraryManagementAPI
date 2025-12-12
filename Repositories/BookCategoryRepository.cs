@@ -78,10 +78,11 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
         return categories;
     }
 
-    public async Task<PagedResponse<BookCategory>> GetBookCategoriesByName(string query, int pageNumber = 1, int pageSize = 20)
+    public async Task<PagedResponse<BookCategory>> GetBookCategoriesByName(string? query = null, int pageNumber = 1, int pageSize = 20)
     {
-        var dbQuery = dbContext.BookCategories
-            .Where(c => c.Name.ToLower().Contains(query.ToLower()));
+        var dbQuery = dbContext.BookCategories.AsQueryable();
+        if (query != null)
+            dbQuery = dbQuery.Where(c => c.Name.ToLower().Contains(query.ToLower()));
 
         var categories = await PagedResponse<BookCategory>.FromQueryable(dbQuery, pageNumber, pageSize);
 
