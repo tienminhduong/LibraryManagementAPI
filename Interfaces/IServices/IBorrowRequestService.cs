@@ -19,7 +19,7 @@ namespace LibraryManagementAPI.Interfaces.IServices
         Task<ReturnBookResultDto> ReturnBookAsync(ReturnBookDto dto, Guid staffAccountId);
         Task<PagedResponse<BorrowRequestDto>> GetBorrowedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20);
         Task<PagedResponse<BorrowRequestDto>> GetOverdueRequestsPagedAsync(int pageNumber = 1, int pageSize = 20);
-        Task<PagedResponse<BorrowHistoryDto>> GetReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20);
-        Task<PagedResponse<BorrowHistoryDto>> GetMemberReturnedRequestsPagedAsync(Guid memberAccountId, int pageNumber = 1, int pageSize = 20);
+        Task<PagedResponse<BorrowRequestDto>> GetReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20);
+        Task<PagedResponse<BorrowRequestDto>> GetOverdueReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20);
     }
 }

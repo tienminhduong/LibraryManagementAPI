@@ -69,6 +69,9 @@ public static class ServiceCollectionExtensions
         services.AddPredictionEnginePool<BookRating, BookRatingPrediction>()
             .FromFile(filePath: modelPath, watchForChanges: true);
         services.AddScoped<ICartService, CartService>();
+        
+        // Register background service for auto-updating borrow request statuses
+        services.AddHostedService<BorrowRequestStatusUpdaterService>();
     }
 
     public static void AddUtilityServices(IServiceCollection services)

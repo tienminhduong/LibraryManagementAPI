@@ -15,5 +15,7 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task Add(BorrowRequest borrowRequest);
         Task Update(BorrowRequest borrowRequest);
         Task Delete(Guid id);
+        Task<BorrowRequest?> GetByBookCopyIdAsync(Guid bookCopyId);
+        Task<BorrowRequest?> GetByQrCodeAsync(string qrCode);
     }
 }

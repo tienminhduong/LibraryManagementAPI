@@ -18,7 +18,6 @@ public class LibraryDbContext(DbContextOptions<LibraryDbContext> options) : DbCo
     public DbSet<BookImportDetail> BookImportDetails { get; set; }
     public DbSet<BookTransaction> BookTransactions { get; set; }
     public DbSet<BorrowRequest> BorrowRequests { get; set; }
-    public DbSet<BorrowRequestItem> BorrowRequestItems { get; set; }
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
 

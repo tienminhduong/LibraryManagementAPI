@@ -320,12 +320,12 @@ namespace LibraryManagementAPI.Controllers
         }
 
         /// <summary>
-        /// Get all returned borrow requests (borrow history) (paged) for admin/staff
+        /// Get all returned borrow requests (returned on time) (paged) for admin/staff
         /// 
         /// STAFF DASHBOARD:
-        /// - Shows all confirmed requests where all books have been returned
+        /// - Shows all requests where all books have been returned on time
         /// - Provides complete borrow history with return dates
-        /// - Indicates if books were returned late
+        /// - Status: Returned
         /// </summary>
         [HttpGet("returned")]
         [Authorize(Policy = Policies.StaffOrAdmin)]
@@ -343,13 +343,36 @@ namespace LibraryManagementAPI.Controllers
         }
 
         /// <summary>
+        /// Get all overdue returned borrow requests (returned late) (paged) for admin/staff
+        /// 
+        /// STAFF DASHBOARD:
+        /// - Shows all requests where books were returned after the due date
+        /// - Helps track members who return books late
+        /// - Status: OverdueReturned
+        /// </summary>
+        [HttpGet("overdue-returned")]
+        [Authorize(Policy = Policies.StaffOrAdmin)]
+        public async Task<IActionResult> GetOverdueReturnedRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                var result = await service.GetOverdueReturnedRequestsPagedAsync(pageNumber, pageSize);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Get borrow requests for the authenticated member (paged)
         /// 
         /// MEMBER VIEW:
         /// - Member can see all their borrow requests
-        /// - Includes: Pending, Confirmed, Rejected, Cancelled
+        /// - Includes: Pending, Borrowed, Overdue, Returned, OverdueReturned, Rejected, Cancelled
         /// - Shows QR codes for pending requests
-        /// - Shows borrowed books and due dates for confirmed requests
+        /// - Shows borrowed books and due dates for active requests
         /// </summary>
         [HttpGet("my-requests")]
         [Authorize(Policy = Policies.MemberOnly)]
@@ -361,33 +384,6 @@ namespace LibraryManagementAPI.Controllers
                 var accountId = User.GetUserId();
                 
                 var result = await service.GetMemberRequestsPagedAsync(accountId, pageNumber, pageSize);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Get borrow history for the authenticated member (paged)
-        /// 
-        /// MEMBER HISTORY VIEW:
-        /// - Member can see all their completed borrow requests
-        /// - Shows only requests where all books have been returned
-        /// - Includes borrow dates, return dates, and due dates
-        /// - Indicates if books were returned late
-        /// </summary>
-        [HttpGet("my-history")]
-        [Authorize(Policy = Policies.MemberOnly)]
-        public async Task<IActionResult> GetMyHistory([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
-        {
-            try
-            {
-                // Get the authenticated member's account ID from JWT
-                var accountId = User.GetUserId();
-                
-                var result = await service.GetMemberReturnedRequestsPagedAsync(accountId, pageNumber, pageSize);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -424,8 +420,8 @@ namespace LibraryManagementAPI.Controllers
         /// RETURN FLOW:
         /// 1. Member brings books back to library
         /// 2. Librarian scans BookCopy QR code
-        /// 3. System finds active transaction for that book
-        /// 4. Updates transaction status to Returned
+        /// 3. System finds active borrow request for that book
+        /// 4. Updates BorrowRequest status to Returned/OverdueReturned
         /// 5. Updates BookCopy status to Available
         /// 6. Book is now available for other members
         /// </summary>
@@ -440,7 +436,14 @@ namespace LibraryManagementAPI.Controllers
                 
                 var result = await service.ReturnBookAsync(dto, accountId);
                 if (result.Success)
-                    return Ok(new { message = result.Message, studentName = result.StudentName, bookTitle = result.BookTitle });
+                    return Ok(new { 
+                        message = result.Message, 
+                        memberName = result.MemberName, 
+                        bookTitle = result.BookTitle,
+                        borrowRequestId = result.BorrowRequestId,
+                        returnedAt = result.ReturnedAt,
+                        wasOverdue = result.WasOverdue
+                    });
                 else
                     return BadRequest(new { message = result.Message });
             }

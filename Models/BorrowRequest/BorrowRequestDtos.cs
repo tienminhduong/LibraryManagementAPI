@@ -1,20 +1,35 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace LibraryManagementAPI.Models.BorrowRequest
 {
+    /// <summary>
+    /// DTO for member to create multiple borrow requests (one per book)
+    /// </summary>
     public class CreateBorrowRequestDto
     {
+        [Required]
+        [MinLength(1, ErrorMessage = "At least one book must be selected")]
         public List<Guid> BookIds { get; set; } = new List<Guid>();
         public string? Notes { get; set; }
     }
 
-    // DTO for admin to create borrow request for a member with specific book copies
+    /// <summary>
+    /// DTO for admin to create a single borrow request with specific book copy
+    /// </summary>
     public class AdminCreateBorrowRequestDto
     {
+        [Required]
         public Guid MemberId { get; set; }
-        public List<Guid> BookCopyIds { get; set; } = new List<Guid>();
+        
+        [Required]
+        public Guid BookCopyId { get; set; } // Single copy
+        
         public string? Notes { get; set; }
     }
 
-    // DTO for member search results
+    /// <summary>
+    /// DTO for member search results
+    /// </summary>
     public class MemberSearchDto
     {
         public Guid Id { get; set; }
@@ -24,6 +39,9 @@ namespace LibraryManagementAPI.Models.BorrowRequest
         public string? Address { get; set; }
     }
 
+    /// <summary>
+    /// Single borrow request DTO (one book copy)
+    /// </summary>
     public class BorrowRequestDto
     {
         public Guid Id { get; set; }
@@ -32,89 +50,82 @@ namespace LibraryManagementAPI.Models.BorrowRequest
         public string? MemberEmail { get; set; }
         public Guid? StaffId { get; set; }
         public string? StaffName { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? ConfirmedAt { get; set; }
-        public DateTime? DueDate { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string? QrCode { get; set; }
-        public string? Notes { get; set; }
-        public List<BorrowRequestItemDto> Items { get; set; } = new List<BorrowRequestItemDto>();
-    }
-
-    public class BorrowRequestItemDto
-    {
-        public Guid Id { get; set; }
+        
+        // Single book copy info
         public Guid BookId { get; set; }
         public string? BookTitle { get; set; }
         public string? BookISBN { get; set; }
+        public string? BookImageUrl { get; set; }
         public Guid? BookCopyId { get; set; }
-        public bool IsConfirmed { get; set; }
+        
+        public DateTime CreatedAt { get; set; }
+        public DateTime? ConfirmedAt { get; set; }
+        public DateTime? BorrowDate { get; set; }
+        public DateTime? DueDate { get; set; }
+        public DateTime? ReturnedAt { get; set; }
+        
+        public string Status { get; set; } = string.Empty;
+        public string? QrCode { get; set; }
+        public string? Notes { get; set; }
+        public bool IsOverdue { get; set; }
     }
 
+    /// <summary>
+    /// Response after creating borrow request(s)
+    /// </summary>
     public class BorrowRequestResponseDto
     {
-        public Guid RequestId { get; set; }
-        public string QrCode { get; set; } = string.Empty;
+        public List<Guid> RequestIds { get; set; } = new List<Guid>();
+        public List<string> QrCodes { get; set; } = new List<string>();
         public string Message { get; set; } = string.Empty;
+        public int TotalRequests { get; set; }
     }
 
+    /// <summary>
+    /// DTO for staff to confirm a single borrow request with specific book copy
+    /// </summary>
     public class ConfirmBorrowRequestDto
     {
+        [Required]
         public Guid RequestId { get; set; }
-        // StaffId removed - will be retrieved from JWT
-        public List<BookCopyAssignmentDto> BookCopyAssignments { get; set; } = new List<BookCopyAssignmentDto>();
+        
+        [Required]
+        public Guid BookCopyId { get; set; } // Staff assigns specific copy
     }
 
-    public class BookCopyAssignmentDto
-    {
-        public Guid BookId { get; set; }
-        public Guid BookCopyId { get; set; }
-    }
-
+    /// <summary>
+    /// DTO for returning a book copy
+    /// </summary>
     public class ReturnBookDto
     {
+        [Required]
         public Guid BookCopyId { get; set; }
-        // StaffId removed - will be retrieved from JWT
     }
 
-    // DTO for borrow history with return information
-    public class BorrowHistoryDto
-    {
-        public Guid Id { get; set; }
-        public Guid MemberId { get; set; }
-        public string? MemberName { get; set; }
-        public string? MemberEmail { get; set; }
-        public Guid? StaffId { get; set; }
-        public string? StaffName { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? ConfirmedAt { get; set; }
-        public DateTime? DueDate { get; set; }
-        public DateTime? ReturnedAt { get; set; } // When all books were returned
-        public string Status { get; set; } = string.Empty;
-        public string? QrCode { get; set; }
-        public string? Notes { get; set; }
-        public List<BorrowHistoryItemDto> Items { get; set; } = new List<BorrowHistoryItemDto>();
-        public bool IsFullyReturned { get; set; } // All books returned
-        public bool WasOverdue { get; set; } // Was returned after due date
-    }
-
-    public class BorrowHistoryItemDto
-    {
-        public Guid Id { get; set; }
-        public Guid BookId { get; set; }
-        public string? BookTitle { get; set; }
-        public string? BookISBN { get; set; }
-        public Guid? BookCopyId { get; set; }
-        public DateTime? BorrowDate { get; set; }
-        public DateTime? ReturnDate { get; set; }
-        public bool IsReturned { get; set; }
-    }
-
+    /// <summary>
+    /// Result of book return operation
+    /// </summary>
     public class ReturnBookResultDto
     {
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
-        public string? StudentName { get; set; }
+        public string? MemberName { get; set; }
         public string? BookTitle { get; set; }
+        public Guid? BorrowRequestId { get; set; }
+        public DateTime? ReturnedAt { get; set; }
+        public bool WasOverdue { get; set; }
+    }
+
+    /// <summary>
+    /// Grouped borrow requests for display (multiple copies from same checkout session)
+    /// </summary>
+    public class GroupedBorrowRequestDto
+    {
+        public DateTime CreatedAt { get; set; }
+        public Guid MemberId { get; set; }
+        public string? MemberName { get; set; }
+        public List<BorrowRequestDto> Requests { get; set; } = new List<BorrowRequestDto>();
+        public int TotalBooks { get; set; }
+        public string OverallStatus { get; set; } = string.Empty; // All Pending, All Borrowed, Mixed, etc.
     }
 }

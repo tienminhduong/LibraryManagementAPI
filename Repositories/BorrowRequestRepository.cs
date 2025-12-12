@@ -18,10 +18,9 @@ namespace LibraryManagementAPI.Repositories
             return await db.BorrowRequests
                 .Include(br => br.Member)
                 .Include(br => br.Staff)
-                .Include(br => br.Items)
-                    .ThenInclude(i => i.Book)
-                .Include(br => br.Items)
-                    .ThenInclude(i => i.BookCopy)
+                .Include(br => br.Book)
+                .Include(br => br.BookCopy)
+                    .ThenInclude(bc => bc!.book)
                 .FirstOrDefaultAsync(br => br.Id == id);
         }
 
@@ -30,8 +29,7 @@ namespace LibraryManagementAPI.Repositories
             return await db.BorrowRequests
                 .Include(br => br.Member)
                 .Include(br => br.Staff)
-                .Include(br => br.Items)
-                    .ThenInclude(i => i.Book)
+                .Include(br => br.Book)
                 .ToListAsync();
         }
 
@@ -40,8 +38,8 @@ namespace LibraryManagementAPI.Repositories
             return await db.BorrowRequests
                 .Include(br => br.Member)
                 .Include(br => br.Staff)
-                .Include(br => br.Items)
-                    .ThenInclude(i => i.Book)
+                .Include(br => br.Book)
+                .Include(br => br.BookCopy)
                 .Where(br => br.MemberId == memberId)
                 .OrderByDescending(br => br.CreatedAt)
                 .ToListAsync();
@@ -52,8 +50,8 @@ namespace LibraryManagementAPI.Repositories
             var query = db.BorrowRequests
                 .Include(br => br.Member)
                 .Include(br => br.Staff)
-                .Include(br => br.Items)
-                    .ThenInclude(i => i.Book)
+                .Include(br => br.Book)
+                .Include(br => br.BookCopy)
                 .Where(br => br.MemberId == memberId)
                 .OrderByDescending(br => br.CreatedAt)
                 .AsQueryable();
@@ -66,8 +64,8 @@ namespace LibraryManagementAPI.Repositories
             return await db.BorrowRequests
                 .Include(br => br.Member)
                 .Include(br => br.Staff)
-                .Include(br => br.Items)
-                    .ThenInclude(i => i.Book)
+                .Include(br => br.Book)
+                .Include(br => br.BookCopy)
                 .Where(br => br.Status == status)
                 .OrderByDescending(br => br.CreatedAt)
                 .ToListAsync();
@@ -78,8 +76,8 @@ namespace LibraryManagementAPI.Repositories
             var query = db.BorrowRequests
                 .Include(br => br.Member)
                 .Include(br => br.Staff)
-                .Include(br => br.Items)
-                    .ThenInclude(i => i.Book)
+                .Include(br => br.Book)
+                .Include(br => br.BookCopy)
                 .Where(br => br.Status == status)
                 .OrderByDescending(br => br.CreatedAt)
                 .AsQueryable();
@@ -105,6 +103,29 @@ namespace LibraryManagementAPI.Repositories
             {
                 db.BorrowRequests.Remove(borrowRequest);
             }
+        }
+        
+        public async Task<BorrowRequest?> GetByBookCopyIdAsync(Guid bookCopyId)
+        {
+            return await db.BorrowRequests
+                .Include(br => br.Member)
+                .Include(br => br.Staff)
+                .Include(br => br.Book)
+                .Include(br => br.BookCopy)
+                .FirstOrDefaultAsync(br => 
+                    br.BookCopyId == bookCopyId &&
+                    (br.Status == BorrowRequestStatus.Borrowed || 
+                     br.Status == BorrowRequestStatus.Overdue));
+        }
+        
+        public async Task<BorrowRequest?> GetByQrCodeAsync(string qrCode)
+        {
+            return await db.BorrowRequests
+                .Include(br => br.Member)
+                .Include(br => br.Staff)
+                .Include(br => br.Book)
+                .Include(br => br.BookCopy)
+                .FirstOrDefaultAsync(br => br.QrCode == qrCode);
         }
     }
 }
