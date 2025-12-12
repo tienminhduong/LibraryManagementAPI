@@ -32,13 +32,25 @@ public class BookImportRepository(LibraryDbContext dbContext) : IBookImportRepos
         await dbContext.SaveChangesAsync();
     }
 
-    public Task<BookImport> GetByIdAsync(Guid id, bool withDetails = false, bool withBookCopyDetails = false)
+    public async Task<BookImport?> GetByIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var bookImport = await dbContext.BookImports
+            .Include(import => import.supplier)
+            .Include(import => import.staff)
+            .Include(import => import.BookImportDetails)!
+            .ThenInclude(details => details.book).ThenInclude(books => books.Authors)
+            .Include(import => import.BookImportDetails)!
+            .ThenInclude(details => details.book).ThenInclude(books => books.BookCategories)
+            .Include(import => import.BookImportDetails)!
+            .ThenInclude(details => details.book).ThenInclude(books => books.Publisher)
+            .Where(import => import.id == id)
+            .FirstOrDefaultAsync();
+
+        return bookImport;
     }
 
-    public async Task<PagedResponse<BookImport>> GetImportHistoryAsync<Tkey>(
-        Expression<Func<BookImport, Tkey>> keySelector,
+    public async Task<PagedResponse<BookImport>> GetImportHistoryAsync<TKey>(
+        Expression<Func<BookImport, TKey>> keySelector,
         bool isDescending = false,
         bool withDetails = false,
         bool withBookCopyDetails = false,
@@ -47,19 +59,14 @@ public class BookImportRepository(LibraryDbContext dbContext) : IBookImportRepos
     {
         var query = dbContext.BookImports.AsQueryable();
 
-        if (!isDescending)
-            query.OrderBy(keySelector);
-        else
-            query.OrderByDescending(keySelector);
+        query = !isDescending ? query.OrderBy(keySelector) : query.OrderByDescending(keySelector);
 
-        if (withDetails)
-        {
-            if (withBookCopyDetails)
-                query.Include(bookImport => bookImport.BookImportDetails!)
-                    .ThenInclude(details => details.book);
-            else
-                query.Include(bookImport => bookImport.BookImportDetails);
-        }
+        if (!withDetails) return await PagedResponse<BookImport>.FromQueryable(query, pageNumber, pageSize);
+        if (withBookCopyDetails)
+            query.Include(bookImport => bookImport.BookImportDetails!)
+                .ThenInclude(details => details.book);
+        else
+            query.Include(bookImport => bookImport.BookImportDetails);
 
         return await PagedResponse<BookImport>.FromQueryable(query, pageNumber, pageSize);
     }

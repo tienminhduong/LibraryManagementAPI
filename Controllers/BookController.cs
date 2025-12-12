@@ -88,7 +88,10 @@ public class BookController(IBookService bookService,
     [HttpGet("import/{id}")]
     public async Task<ActionResult> GetBookImportById(Guid id)
     {
-        return NotFound("Not implemented yet");
+        var bookImport = await bookService.GetImportHistoryByIdAsync(id);
+        if (bookImport == null)
+            return NotFound($"No import history with Id: {id}");
+        return Ok(bookImport);
     }
 
     [HttpGet("import")]

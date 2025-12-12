@@ -36,10 +36,12 @@ public class UserProfile : Profile
         CreateMap<StaffInfo, StaffInfoDto>();
         
         CreateMap<BookImport, BookImportDto>();
-        CreateMap<BookImportDetail, BookImportDetailsDto>()
+        CreateMap<BookImport, DetailBookImportDto>();
+        CreateMap<BookImportDetail, SimpleBookImportDetailsDto>()
             .ForMember(dest => dest.BookTitle,
                 opt => opt.MapFrom(src => src.book != null ? src.book.Title : string.Empty))
             .ForMember(dest => dest.BookISBN,
                 opt => opt.MapFrom(src => src.book != null ? src.book.ISBN : string.Empty));
+        CreateMap<BookImportDetail, BookImportDetailsDto>();
     }
 }

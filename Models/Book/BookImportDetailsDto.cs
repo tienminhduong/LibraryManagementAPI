@@ -2,8 +2,7 @@ namespace LibraryManagementAPI.Models.Book;
 
 public class BookImportDetailsDto
 {
-    public required string BookTitle { get; set; }
-    public required string BookISBN { get; set; }
+    public BookDto Book { get; set; }
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
 }

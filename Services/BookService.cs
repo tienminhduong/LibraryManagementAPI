@@ -206,6 +206,12 @@ public class BookService(
         return PagedResponse<BookImportDto>.MapFrom(history, mapper);
     }
 
+    public async Task<DetailBookImportDto?> GetImportHistoryByIdAsync(Guid id)
+    {
+        var bookImport = await bookImportRepository.GetByIdAsync(id);
+        return mapper.Map<DetailBookImportDto?>(bookImport);
+    }
+
     public async Task<PagedResponse<BookCategoryDto>> SearchBookCategories(string query, int pageNumber = 1, int pageSize = 20)
     {
         var categories = await bookCategoryRepository.GetBookCategoriesByName(query, pageNumber, pageSize);
