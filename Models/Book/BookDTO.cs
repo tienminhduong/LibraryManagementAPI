@@ -9,7 +9,7 @@ public class BookDto
     public required string ISBN { get; set; }
     public required string Title { get; set; }
     public string? ImgUrl { get; set; }
-    public string? Publisher { get; set; }
+    public PublisherDTO? Publisher { get; set; }
     public int PublicationYear { get; set; }
     public string? Description { get; set; }
     public IEnumerable<AuthorDto> Authors { get; set; } = [];
