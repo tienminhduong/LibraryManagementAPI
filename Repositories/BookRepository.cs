@@ -128,6 +128,7 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
     }
 
     public async Task<PagedResponse<Book>> SearchBooks(
+        string? isbn = null,
         string? titleQuery = null,
         string? categoryName = null,
         string? authorName = null,
@@ -143,6 +144,9 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
             .Include(b => b.BookCategories)
             .Include(b => b.Publisher)
             .AsQueryable();
+
+        if (isbn != null)
+            books = books.Where(b => b.ISBN == isbn);
         if (titleQuery != null)
             books = books.Where(b => b.Title.ToLower().Contains(titleQuery.ToLower()));
         if (categoryName != null)
