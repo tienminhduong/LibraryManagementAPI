@@ -77,6 +77,7 @@ public class BookService(
     {
         var books = await bookRepository.GetAllBooksAsync(categoryId, pageNumber, pageSize);
         var bookDtos = PagedResponse<BookDto>.MapFrom(books, mapper);
+        await PopulateAvailableCopiesCountAsync(bookDtos.Data);
         return bookDtos;
     }
 
@@ -84,13 +85,19 @@ public class BookService(
     {
         var books = await bookCategoryRepository.SearchBookByCategory(id, pageNumber, pageSize);
         var bookDtos = PagedResponse<BookDto>.MapFrom(books, mapper);
+        await PopulateAvailableCopiesCountAsync(bookDtos.Data);
         return bookDtos;
     }
 
     public async Task<BookDto?> GetBookByIdAsync(Guid id)
     {
         var book = await bookRepository.GetBookByIdAsync(id);
-        return mapper.Map<BookDto>(book);
+        if (book == null)
+            return null;
+
+        var bookDto = mapper.Map<BookDto>(book);
+        bookDto.AvailableCopiesCount = await bookCopyRepository.GetAvailableCopiesCountByBookId(id);
+        return bookDto;
     }
 
     public async Task<BookCategoryDto> GetBookCategoryByIdAsync(Guid id)
@@ -133,11 +140,12 @@ public class BookService(
         if (_cache.TryGetValue(cacheKey, out PagedResponse<BookDto>? cachedResult))
         {
             _logger.LogInformation("Cache hit for title search: {Title}", title);
-            return cachedResult;
+            return cachedResult!;
         }
 
         var books = await bookRepository.SearchByTitleAsync(title, pageNumber, pageSize);
         var result = PagedResponse<BookDto>.MapFrom(books, mapper);
+        await PopulateAvailableCopiesCountAsync(result.Data);
 
         _cache.Set(cacheKey, result, _cacheDuration);
 
@@ -151,11 +159,12 @@ public class BookService(
         if (_cache.TryGetValue(cacheKey, out PagedResponse<BookDto>? cachedResult))
         {
             _logger.LogInformation("Cache hit for author search: {Author}", author);
-            return cachedResult;
+            return cachedResult!;
         }
 
         var books = await bookRepository.SearchByAuthorAsync(author, pageNumber, pageSize);
         var result = PagedResponse<BookDto>.MapFrom(books, mapper);
+        await PopulateAvailableCopiesCountAsync(result.Data);
 
         _cache.Set(cacheKey, result, _cacheDuration);
 
@@ -227,6 +236,19 @@ public class BookService(
     public async Task<PagedResponse<BookDto>> SearchBooks(string? isbn = null, string? titleQuery = null, string? categoryName = null, string? authorName = null, string? publisherName = null, int? publishedYear = null, string? descriptionContains = null, int pageNumber = 1, int pageSize = 20)
     {
         var books = await bookRepository.SearchBooks(isbn, titleQuery, categoryName, authorName, publisherName, publishedYear, descriptionContains, pageNumber, pageSize);
-        return PagedResponse<BookDto>.MapFrom(books, mapper);
+        var result = PagedResponse<BookDto>.MapFrom(books, mapper);
+        await PopulateAvailableCopiesCountAsync(result.Data);
+        return result;
+    }
+
+    /// <summary>
+    /// Helper method to populate AvailableCopiesCount for a collection of BookDtos
+    /// </summary>
+    private async Task PopulateAvailableCopiesCountAsync(IEnumerable<BookDto> bookDtos)
+    {
+        foreach (var bookDto in bookDtos)
+        {
+            bookDto.AvailableCopiesCount = await bookCopyRepository.GetAvailableCopiesCountByBookId(bookDto.Id);
+        }
     }
 }

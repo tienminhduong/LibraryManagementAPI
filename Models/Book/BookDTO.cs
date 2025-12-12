@@ -14,4 +14,5 @@ public class BookDto
     public string? Description { get; set; }
     public IEnumerable<AuthorDto> Authors { get; set; } = [];
     public IEnumerable<BookCategoryDto> BookCategories { get; set; } = [];
+    public int AvailableCopiesCount { get; set; }
 }

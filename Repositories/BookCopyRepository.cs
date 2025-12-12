@@ -153,5 +153,21 @@ namespace LibraryManagementAPI.Repositories
                 throw new Exception("An error occurred while retrieving book copies.", ex);
             }
         }
+
+        /// <summary>
+        /// Gets count of available copies for a specific book
+        /// </summary>
+        public async Task<int> GetAvailableCopiesCountByBookId(Guid bookId)
+        {
+            try
+            {
+                return await db.BookCopies
+                    .CountAsync(bc => bc.bookId == bookId && bc.status == Status.Available);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while counting available book copies.", ex);
+            }
+        }
     }
 }

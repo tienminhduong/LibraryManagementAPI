@@ -18,7 +18,8 @@ public class UserProfile : Profile
         CreateMap<BookCategoryDto, BookCategory>();
 
         // Book mappings
-        CreateMap<Book, BookDto>();
+        CreateMap<Book, BookDto>()
+            .ForMember(dest => dest.AvailableCopiesCount, opt => opt.Ignore()); // Set manually in service
         CreateMap<CreateBookDto, Book>();
 
         // Author mappings
