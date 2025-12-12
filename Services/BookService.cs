@@ -218,7 +218,7 @@ public class BookService(
         return await bookCopyRepository.GetCopiesByBookId(bookId);
     }
 
-    public async Task<PagedResponse<BookCategoryDto>> SearchBookCategories(string query, int pageNumber = 1, int pageSize = 20)
+    public async Task<PagedResponse<BookCategoryDto>> SearchBookCategories(string? query = null, int pageNumber = 1, int pageSize = 20)
     {
         var categories = await bookCategoryRepository.GetBookCategoriesByName(query, pageNumber, pageSize);
         return PagedResponse<BookCategoryDto>.MapFrom(categories, mapper);
