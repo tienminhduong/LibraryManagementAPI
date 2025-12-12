@@ -43,7 +43,7 @@ public class UserProfile : Profile
         CreateMap<BookImportDetail, BookImportDetailsDto>();
 
         // Supplier mappings
-        CreateMap<Supplier, SupplierDTO>()
+        CreateMap<Supplier, SupplierDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.name))
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.address))
