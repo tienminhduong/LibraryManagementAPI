@@ -15,6 +15,17 @@ public class BookImportRepository(LibraryDbContext dbContext) : IBookImportRepos
         await dbContext.SaveChangesAsync();
     }
 
+    public async Task<PagedResponse<BookImport>> GetImportHistoryAsync(int pageNumber, int pageSize)
+    {
+        var query = dbContext.BookImports
+            .Include(import => import.supplier)
+            .Include(import => import.staff)
+            .Include(import => import.BookImportDetails)!
+                .ThenInclude(details => details.book)
+            .AsQueryable();
+        return await  PagedResponse<BookImport>.FromQueryable(query, pageNumber, pageSize);
+    }
+
     public async Task AddImportDetailAsync(BookImportDetail bookImportDetail)
     {
         await dbContext.BookImportDetails.AddAsync(bookImportDetail);
@@ -44,10 +55,10 @@ public class BookImportRepository(LibraryDbContext dbContext) : IBookImportRepos
         if (withDetails)
         {
             if (withBookCopyDetails)
-                query.Include(bookImport => bookImport.bookImportDetails!)
+                query.Include(bookImport => bookImport.BookImportDetails!)
                     .ThenInclude(details => details.book);
             else
-                query.Include(bookImport => bookImport.bookImportDetails);
+                query.Include(bookImport => bookImport.BookImportDetails);
         }
 
         return await PagedResponse<BookImport>.FromQueryable(query, pageNumber, pageSize);
@@ -56,7 +67,7 @@ public class BookImportRepository(LibraryDbContext dbContext) : IBookImportRepos
     public async Task<bool> ImportBookAsync(BookImport bookImport)
     {
         ArgumentNullException.ThrowIfNull(bookImport);
-        foreach (var importDetail in bookImport.bookImportDetails ?? [])
+        foreach (var importDetail in bookImport.BookImportDetails ?? [])
         {
             if (importDetail.book != null)
                 await dbContext.Books.AddAsync(importDetail.book);

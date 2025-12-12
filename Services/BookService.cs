@@ -161,20 +161,20 @@ public class BookService(
         return result;
     }
 
-    public async Task<Guid> ImportBooks(BookImportDto bookImportDto, Guid staffId)
+    public async Task<Guid> ImportBooks(CreateBookImportDto createBookImportDto, Guid staffId)
     {
         BookImport bookImport = new()
         {
             staffId = staffId,
-            supplierId = bookImportDto.SupplierId,
+            supplierId = createBookImportDto.SupplierId,
             importDate = DateTime.UtcNow,
-            note = bookImportDto.Notes,
-            totalAmount = bookImportDto.Details.Sum(detail => detail.Quantity)
+            note = createBookImportDto.Notes,
+            totalAmount = createBookImportDto.Details.Sum(detail => detail.Quantity)
         };
 
         await bookImportRepository.AddBookImportAsync(bookImport);
 
-        foreach (var detail in bookImportDto.Details)
+        foreach (var detail in createBookImportDto.Details)
         {
             var bookImportDetail = new BookImportDetail
             {
@@ -198,6 +198,12 @@ public class BookService(
             }
         }
         return bookImport.id;
+    }
+
+    public async Task<PagedResponse<BookImportDto>> GetImportHistoryAsync(int pageNumber = 1, int pageSize = 20)
+    {
+        var history = await bookImportRepository.GetImportHistoryAsync(pageNumber, pageSize);
+        return PagedResponse<BookImportDto>.MapFrom(history, mapper);
     }
 
     public async Task<PagedResponse<BookCategoryDto>> SearchBookCategories(string query, int pageNumber = 1, int pageSize = 20)

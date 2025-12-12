@@ -1,8 +1,14 @@
+using LibraryManagementAPI.Models.Info;
+using LibraryManagementAPI.Models.Supplier;
+
 namespace LibraryManagementAPI.Models.Book;
 
 public class BookImportDto
 {
-    public Guid SupplierId { get; set; }
-    public string Notes { get; set; } = "";
-    public IEnumerable<BookImportDetailsDto> Details { get; set; } = [];
+    public SupplierDto Supplier { get; set; }
+    public StaffInfoDto Staff { get; set; }
+    public DateTime ImportDate { get; set; }
+    public decimal TotalAmount { get; set; }
+    public string? Note { get; set; }
+    public IEnumerable<BookImportDetailsDto>? BookImportDetails { get; set; }
 }
