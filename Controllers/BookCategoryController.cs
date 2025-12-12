@@ -11,9 +11,9 @@ namespace LibraryManagementAPI.Controllers;
 public class BookCategoryController(IBookService bookService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<BookCategoryDto>>> GetAllBookCategories()
+    public async Task<ActionResult<IEnumerable<BookCategoryDto>>> GetAllBookCategories(int pageNumber = 1, int pageSize = 20)
     {
-        return Ok(await bookService.GetAllBookCategoriesAsync());
+        return Ok(await bookService.GetAllBookCategoriesAsync(pageNumber, pageSize));
     }
 
     [HttpGet("{id}")]

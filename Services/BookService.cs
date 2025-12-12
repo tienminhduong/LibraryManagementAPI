@@ -1,5 +1,6 @@
 using System.Net.Quic;
 using AutoMapper;
+using CloudinaryDotNet.Actions;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Interfaces.IRepositories;
@@ -66,10 +67,10 @@ public class BookService(
         await bookCategoryRepository.DeleteCategory(id);
     }
 
-    public async Task<IEnumerable<BookCategoryDto>> GetAllBookCategoriesAsync()
+    public async Task<PagedResponse<BookCategoryDto>> GetAllBookCategoriesAsync(int pageNumber = 1, int pageSize = 20)
     {
-        var categories = await bookCategoryRepository.GetAllCategories();
-        return mapper.Map<IEnumerable<BookCategoryDto>>(categories);
+        var categories = await bookCategoryRepository.GetAllCategories(pageNumber, pageSize);
+        return PagedResponse<BookCategoryDto>.MapFrom(categories, mapper);
     }
 
     public async Task<PagedResponse<BookDto>> GetAllBooksAsync(Guid? categoryId, int pageNumber = 1, int pageSize = 20)

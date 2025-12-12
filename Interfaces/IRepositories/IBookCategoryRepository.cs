@@ -5,7 +5,7 @@ namespace LibraryManagementAPI.Interfaces.IRepositories;
 
 public interface IBookCategoryRepository
 {
-    Task<IEnumerable<BookCategory>> GetAllCategories();
+    Task<PagedResponse<BookCategory>> GetAllCategories(int pageNumber = 1, int pageSize = 20);
     Task<BookCategory?> GetCategoryByIdAsync(Guid id);
     Task<bool> AddCategoryAsync(BookCategory category);
     Task<bool> UpdateCategory(BookCategory category);

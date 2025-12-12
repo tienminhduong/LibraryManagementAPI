@@ -8,9 +8,10 @@ namespace LibraryManagementAPI.Repositories;
 
 public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryRepository
 {
-    public async Task<IEnumerable<BookCategory>> GetAllCategories()
+    public async Task<PagedResponse<BookCategory>> GetAllCategories(int pageNumber = 1, int pageSize = 20)
     {
-        return await dbContext.BookCategories.ToListAsync();
+        var query = dbContext.BookCategories.AsQueryable();
+        return await PagedResponse<BookCategory>.FromQueryable(query, pageNumber, pageSize);
     }
 
     public async Task<BookCategory?> GetCategoryByIdAsync(Guid id)
