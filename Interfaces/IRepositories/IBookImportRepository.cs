@@ -6,7 +6,7 @@ namespace LibraryManagementAPI.Interfaces.IRepositories;
 
 public interface IBookImportRepository
 {
-    Task<BookImport> GetByIdAsync(Guid id, bool withDetails = false, bool withBookCopyDetails = false);
+    Task<BookImport?> GetByIdAsync(Guid id);
     Task<PagedResponse<BookImport>> GetImportHistoryAsync<Tkey>(
         Expression<Func<BookImport, Tkey>> keySelector,
         bool isDescending = false,
@@ -17,4 +17,5 @@ public interface IBookImportRepository
     Task<bool> ImportBookAsync(BookImport bookImport);
     Task AddImportDetailAsync(BookImportDetail bookImportDetail);
     Task AddBookImportAsync(BookImport bookImport);
+    Task<PagedResponse<BookImport>> GetImportHistoryAsync(int pageNumber, int pageSize);
 }

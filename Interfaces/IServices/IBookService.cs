@@ -35,7 +35,10 @@ public interface IBookService
         int pageNumber = 1,
         int pageSize = 20);
 
+    // Book import
+    Task<Guid> ImportBooks(CreateBookImportDto createBookImportDto, Guid staffId);
+    Task<PagedResponse<BookImportDto>> GetImportHistoryAsync(int pageNumber = 1, int pageSize = 20);
+    Task<DetailBookImportDto?> GetImportHistoryByIdAsync(Guid id);
     // Book copy
-    Task<Guid> ImportBooks(BookImportDto bookImportDto, Guid staffId);
     Task<IEnumerable<BookCopy>> GetCopiesByBookIdAsync(Guid bookId);
 }

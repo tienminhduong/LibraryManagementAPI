@@ -67,12 +67,12 @@ public class BookController(IBookService bookService,
 
     [HttpPost("import")]
     [Authorize(Policy = Policies.StaffOrAdmin)]
-    public async Task<ActionResult> ImportBooks([FromBody] BookImportDto bookImportDto)
+    public async Task<ActionResult> ImportBooks([FromBody] CreateBookImportDto createBookImportDto)
     {
         try
         {
             var staffId = User.GetUserId();
-            var id = await bookService.ImportBooks(bookImportDto, staffId);
+            var id = await bookService.ImportBooks(createBookImportDto, staffId);
             return CreatedAtAction(nameof(GetBookImportById), new { id });
         }
         catch (ArgumentNullException exception)
@@ -85,10 +85,20 @@ public class BookController(IBookService bookService,
         }
     }
 
-    [HttpGet("import")]
+    [HttpGet("import/{id}")]
     public async Task<ActionResult> GetBookImportById(Guid id)
     {
-        return NotFound("Not implemented yet");
+        var bookImport = await bookService.GetImportHistoryByIdAsync(id);
+        if (bookImport == null)
+            return NotFound($"No import history with Id: {id}");
+        return Ok(bookImport);
+    }
+
+    [HttpGet("import")]
+    public async Task<ActionResult> GetImportHistory(int pageNumber = 1, int pageSize = 20)
+    {
+        var histroy = await bookService.GetImportHistoryAsync(pageNumber, pageSize);
+        return Ok(histroy);
     }
 
     [HttpPatch("{id}/categories")]

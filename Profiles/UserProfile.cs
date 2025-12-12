@@ -3,6 +3,7 @@ using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Models.Author;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
+using LibraryManagementAPI.Models.Info;
 using LibraryManagementAPI.Models.Supplier;
 
 namespace LibraryManagementAPI.Profiles;
@@ -29,6 +30,17 @@ public class UserProfile : Profile
         CreateMap<Publisher, PublisherDTO>();
         CreateMap<CreatePublisherDTO, Publisher>();
         CreateMap<UpdatePublisherDTO, Publisher>();
+        
+        CreateMap<StaffInfo, StaffInfoDto>();
+        
+        CreateMap<BookImport, BookImportDto>();
+        CreateMap<BookImport, DetailBookImportDto>();
+        CreateMap<BookImportDetail, SimpleBookImportDetailsDto>()
+            .ForMember(dest => dest.BookTitle,
+                opt => opt.MapFrom(src => src.book != null ? src.book.Title : string.Empty))
+            .ForMember(dest => dest.BookISBN,
+                opt => opt.MapFrom(src => src.book != null ? src.book.ISBN : string.Empty));
+        CreateMap<BookImportDetail, BookImportDetailsDto>();
 
         // Supplier mappings
         CreateMap<Supplier, SupplierDTO>()

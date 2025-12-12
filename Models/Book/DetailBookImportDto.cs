@@ -3,7 +3,7 @@ using LibraryManagementAPI.Models.Supplier;
 
 namespace LibraryManagementAPI.Models.Book;
 
-public class BookImportDto
+public class DetailBookImportDto
 {
     public Guid Id { get; set; }
     public SupplierDto Supplier { get; set; }
@@ -11,5 +11,5 @@ public class BookImportDto
     public DateTime ImportDate { get; set; }
     public decimal TotalAmount { get; set; }
     public string? Note { get; set; }
-    public IEnumerable<SimpleBookImportDetailsDto>? BookImportDetails { get; set; }
+    public IEnumerable<BookImportDetailsDto>? BookImportDetails { get; set; }
 }
