@@ -117,7 +117,7 @@ namespace LibraryManagementAPI.Services
                     return null;
             }
 
-            return MapToDto(request);
+            return await MapToDtoAsync(request);
         }
 
         public async Task<BorrowRequestDto?> GetBorrowRequestByQrCodeAsync(string qrCode)
@@ -127,7 +127,7 @@ namespace LibraryManagementAPI.Services
             if (request == null)
                 return null;
 
-            return MapToDto(request);
+            return await MapToDtoAsync(request);
         }
 
         /// <summary>
@@ -407,35 +407,40 @@ namespace LibraryManagementAPI.Services
         public async Task<PagedResponse<BorrowRequestDto>> GetPendingRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
         {
             var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Pending, pageNumber, pageSize);
-            var dtoList = paged.Data.Select(MapToDto);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
             return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
         public async Task<PagedResponse<BorrowRequestDto>> GetBorrowedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
         {
             var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Borrowed, pageNumber, pageSize);
-            var dtoList = paged.Data.Select(MapToDto);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
             return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
         public async Task<PagedResponse<BorrowRequestDto>> GetOverdueRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
         {
             var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Overdue, pageNumber, pageSize);
-            var dtoList = paged.Data.Select(MapToDto);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
             return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
         public async Task<PagedResponse<BorrowRequestDto>> GetReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
         {
             var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Returned, pageNumber, pageSize);
-            var dtoList = paged.Data.Select(MapToDto);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
             return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
         public async Task<PagedResponse<BorrowRequestDto>> GetOverdueReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
         {
             var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.OverdueReturned, pageNumber, pageSize);
-            var dtoList = paged.Data.Select(MapToDto);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
             return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
@@ -446,14 +451,16 @@ namespace LibraryManagementAPI.Services
                 return new PagedResponse<BorrowRequestDto>(pageNumber, pageSize, Enumerable.Empty<BorrowRequestDto>(), 0);
 
             var paged = await borrowRequestRepo.GetByMemberIdPaged(memberInfo.id, pageNumber, pageSize);
-            var dtoList = paged.Data.Select(MapToDto);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
             return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
         public async Task<PagedResponse<BorrowRequestDto>> GetMemberRequestsByInfoIdPagedAsync(Guid memberInfoId, int pageNumber = 1, int pageSize = 20)
         {
             var paged = await borrowRequestRepo.GetByMemberIdPaged(memberInfoId, pageNumber, pageSize);
-            var dtoList = paged.Data.Select(MapToDto);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
             return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
@@ -462,8 +469,17 @@ namespace LibraryManagementAPI.Services
             return $"BORROW-{requestId}";
         }
 
-        private BorrowRequestDto MapToDto(BorrowRequest request)
+        private async Task<BorrowRequestDto> MapToDtoAsync(BorrowRequest request)
         {
+            // Determine staff/actor name: prefer Staff navigation, fallback to ProcessedByAccountId
+            string? staffName = request.Staff?.fullName;
+
+            if (string.IsNullOrWhiteSpace(staffName) && request.ProcessedByAccountId.HasValue)
+            {
+                var actorInfo = await infoRepo.GetByAccountIdAsync(request.ProcessedByAccountId.Value);
+                staffName = actorInfo?.fullName;
+            }
+
             return new BorrowRequestDto
             {
                 Id = request.Id,
@@ -471,7 +487,7 @@ namespace LibraryManagementAPI.Services
                 MemberName = request.Member?.fullName,
                 MemberEmail = request.Member?.email,
                 StaffId = request.StaffId,
-                StaffName = request.Staff?.fullName,
+                StaffName = staffName,
                 BookId = request.BookId,
                 BookTitle = request.Book?.Title,
                 BookISBN = request.Book?.ISBN,
