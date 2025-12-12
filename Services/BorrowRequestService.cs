@@ -139,7 +139,8 @@ namespace LibraryManagementAPI.Services
             if (staffInfo == null || (staffInfo is not StaffInfo && staffInfo is not AdminInfo))
                 throw new Exception("Staff information not found.");
 
-            var staffId = staffInfo.id;
+            // Only assign StaffId if the actor is a StaffInfo (not Admin)
+            Guid? staffInfoId = staffInfo is StaffInfo s ? s.id : (Guid?)null;
 
             var request = await borrowRequestRepo.GetByIdWithDetails(dto.RequestId);
             if (request == null)
@@ -167,7 +168,8 @@ namespace LibraryManagementAPI.Services
                 // Update request
                 request.BookCopyId = dto.BookCopyId;
                 request.Status = BorrowRequestStatus.Borrowed;
-                request.StaffId = staffId;
+                request.StaffId = staffInfoId;
+                request.ProcessedByAccountId = staffAccountId; // record acting account (admin or staff)
                 request.ConfirmedAt = DateTime.UtcNow;
                 request.BorrowDate = DateTime.UtcNow;
                 request.DueDate = DateTime.UtcNow.AddDays(30);
@@ -190,7 +192,7 @@ namespace LibraryManagementAPI.Services
             if (staffInfo == null || (staffInfo is not StaffInfo && staffInfo is not AdminInfo))
                 throw new Exception("Staff information not found.");
 
-            var staffId = staffInfo.id;
+            Guid? staffInfoId = staffInfo is StaffInfo s ? s.id : (Guid?)null;
 
             var request = await borrowRequestRepo.GetById(requestId);
             if (request == null)
@@ -200,7 +202,8 @@ namespace LibraryManagementAPI.Services
                 throw new Exception("Borrow request has already been processed.");
 
             request.Status = BorrowRequestStatus.Rejected;
-            request.StaffId = staffId;
+            request.StaffId = staffInfoId;
+            request.ProcessedByAccountId = staffAccountId; // record acting account
             request.Notes = $"{request.Notes}\nRejection reason: {reason}";
 
             await uow.BeginTransactionAsync();
@@ -281,6 +284,7 @@ namespace LibraryManagementAPI.Services
 
                 // Update borrow request
                 borrowRequest.ReturnedAt = DateTime.UtcNow;
+                borrowRequest.ProcessedByAccountId = staffAccountId; // record acting account
                 var wasOverdue = borrowRequest.DueDate.HasValue && 
                                 borrowRequest.ReturnedAt.Value > borrowRequest.DueDate.Value;
                 
@@ -320,7 +324,9 @@ namespace LibraryManagementAPI.Services
             if (staffInfo == null || (staffInfo is not StaffInfo && staffInfo is not AdminInfo))
                 throw new Exception("Staff information not found.");
 
-            var staffId = staffInfo.id;
+            Guid? staffInfoId = staffInfo is StaffInfo s ? s.id : (Guid?)null;
+
+            var staffId = staffInfoId; // for readability
 
             // Validate member exists
             var memberInfo = await infoRepo.GetByIdAsync(dto.MemberId);
@@ -344,6 +350,7 @@ namespace LibraryManagementAPI.Services
                 Id = requestId,
                 MemberId = dto.MemberId,
                 StaffId = staffId,
+                ProcessedByAccountId = staffAccountId, // record acting account
                 BookId = bookCopy.bookId,
                 BookCopyId = dto.BookCopyId,
                 QrCode = qrCode,

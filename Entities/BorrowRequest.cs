@@ -25,6 +25,7 @@ namespace LibraryManagementAPI.Entities
         
         public Guid MemberId { get; set; }
         public Guid? StaffId { get; set; }
+        public Guid? ProcessedByAccountId { get; set; } // New: account id of actor (staff or admin)
         
         // Single book and copy per request
         public Guid BookId { get; set; }
@@ -46,7 +47,9 @@ namespace LibraryManagementAPI.Entities
         
         [ForeignKey("StaffId")]
         public StaffInfo? Staff { get; set; }
-        
+
+        // Note: ProcessedByAccountId references Accounts table (no FK configured)
+
         [ForeignKey("BookId")]
         public Book? Book { get; set; }
         
