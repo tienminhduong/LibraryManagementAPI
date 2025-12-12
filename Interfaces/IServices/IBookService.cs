@@ -1,6 +1,7 @@
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BookCategory;
 using LibraryManagementAPI.Models.Pagination;
+using LibraryManagementAPI.Entities;
 
 namespace LibraryManagementAPI.Interfaces.IServices;
 
@@ -38,4 +39,6 @@ public interface IBookService
     Task<Guid> ImportBooks(CreateBookImportDto createBookImportDto, Guid staffId);
     Task<PagedResponse<BookImportDto>> GetImportHistoryAsync(int pageNumber = 1, int pageSize = 20);
     Task<DetailBookImportDto?> GetImportHistoryByIdAsync(Guid id);
+    // Book copy
+    Task<IEnumerable<BookCopy>> GetCopiesByBookIdAsync(Guid bookId);
 }

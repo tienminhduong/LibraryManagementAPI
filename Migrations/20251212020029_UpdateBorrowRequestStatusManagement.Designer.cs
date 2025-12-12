@@ -3,6 +3,7 @@ using System;
 using LibraryManagementAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryManagementAPI.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    partial class LibraryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251212020029_UpdateBorrowRequestStatusManagement")]
+    partial class UpdateBorrowRequestStatusManagement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -459,15 +462,6 @@ namespace LibraryManagementAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("BookCopyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("BookId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("BorrowDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<DateTime?>("ConfirmedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -483,9 +477,6 @@ namespace LibraryManagementAPI.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ProcessedByAccountId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("QrCode")
                         .HasColumnType("text");
 
@@ -500,15 +491,40 @@ namespace LibraryManagementAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BookCopyId");
-
-                    b.HasIndex("BookId");
-
                     b.HasIndex("MemberId");
 
                     b.HasIndex("StaffId");
 
                     b.ToTable("BorrowRequests");
+                });
+
+            modelBuilder.Entity("LibraryManagementAPI.Entities.BorrowRequestItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("BookCopyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BorrowRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookCopyId");
+
+                    b.HasIndex("BookId");
+
+                    b.HasIndex("BorrowRequestId");
+
+                    b.ToTable("BorrowRequestItems");
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.Cart", b =>
@@ -818,16 +834,6 @@ namespace LibraryManagementAPI.Migrations
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.BorrowRequest", b =>
                 {
-                    b.HasOne("LibraryManagementAPI.Entities.BookCopy", "BookCopy")
-                        .WithMany()
-                        .HasForeignKey("BookCopyId");
-
-                    b.HasOne("LibraryManagementAPI.Entities.Book", "Book")
-                        .WithMany()
-                        .HasForeignKey("BookId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("LibraryManagementAPI.Entities.MemberInfo", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
@@ -838,13 +844,34 @@ namespace LibraryManagementAPI.Migrations
                         .WithMany()
                         .HasForeignKey("StaffId");
 
+                    b.Navigation("Member");
+
+                    b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("LibraryManagementAPI.Entities.BorrowRequestItem", b =>
+                {
+                    b.HasOne("LibraryManagementAPI.Entities.BookCopy", "BookCopy")
+                        .WithMany()
+                        .HasForeignKey("BookCopyId");
+
+                    b.HasOne("LibraryManagementAPI.Entities.Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LibraryManagementAPI.Entities.BorrowRequest", "BorrowRequest")
+                        .WithMany("Items")
+                        .HasForeignKey("BorrowRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Book");
 
                     b.Navigation("BookCopy");
 
-                    b.Navigation("Member");
-
-                    b.Navigation("Staff");
+                    b.Navigation("BorrowRequest");
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.CartItem", b =>
@@ -874,6 +901,11 @@ namespace LibraryManagementAPI.Migrations
             modelBuilder.Entity("LibraryManagementAPI.Entities.BookImport", b =>
                 {
                     b.Navigation("bookImportDetails");
+                });
+
+            modelBuilder.Entity("LibraryManagementAPI.Entities.BorrowRequest", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("LibraryManagementAPI.Entities.Cart", b =>

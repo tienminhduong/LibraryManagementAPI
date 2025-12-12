@@ -40,6 +40,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<IAuthorRepository, AuthorRepository>();
         services.AddScoped<IPublisherRepository, PublisherRepository>();
+        services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IInfoRepository, InfoRepository>();
         services.AddScoped<IBookCopyRepository, BookCopyRepository>();
@@ -55,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IAuthorService, AuthorService>();
         services.AddScoped<IPublisherService, PublisherService>();
+        services.AddScoped<ISupplierService, SupplierService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddScoped<IBorrowBookService, BorrowBookService>();
@@ -67,6 +69,9 @@ public static class ServiceCollectionExtensions
         services.AddPredictionEnginePool<BookRating, BookRatingPrediction>()
             .FromFile(filePath: modelPath, watchForChanges: true);
         services.AddScoped<ICartService, CartService>();
+        
+        // Register background service for auto-updating borrow request statuses
+        services.AddHostedService<BorrowRequestStatusUpdaterService>();
     }
 
     public static void AddUtilityServices(IServiceCollection services)

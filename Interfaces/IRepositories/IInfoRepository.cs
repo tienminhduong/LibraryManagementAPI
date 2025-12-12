@@ -11,5 +11,6 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task UpdateAsync(BaseInfo info);
         Task<bool> IsAccountIdExist(Guid accountId, Role type);
         Task<BaseInfo?> GetInfoByAccountIdAsync(Guid accountId, Role type = Role.Member);
+        Task<IEnumerable<Entities.MemberInfo>> SearchMembersAsync(string searchTerm);
     }
 }

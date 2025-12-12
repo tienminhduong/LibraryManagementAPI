@@ -61,4 +61,16 @@ public class PublisherService(IPublisherRepository publisherRepository,
     publisher.Id = id;
     return publisherRepository.UpdatePublisherAsync(publisher);
   }
+
+  public async Task<PagedResponse<PublisherDTO>> SearchPublishersAsync(string searchTerm, int pageNumber, int pageSize)
+  {
+    if (string.IsNullOrWhiteSpace(searchTerm))
+    {
+      throw new ArgumentException("Search term cannot be empty", nameof(searchTerm));
+    }
+
+    var pagedPublishers = await publisherRepository.SearchPublishersAsync(searchTerm, pageNumber, pageSize);
+    var publisherDtos = PagedResponse<PublisherDTO>.MapFrom(pagedPublishers, mapper);
+    return publisherDtos;
+  }
 }

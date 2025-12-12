@@ -4,7 +4,6 @@ using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Interfaces.IUtility;
 using LibraryManagementAPI.Models.BorrowRequest;
 using LibraryManagementAPI.Models.Pagination;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Services
 {
@@ -12,103 +11,96 @@ namespace LibraryManagementAPI.Services
         IBorrowRequestRepository borrowRequestRepo,
         IBookCopyRepository bookCopyRepo,
         IBookRepository bookRepo,
-        IBookTransactionRepository transactionRepo,
         IInfoRepository infoRepo,
         ICartRepository cartRepo,
-        IUnitOfWork uow) : IBorrowRequestService
+        IUnitOfWork uow,
+        IAccountRepository accountRepo) : IBorrowRequestService
     {
+        /// <summary>
+        /// Creates MULTIPLE borrow requests (one per book)
+        /// </summary>
         public async Task<BorrowRequestResponseDto> CreateBorrowRequestAsync(CreateBorrowRequestDto dto, Guid accountId)
         {
-            // 1. Get member info from account ID
             var memberInfo = await infoRepo.GetByAccountIdAsync(accountId);
             if (memberInfo == null || memberInfo is not MemberInfo)
                 throw new Exception("Member information not found.");
 
             var memberId = memberInfo.id;
+            var requestIds = new List<Guid>();
+            var qrCodes = new List<string>();
 
-            // 2. Validate all books exist and have available copies
-            foreach (var bookId in dto.BookIds)
-            {
-                // Check if book exists
-                var bookExists = await bookRepo.IsBookExistsByIdAsync(bookId);
-                if (!bookExists)
-                    throw new Exception($"Book with ID {bookId} not found.");
-
-                // Check if book has available copies
-                var hasAvailableCopies = await bookCopyRepo.HasAvailableCopiesForBook(bookId);
-                if (!hasAvailableCopies)
-                    throw new Exception($"Book with ID {bookId} has no available copies.");
-            }
-
-            // 3. Generate QR code (using request ID)
-            var requestId = Guid.NewGuid();
-            var qrCode = GenerateQrCode(requestId);
-
-            // 4. Create borrow request
-            var borrowRequest = new BorrowRequest
-            {
-                Id = requestId,
-                MemberId = memberId,
-                QrCode = qrCode,
-                Notes = dto.Notes,
-                Status = BorrowRequestStatus.Pending,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            // 5. Add request items (with BookIds, not BookCopyIds yet)
-            foreach (var bookId in dto.BookIds)
-            {
-                borrowRequest.Items.Add(new BorrowRequestItem
-                {
-                    Id = Guid.NewGuid(),
-                    BorrowRequestId = requestId,
-                    BookId = bookId
-                });
-            }
-
-            // 6. Save to database and remove books from cart
             await uow.BeginTransactionAsync();
             try
             {
-                await borrowRequestRepo.Add(borrowRequest);
-                
-                // Remove the requested books from the cart
+                // Create ONE request per book
+                foreach (var bookId in dto.BookIds)
+                {
+                    // Validate book exists
+                    var bookExists = await bookRepo.IsBookExistsByIdAsync(bookId);
+                    if (!bookExists)
+                        throw new Exception($"Book with ID {bookId} not found.");
+
+                    // Check if book has available copies
+                    var hasAvailableCopies = await bookCopyRepo.HasAvailableCopiesForBook(bookId);
+                    if (!hasAvailableCopies)
+                        throw new Exception($"Book with ID {bookId} has no available copies.");
+
+                    // Create separate request for this book
+                    var requestId = Guid.NewGuid();
+                    var qrCode = GenerateQrCode(requestId);
+
+                    var borrowRequest = new BorrowRequest
+                    {
+                        Id = requestId,
+                        MemberId = memberId,
+                        BookId = bookId,
+                        BookCopyId = null, // Assigned later by staff
+                        QrCode = qrCode,
+                        Notes = dto.Notes,
+                        Status = BorrowRequestStatus.Pending,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await borrowRequestRepo.Add(borrowRequest);
+                    requestIds.Add(requestId);
+                    qrCodes.Add(qrCode);
+                }
+
+                // Remove books from cart
                 var cart = await cartRepo.GetByAccountIdAsync(accountId);
                 if (cart != null)
                 {
-                    // Find cart items that match the requested books
                     var cartItemsToRemove = cart.Items
                         .Where(ci => dto.BookIds.Contains(ci.BookId))
                         .ToList();
 
-                    // Remove each matching cart item
                     foreach (var cartItem in cartItemsToRemove)
                     {
                         await cartRepo.RemoveItemAsync(cartItem.Id);
                     }
 
-                    // Update cart timestamp if items were removed
                     if (cartItemsToRemove.Any())
                     {
                         cart.UpdatedAt = DateTime.UtcNow;
                         await cartRepo.UpdateAsync(cart);
                     }
                 }
-                
+
                 await uow.SaveChangesAsync();
                 await uow.CommitAsync();
 
                 return new BorrowRequestResponseDto
                 {
-                    RequestId = requestId,
-                    QrCode = qrCode,
-                    Message = "Borrow request created successfully. Please show this QR code to the librarian."
+                    RequestIds = requestIds,
+                    QrCodes = qrCodes,
+                    Message = $"{requestIds.Count} borrow request(s) created successfully. Show QR codes to librarian.",
+                    TotalRequests = requestIds.Count
                 };
             }
             catch (Exception ex)
             {
                 await uow.RollbackAsync();
-                throw new Exception("An error occurred while creating the borrow request.", ex);
+                throw new Exception("An error occurred while creating borrow requests.", ex);
             }
         }
 
@@ -123,33 +115,34 @@ namespace LibraryManagementAPI.Services
             {
                 var memberInfo = await infoRepo.GetByAccountIdAsync(accountId);
                 if (memberInfo == null || request.MemberId != memberInfo.id)
-                    return null; // Access denied
+                    return null;
             }
 
-            return MapToDto(request);
+            return await MapToDtoAsync(request);
         }
 
         public async Task<BorrowRequestDto?> GetBorrowRequestByQrCodeAsync(string qrCode)
         {
-            var requests = await borrowRequestRepo.GetAll();
-            var request = requests.FirstOrDefault(r => r.QrCode == qrCode);
+            var request = await borrowRequestRepo.GetByQrCodeAsync(qrCode);
             
             if (request == null)
                 return null;
 
-            return MapToDto(request);
+            return await MapToDtoAsync(request);
         }
 
+        /// <summary>
+        /// Confirms a SINGLE borrow request with a specific book copy
+        /// </summary>
         public async Task<bool> ConfirmBorrowRequestAsync(ConfirmBorrowRequestDto dto, Guid staffAccountId)
         {
-            // 1. Get staff info from account ID
             var staffInfo = await infoRepo.GetByAccountIdAsync(staffAccountId);
             if (staffInfo == null || (staffInfo is not StaffInfo && staffInfo is not AdminInfo))
                 throw new Exception("Staff information not found.");
 
-            var staffId = staffInfo.id;
+            // Only assign StaffId if the actor is a StaffInfo (not Admin)
+            Guid? staffInfoId = staffInfo is StaffInfo s ? s.id : (Guid?)null;
 
-            // 2. Get borrow request
             var request = await borrowRequestRepo.GetByIdWithDetails(dto.RequestId);
             if (request == null)
                 throw new Exception("Borrow request not found.");
@@ -160,46 +153,27 @@ namespace LibraryManagementAPI.Services
             await uow.BeginTransactionAsync();
             try
             {
-                // 3. Assign book copies and create transactions
-                foreach (var assignment in dto.BookCopyAssignments)
-                {
-                    var item = request.Items.FirstOrDefault(i => i.BookId == assignment.BookId);
-                    if (item == null)
-                        continue;
+                // Get and validate book copy
+                var bookCopy = await bookCopyRepo.GetById(dto.BookCopyId);
+                if (bookCopy == null || bookCopy.status != Status.Available)
+                    throw new Exception($"Book copy {dto.BookCopyId} is not available.");
 
-                    // Get and validate book copy
-                    var bookCopy = await bookCopyRepo.GetById(assignment.BookCopyId);
-                    if (bookCopy == null || bookCopy.status != Status.Available)
-                        throw new Exception($"Book copy {assignment.BookCopyId} is not available.");
+                // Verify book copy matches requested book
+                if (bookCopy.bookId != request.BookId)
+                    throw new Exception($"Book copy does not match the requested book.");
 
-                    // Update book copy status
-                    bookCopy.status = Status.Borrowed;
-                    await bookCopyRepo.Update(bookCopy);
+                // Update book copy status
+                bookCopy.status = Status.Borrowed;
+                await bookCopyRepo.Update(bookCopy);
 
-                    // Update request item
-                    item.BookCopyId = assignment.BookCopyId;
-                    item.IsConfirmed = true;
-
-                    // Create book transaction
-                    var transaction = new BookTransaction
-                    {
-                        id = Guid.NewGuid(),
-                        copyId = assignment.BookCopyId,
-                        memberId = request.MemberId,
-                        staffId = staffId,
-                        borrowDate = DateTime.UtcNow,
-                        dueDate = DateTime.UtcNow.AddDays(30),
-                        status = StatusTransaction.BORROWED
-                    };
-
-                    await transactionRepo.Add(transaction);
-                }
-
-                // 4. Update borrow request status
-                request.Status = BorrowRequestStatus.Confirmed;
-                request.StaffId = staffId;
+                // Update request
+                request.BookCopyId = dto.BookCopyId;
+                request.Status = BorrowRequestStatus.Borrowed;
+                request.StaffId = staffInfoId;
+                request.ProcessedByAccountId = staffAccountId; // record acting account (admin or staff)
                 request.ConfirmedAt = DateTime.UtcNow;
-                request.DueDate = DateTime.UtcNow.AddDays(30); // Set due date to 30 days from confirmation
+                request.BorrowDate = DateTime.UtcNow;
+                request.DueDate = DateTime.UtcNow.AddDays(30);
                 await borrowRequestRepo.Update(request);
 
                 await uow.SaveChangesAsync();
@@ -215,14 +189,12 @@ namespace LibraryManagementAPI.Services
 
         public async Task<bool> RejectBorrowRequestAsync(Guid requestId, Guid staffAccountId, string reason)
         {
-            // 1. Get staff info from account ID
             var staffInfo = await infoRepo.GetByAccountIdAsync(staffAccountId);
             if (staffInfo == null || (staffInfo is not StaffInfo && staffInfo is not AdminInfo))
                 throw new Exception("Staff information not found.");
 
-            var staffId = staffInfo.id;
+            Guid? staffInfoId = staffInfo is StaffInfo s ? s.id : (Guid?)null;
 
-            // 2. Get borrow request
             var request = await borrowRequestRepo.GetById(requestId);
             if (request == null)
                 throw new Exception("Borrow request not found.");
@@ -230,9 +202,9 @@ namespace LibraryManagementAPI.Services
             if (request.Status != BorrowRequestStatus.Pending)
                 throw new Exception("Borrow request has already been processed.");
 
-            // 3. Update request status
             request.Status = BorrowRequestStatus.Rejected;
-            request.StaffId = staffId;
+            request.StaffId = staffInfoId;
+            request.ProcessedByAccountId = staffAccountId; // record acting account
             request.Notes = $"{request.Notes}\nRejection reason: {reason}";
 
             await uow.BeginTransactionAsync();
@@ -252,7 +224,6 @@ namespace LibraryManagementAPI.Services
 
         public async Task<bool> CancelBorrowRequestAsync(Guid requestId, Guid memberAccountId)
         {
-            // 1. Get member info from account ID
             var memberInfo = await infoRepo.GetByAccountIdAsync(memberAccountId);
             if (memberInfo == null || memberInfo is not MemberInfo)
                 throw new Exception("Member information not found.");
@@ -284,40 +255,15 @@ namespace LibraryManagementAPI.Services
             }
         }
 
-        public async Task<PagedResponse<BorrowRequestDto>> GetPendingRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        /// <summary>
+        /// Returns a book copy and updates the corresponding borrow request
+        /// </summary>
+        public async Task<ReturnBookResultDto> ReturnBookAsync(ReturnBookDto dto, Guid staffAccountId)
         {
-            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Pending, pageNumber, pageSize);
-            var dtoList = paged.Data.Select(MapToDto);
-            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
-        }
-
-        public async Task<PagedResponse<BorrowRequestDto>> GetMemberRequestsPagedAsync(Guid memberAccountId, int pageNumber = 1, int pageSize = 20)
-        {
-            // Get member info from account ID
-            var memberInfo = await infoRepo.GetByAccountIdAsync(memberAccountId);
-            if (memberInfo == null || memberInfo is not MemberInfo)
-                return new PagedResponse<BorrowRequestDto>(pageNumber, pageSize, Enumerable.Empty<BorrowRequestDto>(), 0);
-
-            var paged = await borrowRequestRepo.GetByMemberIdPaged(memberInfo.id, pageNumber, pageSize);
-            var dtoList = paged.Data.Select(MapToDto);
-            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
-        }
-
-        public async Task<PagedResponse<BorrowRequestDto>> GetMemberRequestsByInfoIdPagedAsync(Guid memberInfoId, int pageNumber = 1, int pageSize = 20)
-        {
-            var paged = await borrowRequestRepo.GetByMemberIdPaged(memberInfoId, pageNumber, pageSize);
-            var dtoList = paged.Data.Select(MapToDto);
-            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
-        }
-
-        public async Task<bool> ReturnBookAsync(ReturnBookDto dto, Guid staffAccountId)
-        {
-            // 1. Get staff info from account ID
             var staffInfo = await infoRepo.GetByAccountIdAsync(staffAccountId);
             if (staffInfo == null || (staffInfo is not StaffInfo && staffInfo is not AdminInfo))
                 throw new Exception("Staff information not found.");
 
-            // 2. Get book copy
             var bookCopy = await bookCopyRepo.GetById(dto.BookCopyId);
             if (bookCopy == null)
                 throw new Exception("Book copy not found.");
@@ -325,30 +271,43 @@ namespace LibraryManagementAPI.Services
             if (bookCopy.status != Status.Borrowed)
                 throw new Exception("This book is not currently borrowed.");
 
+            // Find the active borrow request for this book copy
+            var borrowRequest = await borrowRequestRepo.GetByBookCopyIdAsync(dto.BookCopyId);
+            if (borrowRequest == null)
+                throw new Exception("No active borrow request found for this book copy.");
+
             await uow.BeginTransactionAsync();
             try
             {
-                // 3. Find active transaction for this book copy
-                var transactions = await transactionRepo.GetAll();
-                var activeTransaction = transactions.FirstOrDefault(t => 
-                    t.copyId == dto.BookCopyId && 
-                    t.status == StatusTransaction.BORROWED);
-
-                if (activeTransaction == null)
-                    throw new Exception("No active transaction found for this book copy.");
-
-                // 4. Update transaction
-                activeTransaction.returnDate = DateTime.UtcNow;
-                activeTransaction.status = StatusTransaction.RETURNED;
-                await transactionRepo.Update(activeTransaction);
-
-                // 5. Update book copy status
+                // Update book copy status
                 bookCopy.status = Status.Available;
                 await bookCopyRepo.Update(bookCopy);
 
+                // Update borrow request
+                borrowRequest.ReturnedAt = DateTime.UtcNow;
+                borrowRequest.ProcessedByAccountId = staffAccountId; // record acting account
+                var wasOverdue = borrowRequest.DueDate.HasValue && 
+                                borrowRequest.ReturnedAt.Value > borrowRequest.DueDate.Value;
+                
+                borrowRequest.Status = wasOverdue 
+                    ? BorrowRequestStatus.OverdueReturned 
+                    : BorrowRequestStatus.Returned;
+                
+                await borrowRequestRepo.Update(borrowRequest);
+
                 await uow.SaveChangesAsync();
                 await uow.CommitAsync();
-                return true;
+
+                return new ReturnBookResultDto
+                {
+                    Success = true,
+                    Message = "Book returned successfully.",
+                    MemberName = borrowRequest.Member?.fullName,
+                    BookTitle = borrowRequest.Book?.Title,
+                    BorrowRequestId = borrowRequest.Id,
+                    ReturnedAt = borrowRequest.ReturnedAt,
+                    WasOverdue = wasOverdue
+                };
             }
             catch (Exception ex)
             {
@@ -357,46 +316,192 @@ namespace LibraryManagementAPI.Services
             }
         }
 
+        /// <summary>
+        /// Admin creates and immediately confirms a borrow request
+        /// </summary>
+        public async Task<BorrowRequestResponseDto> AdminCreateBorrowRequestAsync(AdminCreateBorrowRequestDto dto, Guid staffAccountId)
+        {
+            var staffInfo = await infoRepo.GetByAccountIdAsync(staffAccountId);
+            if (staffInfo == null || (staffInfo is not StaffInfo && staffInfo is not AdminInfo))
+                throw new Exception("Staff information not found.");
+
+            Guid? staffInfoId = staffInfo is StaffInfo s ? s.id : (Guid?)null;
+
+            var staffId = staffInfoId; // for readability
+
+            // Validate member exists
+            var memberInfo = await infoRepo.GetByIdAsync(dto.MemberId);
+            if (memberInfo == null || memberInfo is not MemberInfo)
+                throw new Exception("Member not found.");
+
+            // Validate book copy exists and is available
+            var bookCopy = await bookCopyRepo.GetById(dto.BookCopyId);
+            if (bookCopy == null)
+                throw new Exception($"Book copy with ID {dto.BookCopyId} not found.");
+            
+            if (bookCopy.status != Status.Available)
+                throw new Exception($"Book copy with ID {dto.BookCopyId} is not available.");
+
+            var requestId = Guid.NewGuid();
+            var qrCode = GenerateQrCode(requestId);
+
+            // Create request with Borrowed status (immediately confirmed)
+            var borrowRequest = new BorrowRequest
+            {
+                Id = requestId,
+                MemberId = dto.MemberId,
+                StaffId = staffId,
+                ProcessedByAccountId = staffAccountId, // record acting account
+                BookId = bookCopy.bookId,
+                BookCopyId = dto.BookCopyId,
+                QrCode = qrCode,
+                Notes = dto.Notes,
+                Status = BorrowRequestStatus.Borrowed,
+                CreatedAt = DateTime.UtcNow,
+                ConfirmedAt = DateTime.UtcNow,
+                BorrowDate = DateTime.UtcNow,
+                DueDate = DateTime.UtcNow.AddDays(30)
+            };
+
+            await uow.BeginTransactionAsync();
+            try
+            {
+                // Update book copy status
+                bookCopy.status = Status.Borrowed;
+                await bookCopyRepo.Update(bookCopy);
+
+                // Save borrow request
+                await borrowRequestRepo.Add(borrowRequest);
+
+                await uow.SaveChangesAsync();
+                await uow.CommitAsync();
+
+                return new BorrowRequestResponseDto
+                {
+                    RequestIds = new List<Guid> { requestId },
+                    QrCodes = new List<string> { qrCode },
+                    Message = "Borrow request created and confirmed successfully by admin.",
+                    TotalRequests = 1
+                };
+            }
+            catch (Exception ex)
+            {
+                await uow.RollbackAsync();
+                throw new Exception("An error occurred while creating the admin borrow request.", ex);
+            }
+        }
+
+        public async Task<IEnumerable<MemberSearchDto>> SearchMembersAsync(string searchTerm)
+        {
+            var members = await infoRepo.SearchMembersAsync(searchTerm);
+            
+            return members.Select(m => new MemberSearchDto
+            {
+                Id = m.id,
+                FullName = m.fullName,
+                Email = m.email,
+                PhoneNumber = m.phoneNumber,
+                Address = m.address
+            });
+        }
+
+        public async Task<PagedResponse<BorrowRequestDto>> GetPendingRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Pending, pageNumber, pageSize);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
+        }
+
         public async Task<PagedResponse<BorrowRequestDto>> GetBorrowedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
         {
-            // Get all confirmed requests that are currently borrowed (not overdue)
-            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Confirmed, pageNumber, pageSize);
-            var currentTime = DateTime.UtcNow;
-            
-            // Filter to only borrowed (not overdue) requests
-            var borrowedRequests = paged.Data
-                .Where(r => r.DueDate.HasValue && r.DueDate.Value >= currentTime)
-                .ToList();
-            
-            var dtoList = borrowedRequests.Select(MapToDto);
-            // Recalculate total based on filtered results
-            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, borrowedRequests.Count);
+            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Borrowed, pageNumber, pageSize);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
         public async Task<PagedResponse<BorrowRequestDto>> GetOverdueRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
         {
-            // Get all confirmed requests that are overdue
-            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Confirmed, pageNumber, pageSize);
-            var currentTime = DateTime.UtcNow;
-            
-            // Filter to only overdue requests
-            var overdueRequests = paged.Data
-                .Where(r => r.DueDate.HasValue && r.DueDate.Value < currentTime)
-                .ToList();
-            
-            var dtoList = overdueRequests.Select(MapToDto);
-            // Recalculate total based on filtered results
-            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, overdueRequests.Count);
+            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Overdue, pageNumber, pageSize);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
+        }
+
+        public async Task<PagedResponse<BorrowRequestDto>> GetReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Returned, pageNumber, pageSize);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
+        }
+
+        public async Task<PagedResponse<BorrowRequestDto>> GetOverdueReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.OverdueReturned, pageNumber, pageSize);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
+        }
+
+        public async Task<PagedResponse<BorrowRequestDto>> GetMemberRequestsPagedAsync(Guid memberAccountId, int pageNumber = 1, int pageSize = 20)
+        {
+            var memberInfo = await infoRepo.GetByAccountIdAsync(memberAccountId);
+            if (memberInfo == null || memberInfo is not MemberInfo)
+                return new PagedResponse<BorrowRequestDto>(pageNumber, pageSize, Enumerable.Empty<BorrowRequestDto>(), 0);
+
+            var paged = await borrowRequestRepo.GetByMemberIdPaged(memberInfo.id, pageNumber, pageSize);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
+        }
+
+        public async Task<PagedResponse<BorrowRequestDto>> GetMemberRequestsByInfoIdPagedAsync(Guid memberInfoId, int pageNumber = 1, int pageSize = 20)
+        {
+            var paged = await borrowRequestRepo.GetByMemberIdPaged(memberInfoId, pageNumber, pageSize);
+            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
+            var dtoList = await Task.WhenAll(dtoTasks);
+            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
         private string GenerateQrCode(Guid requestId)
         {
-            // Generate a QR code data string
             return $"BORROW-{requestId}";
         }
 
-        private BorrowRequestDto MapToDto(BorrowRequest request)
+        private async Task<BorrowRequestDto> MapToDtoAsync(BorrowRequest request)
         {
+            // Determine actor name: prefer account username (ProcessedByAccountId), then info fullName, then Staff navigation
+            string? actorName = null;
+
+            if (request.ProcessedByAccountId.HasValue)
+            {
+                try
+                {
+                    var account = await accountRepo.GetAccountAsync(request.ProcessedByAccountId.Value);
+                    if (account != null && !string.IsNullOrWhiteSpace(account.userName))
+                    {
+                        actorName = account.userName; // prefer account username
+                    }
+                }
+                catch
+                {
+                    // ignore and fallback
+                }
+
+                if (string.IsNullOrWhiteSpace(actorName))
+                {
+                    var actorInfo = await infoRepo.GetByAccountIdAsync(request.ProcessedByAccountId.Value);
+                    actorName = actorInfo?.fullName;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(actorName) && request.Staff != null)
+            {
+                actorName = request.Staff.fullName;
+            }
+
             return new BorrowRequestDto
             {
                 Id = request.Id,
@@ -404,22 +509,22 @@ namespace LibraryManagementAPI.Services
                 MemberName = request.Member?.fullName,
                 MemberEmail = request.Member?.email,
                 StaffId = request.StaffId,
-                StaffName = request.Staff?.fullName,
+                StaffName = actorName,
+                BookId = request.BookId,
+                BookTitle = request.Book?.Title,
+                BookISBN = request.Book?.ISBN,
+                BookImageUrl = request.Book?.ImgUrl,
+                BookCopyId = request.BookCopyId,
                 CreatedAt = request.CreatedAt,
                 ConfirmedAt = request.ConfirmedAt,
+                BorrowDate = request.BorrowDate,
                 DueDate = request.DueDate,
+                ReturnedAt = request.ReturnedAt,
                 Status = request.Status.ToString(),
                 QrCode = request.QrCode,
                 Notes = request.Notes,
-                Items = request.Items.Select(i => new BorrowRequestItemDto
-                {
-                    Id = i.Id,
-                    BookId = i.BookId,
-                    BookTitle = i.Book?.Title,
-                    BookISBN = i.Book?.ISBN,
-                    BookCopyId = i.BookCopyId,
-                    IsConfirmed = i.IsConfirmed
-                }).ToList()
+                IsOverdue = request.Status == BorrowRequestStatus.Overdue || 
+                           request.Status == BorrowRequestStatus.OverdueReturned
             };
         }
     }

@@ -7,4 +7,5 @@ public interface IPublisherService
     Task<PublisherDTO> AddPublisherAsync(CreatePublisherDTO publisherDto);
     Task UpdatePublisherAsync(Guid id, UpdatePublisherDTO publisherDto);
     Task DeletePublisherAsync(Guid id);
+    Task<PagedResponse<PublisherDTO>> SearchPublishersAsync(string searchTerm, int pageNumber, int pageSize);
 }

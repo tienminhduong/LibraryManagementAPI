@@ -54,4 +54,20 @@ public class PublisherRepository(LibraryDbContext dbContext) : IPublisherReposit
     dbContext.Publishers.Update(publisher);
     await dbContext.SaveChangesAsync();
   }
+
+  public async Task<PagedResponse<Publisher>> SearchPublishersAsync(string searchTerm, int pageNumber, int pageSize)
+  {
+    var normalizedSearch = searchTerm.ToLower().Trim();
+    
+    var publishers = dbContext.Publishers
+      .Where(p => 
+        (p.Name != null && p.Name.ToLower().Contains(normalizedSearch)) ||
+        (p.PhoneNumber != null && p.PhoneNumber.ToLower().Contains(normalizedSearch)) ||
+        (p.Address != null && p.Address.ToLower().Contains(normalizedSearch)))
+      .OrderBy(p => p.Name)
+      .AsQueryable()
+      .AsNoTracking();
+    
+    return await PagedResponse<Publisher>.FromQueryable(publishers, pageNumber, pageSize);
+  }
 }

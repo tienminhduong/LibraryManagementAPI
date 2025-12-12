@@ -201,4 +201,28 @@ public class BookController(IBookService bookService,
             return StatusCode(500, "An error occurred while searching");
         }
     }
+
+    [HttpGet("{id}/copies/qrs")]
+    public async Task<ActionResult> GetBookCopiesQrCodes(Guid id)
+    {
+        try
+        {
+            var copies = await bookService.GetCopiesByBookIdAsync(id);
+            if (copies == null || !copies.Any())
+                return NotFound(new { message = "No copies found for this book." });
+
+            var result = copies.Select(c => new {
+                CopyId = c.id,
+                QrCode = c.QrCode,
+                Status = c.status.ToString()
+            });
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error getting book copy QR codes for book {BookId}", id);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
