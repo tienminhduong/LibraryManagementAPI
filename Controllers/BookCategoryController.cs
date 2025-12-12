@@ -30,7 +30,7 @@ public class BookCategoryController(IBookService bookService) : ControllerBase
         return Ok(books);
     }
 
-    [HttpGet("/search")]
+    [HttpGet("search")]
     public async Task<ActionResult> SearchBookCategories(string? query = null, int pageNumber = 1, int pageSize = 20)
     {
         var bookCategories = await bookService.SearchBookCategories(query, pageNumber, pageSize);
