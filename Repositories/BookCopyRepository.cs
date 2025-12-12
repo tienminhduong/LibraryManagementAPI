@@ -136,5 +136,22 @@ namespace LibraryManagementAPI.Repositories
                 throw new Exception("An error occurred while retrieving book copy by QR code.", ex);
             }
         }
+
+        /// <summary>
+        /// Gets all copies (any status) for a specific book
+        /// </summary>
+        public async Task<IEnumerable<BookCopy>> GetCopiesByBookId(Guid bookId)
+        {
+            try
+            {
+                return await db.BookCopies
+                    .Where(bc => bc.bookId == bookId)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while retrieving book copies.", ex);
+            }
+        }
     }
 }

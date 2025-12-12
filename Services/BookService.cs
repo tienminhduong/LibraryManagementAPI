@@ -200,6 +200,11 @@ public class BookService(
         return bookImport.id;
     }
 
+    public async Task<IEnumerable<BookCopy>> GetCopiesByBookIdAsync(Guid bookId)
+    {
+        return await bookCopyRepository.GetCopiesByBookId(bookId);
+    }
+
     public async Task<PagedResponse<BookCategoryDto>> SearchBookCategories(string query, int pageNumber = 1, int pageSize = 20)
     {
         var categories = await bookCategoryRepository.GetBookCategoriesByName(query, pageNumber, pageSize);

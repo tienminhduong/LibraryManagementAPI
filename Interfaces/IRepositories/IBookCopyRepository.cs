@@ -14,5 +14,6 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task<IEnumerable<BookCopy>> GetAvailableCopiesByBookId(Guid bookId);
         Task<BookCopy?> GetByQrCode(string qrCode);
         string GenerateQrCode(Guid bookCopyId);
+        Task<IEnumerable<BookCopy>> GetCopiesByBookId(Guid bookId);
     }
 }

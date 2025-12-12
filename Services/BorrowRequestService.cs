@@ -13,7 +13,8 @@ namespace LibraryManagementAPI.Services
         IBookRepository bookRepo,
         IInfoRepository infoRepo,
         ICartRepository cartRepo,
-        IUnitOfWork uow) : IBorrowRequestService
+        IUnitOfWork uow,
+        IAccountRepository accountRepo) : IBorrowRequestService
     {
         /// <summary>
         /// Creates MULTIPLE borrow requests (one per book)
@@ -471,13 +472,34 @@ namespace LibraryManagementAPI.Services
 
         private async Task<BorrowRequestDto> MapToDtoAsync(BorrowRequest request)
         {
-            // Determine staff/actor name: prefer Staff navigation, fallback to ProcessedByAccountId
-            string? staffName = request.Staff?.fullName;
+            // Determine actor name: prefer account username (ProcessedByAccountId), then info fullName, then Staff navigation
+            string? actorName = null;
 
-            if (string.IsNullOrWhiteSpace(staffName) && request.ProcessedByAccountId.HasValue)
+            if (request.ProcessedByAccountId.HasValue)
             {
-                var actorInfo = await infoRepo.GetByAccountIdAsync(request.ProcessedByAccountId.Value);
-                staffName = actorInfo?.fullName;
+                try
+                {
+                    var account = await accountRepo.GetAccountAsync(request.ProcessedByAccountId.Value);
+                    if (account != null && !string.IsNullOrWhiteSpace(account.userName))
+                    {
+                        actorName = account.userName; // prefer account username
+                    }
+                }
+                catch
+                {
+                    // ignore and fallback
+                }
+
+                if (string.IsNullOrWhiteSpace(actorName))
+                {
+                    var actorInfo = await infoRepo.GetByAccountIdAsync(request.ProcessedByAccountId.Value);
+                    actorName = actorInfo?.fullName;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(actorName) && request.Staff != null)
+            {
+                actorName = request.Staff.fullName;
             }
 
             return new BorrowRequestDto
@@ -487,7 +509,7 @@ namespace LibraryManagementAPI.Services
                 MemberName = request.Member?.fullName,
                 MemberEmail = request.Member?.email,
                 StaffId = request.StaffId,
-                StaffName = staffName,
+                StaffName = actorName,
                 BookId = request.BookId,
                 BookTitle = request.Book?.Title,
                 BookISBN = request.Book?.ISBN,
