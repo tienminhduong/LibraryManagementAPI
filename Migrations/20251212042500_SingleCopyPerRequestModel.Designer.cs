@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryManagementAPI.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    [Migration("20251212031244_RefactorToSingleCopyPerRequest")]
-    partial class RefactorToSingleCopyPerRequest
+    [Migration("20251212042500_SingleCopyPerRequestModel")]
+    partial class SingleCopyPerRequestModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
