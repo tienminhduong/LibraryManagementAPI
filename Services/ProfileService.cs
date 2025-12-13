@@ -1,4 +1,5 @@
-﻿using LibraryManagementAPI.Entities;
+﻿using LibraryManagementAPI.Controllers;
+using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Info;
@@ -56,6 +57,110 @@ namespace LibraryManagementAPI.Services
             catch (Exception ex)
             {
                 throw new Exception("An error occurred while retrieving the profile.", ex);
+            }
+        }
+
+        public async Task UpdateAdminProfileAsync(Guid accountId, UpdateProfileRequest updateRequest)
+        {
+            try
+            {
+                var res = await infoRepository.GetInfoByAccountIdAsync(accountId, Role.Admin);
+                if (res == null)
+                {
+                    throw new Exception("Profile not found");
+                }
+                var adminInfo = (AdminInfo)res;
+
+                if (!string.IsNullOrEmpty(updateRequest.fullName))
+                {
+                    adminInfo.fullName = updateRequest.fullName;
+                }
+                if (!string.IsNullOrEmpty(updateRequest.email))
+                {
+                    adminInfo.email = updateRequest.email;
+                }
+                if (!string.IsNullOrEmpty(updateRequest.phoneNumber))
+                {
+                    adminInfo.phoneNumber = updateRequest.phoneNumber;
+                }
+
+                await infoRepository.UpdateAsync(adminInfo);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while updating the profile.", ex);
+            }
+        }
+
+        public async Task UpdateMemberProfileAsync(Guid accountId, UpdateProfileRequest updateRequest)
+        {
+            try
+            {
+                var res = await infoRepository.GetInfoByAccountIdAsync(accountId, Role.Member);
+                if (res == null)
+                {
+                    throw new Exception("Profile not found");
+                }
+                var memberInfo = (MemberInfo)res;
+
+                if (!string.IsNullOrEmpty(updateRequest.fullName))
+                {
+                    memberInfo.fullName = updateRequest.fullName;
+                }
+                if (!string.IsNullOrEmpty(updateRequest.email))
+                {
+                    memberInfo.email = updateRequest.email;
+                }
+                if (!string.IsNullOrEmpty(updateRequest.phoneNumber))
+                {
+                    memberInfo.phoneNumber = updateRequest.phoneNumber;
+                }
+                if (!string.IsNullOrEmpty(updateRequest.address))
+                {
+                    memberInfo.address = updateRequest.address;
+                }
+                if (!string.IsNullOrEmpty(updateRequest.imageUrl))
+                {
+                    memberInfo.imageUrl = updateRequest.imageUrl;
+                }
+
+                await infoRepository.UpdateAsync(memberInfo);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while updating the profile.", ex);
+            }
+        }
+
+        public async Task UpdateStaffProfileAsync(Guid accountId, UpdateProfileRequest updateRequest)
+        {
+            try
+            {
+                var res = await infoRepository.GetInfoByAccountIdAsync(accountId, Role.Staff);
+                if (res == null)
+                {
+                    throw new Exception("Profile not found");
+                }
+                var staffInfo = (StaffInfo)res;
+
+                if (!string.IsNullOrEmpty(updateRequest.fullName))
+                {
+                    staffInfo.fullName = updateRequest.fullName;
+                }
+                if (!string.IsNullOrEmpty(updateRequest.email))
+                {
+                    staffInfo.email = updateRequest.email;
+                }
+                if (!string.IsNullOrEmpty(updateRequest.phoneNumber))
+                {
+                    staffInfo.phoneNumber = updateRequest.phoneNumber;
+                }
+
+                await infoRepository.UpdateAsync(staffInfo);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while updating the profile.", ex);
             }
         }
 
