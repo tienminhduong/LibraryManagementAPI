@@ -37,6 +37,8 @@ namespace LibraryManagementAPI.Models.BorrowRequest
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Address { get; set; }
+        public int BorrowCount { get; set; } = 0;
+        public int LateCount { get; set; } = 0;
     }
 
     /// <summary>

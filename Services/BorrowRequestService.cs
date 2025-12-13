@@ -394,8 +394,8 @@ namespace LibraryManagementAPI.Services
         public async Task<IEnumerable<MemberSearchDto>> SearchMembersAsync(string searchTerm)
         {
             var members = await infoRepo.SearchMembersAsync(searchTerm);
-            
-            return members.Select(m => new MemberSearchDto
+
+            var rawMemberDtos = members.Select(m => new MemberSearchDto
             {
                 Id = m.id,
                 FullName = m.fullName,
@@ -403,6 +403,16 @@ namespace LibraryManagementAPI.Services
                 PhoneNumber = m.phoneNumber,
                 Address = m.address
             });
+
+
+            var memberDtos = rawMemberDtos.ToList();
+            foreach (var memberDto in memberDtos)
+            {
+                memberDto.BorrowCount = await infoRepo.GetBorrowCount(memberDto.Id);
+                memberDto.LateCount =  await infoRepo.GetLateCount(memberDto.Id);
+            }
+
+            return memberDtos;
         }
 
         public async Task<PagedResponse<BorrowRequestDto>> GetPendingRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)

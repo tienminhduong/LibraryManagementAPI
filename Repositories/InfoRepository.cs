@@ -144,5 +144,19 @@ namespace LibraryManagementAPI.Repositories
                 throw new Exception("An error occurred while searching for members.", ex);
             }
         }
+
+        public async Task<int> GetBorrowCount(Guid memberId)
+        {
+            return await dbContext.BookTransactions
+                .Where(trans => trans.memberId == memberId).CountAsync();
+        }
+
+        public async Task<int> GetLateCount(Guid memberId)
+        {
+            return await dbContext.BookTransactions
+                .Where(trans => trans.memberId == memberId)
+                .Where(trans => trans.status == StatusTransaction.OVERDUE)
+                .CountAsync();
+        }
     }
 }
