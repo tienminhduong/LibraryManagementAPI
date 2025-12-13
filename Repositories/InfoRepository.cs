@@ -65,9 +65,17 @@ namespace LibraryManagementAPI.Repositories
             }
         }
 
-        public Task UpdateAsync(BaseInfo info)
+        public async Task UpdateAsync(BaseInfo info)
         {
-            throw new NotImplementedException();
+            try
+            {
+                dbContext.Update(info);
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while updating the info.", ex);
+            }
         }
 
         public async Task<bool> IsAccountIdExist(Guid accountId, Role type = Role.Member)
