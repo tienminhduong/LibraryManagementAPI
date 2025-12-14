@@ -11,6 +11,7 @@ public class ResetPasswordService(IServiceScopeFactory scopeFactory) : IResetPas
     private readonly string _appMailPassword = Environment.GetEnvironmentVariable("MAIL_APP_PASSWORD") ?? "";
     
     private const string SenderName = "Library Management";
+    private const int TokenValidityMinutes = 10;
 
     private readonly Dictionary<string, ResetTokenInfo> _resetTokens = new();
 
@@ -25,12 +26,12 @@ public class ResetPasswordService(IServiceScopeFactory scopeFactory) : IResetPas
         _resetTokens[email] = new ResetTokenInfo()
         {
             Token = resetToken,
-            Expiry = DateTime.UtcNow.AddMinutes(10)
+            Expiry = DateTime.UtcNow.AddMinutes(TokenValidityMinutes)
         };
         message.Body = new TextPart("html")
         {
             Text = $"<p>Your password reset token is: <strong>{resetToken}</strong></p>" +
-                   "<p>Please use this token to reset your password. This token is valid for 15 minutes.</p>"
+                   $"<p>Please use this token to reset your password. This token is valid for {TokenValidityMinutes} minutes.</p>"
         };
         
         using var client = new SmtpClient();
