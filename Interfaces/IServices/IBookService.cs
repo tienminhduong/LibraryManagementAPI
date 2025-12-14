@@ -15,6 +15,7 @@ public interface IBookService
     Task UpdateBookCategoryAsync(Guid id, UpdateBookCategoryDto categoryDto);
     Task DeleteBookCategoryAsync(Guid id);
     Task<PagedResponse<BookCategoryDto>> SearchBookCategories(string? query, int pageNumber = 1, int pageSize = 20);
+    Task<Response<PagedResponse<CategoryBorrowStatDto>>> GetTopCategoryByTimeAsync(int pageNumber = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null);
 
     // Books
     Task<PagedResponse<BookDto>> GetAllBooksAsync(Guid? categoryId, int pageNumber = 1, int pageSize = 20);

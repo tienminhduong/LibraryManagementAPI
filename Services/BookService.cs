@@ -251,4 +251,12 @@ public class BookService(
             bookDto.AvailableCopiesCount = await bookCopyRepository.GetAvailableCopiesCountByBookId(bookDto.Id);
         }
     }
+
+    public async Task<Response<PagedResponse<CategoryBorrowStatDto>>> GetTopCategoryByTimeAsync(int pageNumber = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null)
+    {
+        var categories = await bookCategoryRepository.GetTopCategoryByTime(pageNumber, pageSize, from, to);
+        if (categories == null)
+            return Response<PagedResponse<CategoryBorrowStatDto>>.Failure("Error");
+        return Response<PagedResponse<CategoryBorrowStatDto>>.Success(categories);
+    }
 }
