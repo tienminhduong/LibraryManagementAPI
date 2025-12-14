@@ -5,6 +5,7 @@ using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Interfaces.IUtility;
 using LibraryManagementAPI.Models.Account;
 using LibraryManagementAPI.Models.Info;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Services
 {
@@ -82,6 +83,21 @@ namespace LibraryManagementAPI.Services
                 return Response<string>.Failure("Registration failed: " + ex.Message);
                 //throw new Exception("An error occurred while registering the account.", ex);
             }
+        }
+
+        public async Task<Response<string>> ResetPassword(string userEmail, string newPassword)
+        {
+            var dbContext = accountRepository.GetDbContext();
+            var account = dbContext.Accounts.Include(a => a.info).FirstOrDefault(a => a.info!.email == userEmail);
+            
+            if (account == null)
+            {
+                return Response<string>.Failure("Account not found.");
+            }
+            
+            account.passwordHash = hasher.HashPassword(newPassword);
+            await dbContext.SaveChangesAsync();
+            return Response<string>.Success("Password reset successful.");
         }
 
         private BaseInfo? MapInfoDtoToEntity(BaseInfoDto infoDto, Role role)

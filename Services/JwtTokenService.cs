@@ -6,7 +6,7 @@ using LibraryManagementAPI.Models.Utility;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
-public class JwtTokenService: ITokenService
+public class JwtTokenService : ITokenService
 {
     private readonly IConfiguration _configuration;
 
