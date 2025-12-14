@@ -1,3 +1,5 @@
+using LibraryManagementAPI.Entities;
+
 public class Response<T>
 {
     public T? data { get; set; }
