@@ -35,6 +35,10 @@ public interface IBookService
         string? descriptionContains = null,
         int pageNumber = 1,
         int pageSize = 20);
+    Task<Response<PagedResponse<BookBorrowStatDto>>> GetTopBookByTimeAsync(DateTime? from = null, 
+                                                                        DateTime? to = null, 
+                                                                        int pageNumber = 1, 
+                                                                        int pageSize = 20);
 
     // Book import
     Task<Guid> ImportBooks(CreateBookImportDto createBookImportDto, Guid staffId);

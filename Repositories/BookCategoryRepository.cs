@@ -93,14 +93,9 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
         return categories;
     }
 
-    private static readonly BorrowRequestStatus[] validStatuses = 
-        new[] { BorrowRequestStatus.Borrowed, 
-            BorrowRequestStatus.Returned, 
-            BorrowRequestStatus.Overdue,
-            BorrowRequestStatus.OverdueReturned};
     public async Task<PagedResponse<CategoryBorrowStatDto>> GetTopCategoryByTime(int pageNumber = 1, int pageSize = 20, DateTime? from = null, DateTime? to = null)
     {
-        var (start, end) = ResolveRange(from, to);
+        var (start, end) = Utility.ResolveRangeTime(from, to);
 
         var query =
         from br in dbContext.BorrowRequests
@@ -109,7 +104,7 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
         from c in b.BookCategories   // 👈 MANY-TO-MANY (EF auto join bảng trung gian)
         where br.CreatedAt >= start
            && br.CreatedAt <= end
-           && validStatuses.Contains(br.Status)
+           && Utility.validStatuses.Contains(br.Status)
         group c by new { c.Id, c.Name } into g
         orderby g.Count() descending
         select new CategoryBorrowStatDto
@@ -120,28 +115,5 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
         };
         var pagedQuery = await PagedResponse<CategoryBorrowStatDto>.FromQueryable(query, pageNumber, pageSize);
         return pagedQuery;
-    }
-
-    private static (DateTime From, DateTime To) ResolveRange(DateTime? from, DateTime? to)
-    {
-        var now = DateTime.UtcNow;
-
-        var start = from?.ToUniversalTime()
-            ?? new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        var end = to?.ToUniversalTime()
-            ?? start.AddMonths(1).AddTicks(-1);
-
-
-
-        //var now = DateTime.UtcNow;
-
-        //var start = from ?? new DateTime(now.Year, now.Month, 1);
-
-        //var end = to ?? start
-        //    .AddMonths(1)
-        //    .AddTicks(-1); // cuối tháng 23:59:59.9999999
-
-        return (start, end);
     }
 }

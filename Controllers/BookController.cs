@@ -225,4 +225,26 @@ public class BookController(IBookService bookService,
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [HttpGet("top-books")]
+    public async Task<IActionResult> GetTopBooks(DateTime? from = null, DateTime? to = null, int pageNumber = 1, int pageSize = 20)
+    {
+        try
+        {
+            var topBooks = await bookService.GetTopBookByTimeAsync(from, to, pageNumber, pageSize);
+            
+            if(topBooks.isSuccess)
+            {
+                return Ok(topBooks);
+            }
+            else
+            {
+                return BadRequest(topBooks);
+            }
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
