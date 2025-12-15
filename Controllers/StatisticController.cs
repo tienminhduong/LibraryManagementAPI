@@ -26,4 +26,11 @@ public class StatisticController(IStatisticService statisticService) : Controlle
         var result = await statisticService.GetTopMembersByBorrowCount(fromDate, toDate, topN);
         return Ok(result);
     }
+    [HttpGet("total")]
+    [Authorize(Policy = Policies.AdminOnly)]
+    public async Task<ActionResult> GetTotalCounts()
+    {
+        var result = await statisticService.GetTotalCounts();
+        return Ok(result);
+    }
 }

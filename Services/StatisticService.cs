@@ -69,4 +69,18 @@ public class StatisticService(LibraryDbContext dbContext) : IStatisticService
 
         return query;
     }
+
+    public async Task<TotalCountsDto> GetTotalCounts()
+    {
+        var totalMembers = await dbContext.MemberInfos.CountAsync();
+        var totalBooks = await dbContext.Books.CountAsync();
+        var totalBorrowRequests = await dbContext.BorrowRequests.CountAsync();
+
+        return new TotalCountsDto
+        {
+            TotalMembers = totalMembers,
+            TotalBooks = totalBooks,
+            TotalBorrowRequests = totalBorrowRequests
+        };
+    }
 }

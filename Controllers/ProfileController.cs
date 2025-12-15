@@ -7,6 +7,7 @@ using LibraryManagementAPI.Models.Account;
 using LibraryManagementAPI.Models.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace LibraryManagementAPI.Controllers
 {
@@ -16,7 +17,8 @@ namespace LibraryManagementAPI.Controllers
     public class ProfileController(
         IProfileService profileService,
         IInfoRepository infoRepo,
-        IAccountRepository accountRepository) : ControllerBase
+        IAccountRepository accountRepository,
+        IPhotoService photoService) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> GetUserProfile()
@@ -92,7 +94,7 @@ namespace LibraryManagementAPI.Controllers
         }
         
         [HttpPut]
-        public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateProfileRequest updateRequest)
+        public async Task<IActionResult> UpdateUserProfile([FromForm] UpdateProfileRequest updateRequest, IFormFile? image)
         {
             // Get Account ID from JWT
             var accountId = User.GetUserId();
@@ -101,6 +103,25 @@ namespace LibraryManagementAPI.Controllers
             if (accountId == Guid.Empty)
             {
                 return Unauthorized(new { message = "Invalid or missing account ID." });
+            }
+
+            // If an image file is provided, upload it and set the imageUrl on the request
+            if (image != null && image.Length > 0)
+            {
+                try
+                {
+                    var uploadResult = await photoService.UploadPhotoAsync(image);
+                    if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
+                    {
+                        return BadRequest(new { message = "Failed to upload image." });
+                    }
+
+                    updateRequest.imageUrl = uploadResult.SecureUrl.ToString();
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new { message = ex.Message });
+                }
             }
             
             // check role and get it from service
