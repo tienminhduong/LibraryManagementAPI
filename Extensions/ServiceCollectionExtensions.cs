@@ -58,6 +58,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IBookImportRepository, BookImportRepository>();
+        services.AddScoped<IStaffRepository, StaffRepository>();
     }
 
     public static void AddServices(IServiceCollection services)
@@ -74,6 +75,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IRecommendationService, RecommendationService>();
         services.AddScoped<IStatisticService, StatisticService>();
+        services.AddScoped<IStaffService, StaffService>();
         services.AddMemoryCache();
         var modelPath = "RecommendModel/BookRecommendationModel.zip";
         services.AddPredictionEnginePool<BookRating, BookRatingPrediction>()

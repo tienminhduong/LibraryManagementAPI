@@ -9,6 +9,7 @@ namespace LibraryManagementAPI.Models.Info
     [JsonDerivedType(typeof(MemberInfoDto), "member")]
     public class BaseInfoDto
     {
+        public Guid Id { get; set; }
         public string? fullName { get; set; }
         public string? email { get; set; }
         public string? phoneNumber { get; set; }
