@@ -257,7 +257,7 @@ public class BookController(IBookService bookService,
         {
             var topBooks = await bookService.GetTopBookByTimeAsync(from, to, pageNumber, pageSize);
             
-            if(topBooks.isSuccess)
+            if(topBooks != null)
             {
                 return Ok(topBooks);
             }
