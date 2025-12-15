@@ -35,6 +35,7 @@ public class BookController(IBookService bookService,
     }
 
     [HttpGet("search")]
+    [ResponseCache(Duration = 60, VaryByQueryKeys = ["isbn", "titleQuery", "categoryName", "authorName", "publisherName", "publishedYear", "descriptionContains", "pageNumber", "pageSize"])]
     public async Task<ActionResult> SearchBooks(
         string? isbn = null,
         string? titleQuery = null,
