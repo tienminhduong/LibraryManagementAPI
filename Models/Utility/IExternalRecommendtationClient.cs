@@ -27,10 +27,11 @@ namespace LibraryManagementAPI.Models.Utility
             float alpha = 0.6f,
             CancellationToken cancellationToken = default)
         {
-
-            using var resp = await _http.GetAsync($"https://localhost:7193/models/recommend/hybrid"
+            var baseUrl = Environment.GetEnvironmentVariable("RECOMMENDER_API_URL");
+            var requestUrl = $"{baseUrl}/models/recommend/hybrid"
                 + $"?pageNumber={pageNumber}&pageSize={pageSize}" +
-                $"&userId={memberId.ToString()}&alpha={alpha}");
+                $"&userId={memberId.ToString()}&alpha={alpha}";
+            using var resp = await _http.GetAsync(requestUrl);
             resp.EnsureSuccessStatusCode();
             await using var stream = await resp.Content.ReadAsStreamAsync(cancellationToken);
             var ids = await JsonSerializer.DeserializeAsync<List<BookRatingContent>>(stream, cancellationToken: cancellationToken);
