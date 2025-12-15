@@ -23,7 +23,15 @@ public static class ServiceCollectionExtensions
             options.UseNpgsql(connectionString));
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-        services.AddResponseCaching();
+        // services.AddResponseCaching();
+        services.AddOutputCache(options =>
+        {
+            options.AddBasePolicy(builder =>
+            {
+                builder.Expire(TimeSpan.FromMinutes(1));
+                builder.Cache();
+            });;
+        });
 
         AddCORSConfiguration(services);
 
