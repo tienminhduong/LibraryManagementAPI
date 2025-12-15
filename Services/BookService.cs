@@ -235,9 +235,20 @@ public class BookService(
 
     public async Task<PagedResponse<BookDto>> SearchBooks(string? isbn = null, string? titleQuery = null, string? categoryName = null, string? authorName = null, string? publisherName = null, int? publishedYear = null, string? descriptionContains = null, int pageNumber = 1, int pageSize = 20)
     {
+        var cacheKey = $"books_{isbn}_{titleQuery}_{categoryName}_{authorName}_{publisherName}_{publishedYear}_{descriptionContains}_{pageNumber}_{pageSize}";
+
+        if (_cache.TryGetValue(cacheKey, out PagedResponse<BookDto>? cachedResult))
+        {
+            _logger.LogInformation("Cache hit for book search: {Key}", cacheKey);
+            return cachedResult!;
+        }
+        
         var books = await bookRepository.SearchBooks(isbn, titleQuery, categoryName, authorName, publisherName, publishedYear, descriptionContains, pageNumber, pageSize);
         var result = PagedResponse<BookDto>.MapFrom(books, mapper);
         await PopulateAvailableCopiesCountAsync(result.Data);
+
+        _cache.Set(cacheKey, result, _cacheDuration);
+        
         return result;
     }
 
