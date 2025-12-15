@@ -146,12 +146,15 @@ public class BookController(IBookService bookService,
 
     [Authorize]
     [HttpGet("recommend")]
-    public async Task<ActionResult> GetRecommendBooks(int pageNumber = 1, int pageSize = 20)
+    public async Task<ActionResult> GetRecommendBooks(int pageNumber = 1, int pageSize = 20, float alpha = 0.6f)
     {
         // Get Account ID from JWT
         var accountId = User.GetUserId();
+        var type = User.GetUserRole();
+        var info = await infoRepository.GetInfoByAccountIdAsync(accountId, Role.Member);
+        var memberId = info?.id;
 
-        var res = await recommendationService.GetRecommendedBooksForUser(accountId, pageNumber, pageSize);
+        var res = await recommendationService.GetRecommendedBooksForUser(memberId, pageNumber, pageSize, alpha);
         if (res.isSuccess)
         {
             return Ok(res);
