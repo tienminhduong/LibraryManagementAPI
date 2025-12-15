@@ -82,4 +82,13 @@ public class BookCategoryController(IBookService bookService) : ControllerBase
             return NotFound(ex.Message);
         }
     }
+
+    [HttpGet("top-categories")]
+    public async Task<ActionResult> GetTopCategoriesByTime(DateTime? from = null, DateTime? to = null, int pageNumber = 1, int pageSize = 20)
+    {
+        var topCategories = await bookService.GetTopCategoryByTimeAsync(pageNumber, pageSize, from, to);
+        if (!topCategories.isSuccess)
+            return BadRequest(topCategories);
+        return Ok(topCategories);
+    }
 }

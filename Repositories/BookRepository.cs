@@ -1,9 +1,12 @@
 ﻿using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
+using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.Pagination;
+using LibraryManagementAPI.Models.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.ML;
+using System.Net.WebSockets;
 
 namespace LibraryManagementAPI.Repositories;
 
@@ -162,5 +165,39 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
         if (descriptionContains != null)
             books = books.Where(b => b.Description != null && b.Description.ToLower().Contains(descriptionContains.ToLower()));
         return await PagedResponse<Book>.FromQueryable(books, pageNumber, pageSize);
+    }
+
+    public async Task<PagedResponse<BookBorrowStatDto>> GetTopBooks(DateTime? from, DateTime? to, int pageNumber = 1, int pageSize = 20)
+    {
+        var (start, end) = Models.Utility.Utility.ResolveRangeTime(from, to);
+
+        var borrowRange =
+            from br in dbContext.BorrowRequests
+            where br.BorrowDate >= start && br.BorrowDate <= end
+                    && Utility.validStatuses.Contains(br.Status)
+            select br;
+
+        var bookIdAndCount =
+            from br in borrowRange
+            join bc in dbContext.BookCopies on br.BookCopyId equals bc.id
+            group bc by bc.bookId into g
+            select new
+            {
+                BookId = g.Key,
+                BorrowCount = g.Count()
+            };
+
+        var query = 
+            from bc in bookIdAndCount
+            join b in dbContext.Books on bc.BookId equals b.Id
+            orderby bc.BorrowCount descending
+            select new BookBorrowStatDto
+            {
+                book = b,
+                BorrowCount = bc.BorrowCount
+            };
+
+        var pagedResult = await PagedResponse<BookBorrowStatDto>.FromQueryable(query, pageNumber, pageSize);
+        return pagedResult;
     }
 }
