@@ -4,6 +4,7 @@ using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Interfaces.IUtility;
 using LibraryManagementAPI.Models.BorrowRequest;
 using LibraryManagementAPI.Models.Pagination;
+using LibraryManagementAPI.Models.User;
 
 namespace LibraryManagementAPI.Services
 {
@@ -566,6 +567,15 @@ namespace LibraryManagementAPI.Services
                 IsOverdue = request.Status == BorrowRequestStatus.Overdue || 
                            request.Status == BorrowRequestStatus.OverdueReturned
             };
+        }
+
+        public async Task<Response<PagedResponse<LateReturnedUserDto>>> GetInfoOverdueForMemberAsync(int pageNumber = 1,
+            int pageSize = 20)
+        {
+            var paged = await borrowRequestRepo.GetBorrowCountForMemberAsync(pageNumber, pageSize);
+            if(paged == null)
+                return Response<PagedResponse<LateReturnedUserDto>>.Failure("Could not retrieve late returns.");
+            return Response<PagedResponse<LateReturnedUserDto>>.Success(paged);
         }
     }
 }

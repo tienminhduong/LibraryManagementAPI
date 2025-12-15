@@ -2,6 +2,7 @@ using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Models.Pagination;
+using LibraryManagementAPI.Models.User;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Repositories
@@ -166,5 +167,58 @@ namespace LibraryManagementAPI.Repositories
 
             return await PagedResponse<BorrowRequest>.FromQueryable(query, pageNumber, pageSize);
         }
+
+        public async Task<PagedResponse<LateReturnedUserDto>> GetBorrowCountForMemberAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            var query = db.BorrowRequests
+                .AsNoTracking()
+                .Where(br => br.Status == BorrowRequestStatus.Overdue ||
+                            br.Status == BorrowRequestStatus.OverdueReturned)
+                .GroupBy(br => br.MemberId)
+                .Select(g => new LateReturnedUser
+                {
+                    UserId = g.Key,
+                    LateReturnsCount = g.Count(br => br.Status == BorrowRequestStatus.OverdueReturned),
+                    LateNotReturnedCount = g.Count(br => br.Status == BorrowRequestStatus.Overdue),
+                    BorrowCount = g.Count()
+                });
+
+            var nextQuery = db.MemberInfos
+                .AsNoTracking()
+                .Join(query,
+                    mi => mi.id,
+                    lru => lru.UserId,
+                    (mi, lru) => new LateReturnedUserMember
+                    {
+                        UserId = lru.UserId,
+                        LateReturnsCount = lru.LateReturnsCount,
+                        LateNotReturnedCount = lru.LateNotReturnedCount,
+                        BorrowCount = lru.BorrowCount,
+                        FullName = mi.fullName ?? "",
+                        Email = mi.email ?? "",
+                        LoginId = mi.loginId
+                    });
+
+            var finalQuery = db.Accounts
+                .Join(nextQuery,
+                    acc => acc.id,
+                    lrum => lrum.LoginId,
+                    (acc, lrum) => new LateReturnedUserDto
+                    {
+                        UserId = lrum.UserId,
+                        LateReturnsCount = lrum.LateReturnsCount,
+                        LateNotReturnedCount = lrum.LateNotReturnedCount,
+                        BorrowCount = lrum.BorrowCount,
+                        FullName = lrum.FullName,
+                        Email = lrum.Email,
+                        IsActive = acc.isActive
+                    })
+                .OrderBy(u => u.LateNotReturnedCount);
+
+            var res = await PagedResponse<LateReturnedUserDto>.FromQueryable(finalQuery, pageNumber, pageSize);
+            return res;
+        }
+
+        
     }
 }

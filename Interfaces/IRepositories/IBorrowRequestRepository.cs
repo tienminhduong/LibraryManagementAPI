@@ -1,5 +1,6 @@
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Models.Pagination;
+using LibraryManagementAPI.Models.User;
 
 namespace LibraryManagementAPI.Interfaces.IRepositories
 {
@@ -19,5 +20,7 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task Delete(Guid id);
         Task<BorrowRequest?> GetByBookCopyIdAsync(Guid bookCopyId);
         Task<BorrowRequest?> GetByQrCodeAsync(string qrCode);
+        Task<PagedResponse<LateReturnedUserDto>> GetBorrowCountForMemberAsync(int pageNumber = 1,
+            int pageSize = 20);
     }
 }
