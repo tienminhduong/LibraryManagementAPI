@@ -9,6 +9,7 @@ using LibraryManagementAPI.Models.Utility;
 using LibraryManagementAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -35,7 +36,7 @@ public class BookController(IBookService bookService,
     }
 
     [HttpGet("search")]
-    [ResponseCache(Duration = 60, VaryByQueryKeys = ["isbn", "titleQuery", "categoryName", "authorName", "publisherName", "publishedYear", "descriptionContains", "pageNumber", "pageSize"])]
+    [OutputCache(Duration = 60, VaryByRouteValueNames = ["titleQuery", "authorName", "categoryName", "publisherName", "isbn", "publishedYear", "descriptionContains", "pageNumber", "pageSize"])]
     public async Task<ActionResult> SearchBooks(
         string? isbn = null,
         string? titleQuery = null,

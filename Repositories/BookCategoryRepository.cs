@@ -102,8 +102,8 @@ public class BookCategoryRepository(LibraryDbContext dbContext) : IBookCategoryR
         join bc in dbContext.BookCopies on br.BookCopyId equals bc.id
         join b in dbContext.Books on bc.bookId equals b.Id
         from c in b.BookCategories   // 👈 MANY-TO-MANY (EF auto join bảng trung gian)
-        where br.CreatedAt >= start
-           && br.CreatedAt <= end
+        where br.ConfirmedAt >= start
+           && br.ConfirmedAt <= end
            && Utility.validStatuses.Contains(br.Status)
         group c by new { c.Id, c.Name } into g
         orderby g.Count() descending

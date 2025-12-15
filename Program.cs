@@ -60,7 +60,8 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.UseResponseCaching();
+// app.UseResponseCaching();
+app.UseOutputCache();
 
 app.UseCors(allowAllPolicy);
 

@@ -404,7 +404,6 @@ namespace LibraryManagementAPI.Services
                 Address = m.address
             });
 
-
             var memberDtos = rawMemberDtos.ToList();
             foreach (var memberDto in memberDtos)
             {
@@ -415,64 +414,95 @@ namespace LibraryManagementAPI.Services
             return memberDtos;
         }
 
-        public async Task<PagedResponse<BorrowRequestDto>> GetPendingRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        // New unified methods with optional status filtering
+        public async Task<PagedResponse<BorrowRequestDto>> GetBorrowRequestsAsync(BorrowRequestStatusFilter? status, int pageNumber = 1, int pageSize = 20)
         {
-            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Pending, pageNumber, pageSize);
+            BorrowRequestStatus? entityStatus = status.HasValue ? MapStatusFilterToEntity(status.Value) : null;
+            var paged = await borrowRequestRepo.GetAllByStatusPaged(entityStatus, pageNumber, pageSize);
             var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
             var dtoList = await Task.WhenAll(dtoTasks);
             return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
-        public async Task<PagedResponse<BorrowRequestDto>> GetBorrowedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        public async Task<PagedResponse<BorrowRequestDto>> GetMemberBorrowRequestsAsync(Guid memberInfoId, BorrowRequestStatusFilter? status, int pageNumber = 1, int pageSize = 20)
         {
-            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Borrowed, pageNumber, pageSize);
+            BorrowRequestStatus? entityStatus = status.HasValue ? MapStatusFilterToEntity(status.Value) : null;
+            var paged = await borrowRequestRepo.GetByMemberIdAndStatusPaged(memberInfoId, entityStatus, pageNumber, pageSize);
             var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
             var dtoList = await Task.WhenAll(dtoTasks);
             return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
-        public async Task<PagedResponse<BorrowRequestDto>> GetOverdueRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        public async Task<PagedResponse<BorrowRequestDto>> GetMyBorrowRequestsAsync(Guid accountId, BorrowRequestStatusFilter? status, int pageNumber = 1, int pageSize = 20)
         {
-            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Overdue, pageNumber, pageSize);
-            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
-            var dtoList = await Task.WhenAll(dtoTasks);
-            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
-        }
-
-        public async Task<PagedResponse<BorrowRequestDto>> GetReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
-        {
-            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.Returned, pageNumber, pageSize);
-            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
-            var dtoList = await Task.WhenAll(dtoTasks);
-            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
-        }
-
-        public async Task<PagedResponse<BorrowRequestDto>> GetOverdueReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
-        {
-            var paged = await borrowRequestRepo.GetByStatusPaged(BorrowRequestStatus.OverdueReturned, pageNumber, pageSize);
-            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
-            var dtoList = await Task.WhenAll(dtoTasks);
-            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
-        }
-
-        public async Task<PagedResponse<BorrowRequestDto>> GetMemberRequestsPagedAsync(Guid memberAccountId, int pageNumber = 1, int pageSize = 20)
-        {
-            var memberInfo = await infoRepo.GetByAccountIdAsync(memberAccountId);
+            var memberInfo = await infoRepo.GetByAccountIdAsync(accountId);
             if (memberInfo == null || memberInfo is not MemberInfo)
                 return new PagedResponse<BorrowRequestDto>(pageNumber, pageSize, Enumerable.Empty<BorrowRequestDto>(), 0);
 
-            var paged = await borrowRequestRepo.GetByMemberIdPaged(memberInfo.id, pageNumber, pageSize);
+            BorrowRequestStatus? entityStatus = status.HasValue ? MapStatusFilterToEntity(status.Value) : null;
+            var paged = await borrowRequestRepo.GetByMemberIdAndStatusPaged(memberInfo.id, entityStatus, pageNumber, pageSize);
             var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
             var dtoList = await Task.WhenAll(dtoTasks);
             return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
         }
 
+        // Helper method to convert status filter to entity status
+        private BorrowRequestStatus MapStatusFilterToEntity(BorrowRequestStatusFilter filter)
+        {
+            return filter switch
+            {
+                BorrowRequestStatusFilter.Pending => BorrowRequestStatus.Pending,
+                BorrowRequestStatusFilter.Borrowed => BorrowRequestStatus.Borrowed,
+                BorrowRequestStatusFilter.Overdue => BorrowRequestStatus.Overdue,
+                BorrowRequestStatusFilter.Returned => BorrowRequestStatus.Returned,
+                BorrowRequestStatusFilter.OverdueReturned => BorrowRequestStatus.OverdueReturned,
+                BorrowRequestStatusFilter.Rejected => BorrowRequestStatus.Rejected,
+                BorrowRequestStatusFilter.Cancelled => BorrowRequestStatus.Cancelled,
+                _ => throw new ArgumentException($"Unknown status filter: {filter}")
+            };
+        }
+
+        // Legacy methods (kept for backward compatibility)
+        [Obsolete("Use GetBorrowRequestsAsync with status parameter instead")]
+        public async Task<PagedResponse<BorrowRequestDto>> GetPendingRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            return await GetBorrowRequestsAsync(BorrowRequestStatusFilter.Pending, pageNumber, pageSize);
+        }
+
+        [Obsolete("Use GetBorrowRequestsAsync with status parameter instead")]
+        public async Task<PagedResponse<BorrowRequestDto>> GetBorrowedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            return await GetBorrowRequestsAsync(BorrowRequestStatusFilter.Borrowed, pageNumber, pageSize);
+        }
+
+        [Obsolete("Use GetBorrowRequestsAsync with status parameter instead")]
+        public async Task<PagedResponse<BorrowRequestDto>> GetOverdueRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            return await GetBorrowRequestsAsync(BorrowRequestStatusFilter.Overdue, pageNumber, pageSize);
+        }
+
+        [Obsolete("Use GetBorrowRequestsAsync with status parameter instead")]
+        public async Task<PagedResponse<BorrowRequestDto>> GetReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            return await GetBorrowRequestsAsync(BorrowRequestStatusFilter.Returned, pageNumber, pageSize);
+        }
+
+        [Obsolete("Use GetBorrowRequestsAsync with status parameter instead")]
+        public async Task<PagedResponse<BorrowRequestDto>> GetOverdueReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20)
+        {
+            return await GetBorrowRequestsAsync(BorrowRequestStatusFilter.OverdueReturned, pageNumber, pageSize);
+        }
+
+        [Obsolete("Use GetMyBorrowRequestsAsync instead")]
+        public async Task<PagedResponse<BorrowRequestDto>> GetMemberRequestsPagedAsync(Guid memberAccountId, int pageNumber = 1, int pageSize = 20)
+        {
+            return await GetMyBorrowRequestsAsync(memberAccountId, null, pageNumber, pageSize);
+        }
+
+        [Obsolete("Use GetMemberBorrowRequestsAsync instead")]
         public async Task<PagedResponse<BorrowRequestDto>> GetMemberRequestsByInfoIdPagedAsync(Guid memberInfoId, int pageNumber = 1, int pageSize = 20)
         {
-            var paged = await borrowRequestRepo.GetByMemberIdPaged(memberInfoId, pageNumber, pageSize);
-            var dtoTasks = paged.Data.Select(r => MapToDtoAsync(r));
-            var dtoList = await Task.WhenAll(dtoTasks);
-            return new PagedResponse<BorrowRequestDto>(paged.PageNumber, paged.PageSize, dtoList, paged.TotalItems);
+            return await GetMemberBorrowRequestsAsync(memberInfoId, null, pageNumber, pageSize);
         }
 
         private string GenerateQrCode(Guid requestId)

@@ -20,6 +20,9 @@ namespace LibraryManagementAPI.Models.Utility
             var end = to?.ToUniversalTime()
                 ?? start.AddMonths(1).AddTicks(-1);
 
+            Console.WriteLine("Utility called: from " + start + " to " + end);
+            
+
             return (start, end);
         }
 
