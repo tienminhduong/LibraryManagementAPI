@@ -254,19 +254,28 @@ namespace LibraryManagementAPI.Controllers
         }
 
         /// <summary>
-        /// Get all pending borrow requests (paged) for admin/staff
+        /// Get all borrow requests (paged) for admin/staff with optional status filter
         /// 
-        /// STAFF DASHBOARD:
-        /// - Shows all requests waiting to be processed
-        /// - Staff can select and process requests from this list
+        /// NEW UNIFIED ENDPOINT:
+        /// - GET /api/borrow-requests?status=Pending (get pending requests)
+        /// - GET /api/borrow-requests?status=Borrowed (get borrowed requests)
+        /// - GET /api/borrow-requests?status=Overdue (get overdue requests)
+        /// - GET /api/borrow-requests?status=Returned (get returned requests)
+        /// - GET /api/borrow-requests?status=OverdueReturned (get overdue returned requests)
+        /// - GET /api/borrow-requests (get all requests)
+        /// 
+        /// Status values: Pending, Borrowed, Overdue, Returned, OverdueReturned, Rejected, Cancelled
         /// </summary>
-        [HttpGet("pending")]
+        [HttpGet]
         [Authorize(Policy = Policies.StaffOrAdmin)]
-        public async Task<IActionResult> GetPendingRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetBorrowRequests(
+            [FromQuery] BorrowRequestStatusFilter? status,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20)
         {
             try
             {
-                var result = await service.GetPendingRequestsPagedAsync(pageNumber, pageSize);
+                var result = await service.GetBorrowRequestsAsync(status, pageNumber, pageSize);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -276,114 +285,27 @@ namespace LibraryManagementAPI.Controllers
         }
 
         /// <summary>
-        /// Get all borrowed borrow requests (paged) for admin/staff
-        /// 
-        /// STAFF DASHBOARD:
-        /// - Shows all confirmed requests that are currently borrowed and not yet overdue
-        /// - Staff can track active borrows
-        /// </summary>
-        [HttpGet("borrowed")]
-        [Authorize(Policy = Policies.StaffOrAdmin)]
-        public async Task<IActionResult> GetBorrowedRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
-        {
-            try
-            {   
-                var result = await service.GetBorrowedRequestsPagedAsync(pageNumber, pageSize);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Get all overdue borrow requests (paged) for admin/staff
-        /// 
-        /// STAFF DASHBOARD:
-        /// - Shows all confirmed requests that are past their due date
-        /// - Staff can follow up with members who have overdue books
-        /// </summary>
-        [HttpGet("overdue")]
-        [Authorize(Policy = Policies.StaffOrAdmin)]
-        public async Task<IActionResult> GetOverdueRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
-        {
-            try
-            {
-                var result = await service.GetOverdueRequestsPagedAsync(pageNumber, pageSize);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Get all returned borrow requests (returned on time) (paged) for admin/staff
-        /// 
-        /// STAFF DASHBOARD:
-        /// - Shows all requests where all books have been returned on time
-        /// - Provides complete borrow history with return dates
-        /// - Status: Returned
-        /// </summary>
-        [HttpGet("returned")]
-        [Authorize(Policy = Policies.StaffOrAdmin)]
-        public async Task<IActionResult> GetReturnedRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
-        {
-            try
-            {
-                var result = await service.GetReturnedRequestsPagedAsync(pageNumber, pageSize);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Get all overdue returned borrow requests (returned late) (paged) for admin/staff
-        /// 
-        /// STAFF DASHBOARD:
-        /// - Shows all requests where books were returned after the due date
-        /// - Helps track members who return books late
-        /// - Status: OverdueReturned
-        /// </summary>
-        [HttpGet("overdue-returned")]
-        [Authorize(Policy = Policies.StaffOrAdmin)]
-        public async Task<IActionResult> GetOverdueReturnedRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
-        {
-            try
-            {
-                var result = await service.GetOverdueReturnedRequestsPagedAsync(pageNumber, pageSize);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Get borrow requests for the authenticated member (paged)
+        /// Get borrow requests for the authenticated member (paged) with optional status filter
         /// 
         /// MEMBER VIEW:
-        /// - Member can see all their borrow requests
-        /// - Includes: Pending, Borrowed, Overdue, Returned, OverdueReturned, Rejected, Cancelled
+        /// - GET /api/borrow-requests/my-requests (get all my requests)
+        /// - GET /api/borrow-requests/my-requests?status=Pending (get my pending requests)
+        /// - GET /api/borrow-requests/my-requests?status=Borrowed (get my borrowed requests)
+        /// - Member can filter by status: Pending, Borrowed, Overdue, Returned, OverdueReturned, Rejected, Cancelled
         /// - Shows QR codes for pending requests
         /// - Shows borrowed books and due dates for active requests
         /// </summary>
         [HttpGet("my-requests")]
         [Authorize(Policy = Policies.MemberOnly)]
-        public async Task<IActionResult> GetMyRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetMyRequests(
+            [FromQuery] BorrowRequestStatusFilter? status,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20)
         {
             try
             {
-                // Get the authenticated member's account ID from JWT
                 var accountId = User.GetUserId();
-                
-                var result = await service.GetMemberRequestsPagedAsync(accountId, pageNumber, pageSize);
+                var result = await service.GetMyBorrowRequestsAsync(accountId, status, pageNumber, pageSize);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -393,19 +315,25 @@ namespace LibraryManagementAPI.Controllers
         }
 
         /// <summary>
-        /// Admin/Staff gets borrow requests for a specific member (paged)
+        /// Admin/Staff gets borrow requests for a specific member (paged) with optional status filter
         /// 
         /// STAFF VIEW:
-        /// - View all requests for any member
+        /// - GET /api/borrow-requests/member/{memberId} (get all requests for member)
+        /// - GET /api/borrow-requests/member/{memberId}?status=Borrowed (get borrowed requests for member)
+        /// - View all requests for any member with optional filtering
         /// - Useful for customer service and tracking
         /// </summary>
         [HttpGet("member/{memberId}")]
         [Authorize(Policy = Policies.StaffOrAdmin)]
-        public async Task<IActionResult> GetMemberRequests(Guid memberId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetMemberRequests(
+            Guid memberId,
+            [FromQuery] BorrowRequestStatusFilter? status,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20)
         {
             try
             {
-                var result = await service.GetMemberRequestsByInfoIdPagedAsync(memberId, pageNumber, pageSize);
+                var result = await service.GetMemberBorrowRequestsAsync(memberId, status, pageNumber, pageSize);
                 return Ok(result);
             }
             catch (Exception ex)

@@ -127,5 +127,44 @@ namespace LibraryManagementAPI.Repositories
                 .Include(br => br.BookCopy)
                 .FirstOrDefaultAsync(br => br.QrCode == qrCode);
         }
+
+        public async Task<PagedResponse<BorrowRequest>> GetByMemberIdAndStatusPaged(Guid memberId, BorrowRequestStatus? status, int pageNumber = 1, int pageSize = 20)
+        {
+            var query = db.BorrowRequests
+                .Include(br => br.Member)
+                .Include(br => br.Staff)
+                .Include(br => br.Book)
+                .Include(br => br.BookCopy)
+                .Where(br => br.MemberId == memberId)
+                .AsQueryable();
+
+            if (status.HasValue)
+            {
+                query = query.Where(br => br.Status == status.Value);
+            }
+
+            query = query.OrderByDescending(br => br.CreatedAt);
+
+            return await PagedResponse<BorrowRequest>.FromQueryable(query, pageNumber, pageSize);
+        }
+
+        public async Task<PagedResponse<BorrowRequest>> GetAllByStatusPaged(BorrowRequestStatus? status, int pageNumber = 1, int pageSize = 20)
+        {
+            var query = db.BorrowRequests
+                .Include(br => br.Member)
+                .Include(br => br.Staff)
+                .Include(br => br.Book)
+                .Include(br => br.BookCopy)
+                .AsQueryable();
+
+            if (status.HasValue)
+            {
+                query = query.Where(br => br.Status == status.Value);
+            }
+
+            query = query.OrderByDescending(br => br.CreatedAt);
+
+            return await PagedResponse<BorrowRequest>.FromQueryable(query, pageNumber, pageSize);
+        }
     }
 }
