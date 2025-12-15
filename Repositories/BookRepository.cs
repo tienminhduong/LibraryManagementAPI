@@ -143,6 +143,9 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
     {
         var books = dbContext.Books
             .AsNoTracking()
+            .Include(b => b.BookCategories)
+            .Include(b => b.Authors)
+            .Include(b => b.Publisher)
             .OrderBy(b => b.Title)
             .AsQueryable();
 
@@ -152,15 +155,12 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
             books = books.Where(b => b.Title.ToLower().Contains(titleQuery.ToLower()));
         if (categoryName != null)
             books = books
-                .Include(b => b.BookCategories)
                 .Where(b => b.BookCategories.Any(c => c.Name.ToLower().Contains(categoryName.ToLower())));
         if (authorName != null)
             books = books
-                .Include(b => b.Authors)
                 .Where(b => b.Authors.Any(a => a.Name.ToLower().Contains(authorName.ToLower())));
         if (publisherName != null)
             books = books
-                .Include(b => b.Publisher)
                 .Where(b => b.Publisher != null && b.Publisher.Name.ToLower().Contains(publisherName.ToLower()));
         if (publishedYear != null)
             books = books.Where(b => b.PublicationYear == publishedYear);
