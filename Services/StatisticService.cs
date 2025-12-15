@@ -9,7 +9,6 @@ public class StatisticService(LibraryDbContext dbContext) : IStatisticService
 {
     public async Task<BorrowCountStatDto?> GetBorrowCountStat(DateTime startDate, DateTime endDate)
     {
-        //check start date and end date are in utc format
         startDate = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
         endDate = DateTime.SpecifyKind(endDate.Date, DateTimeKind.Utc);
         
@@ -17,17 +16,27 @@ public class StatisticService(LibraryDbContext dbContext) : IStatisticService
             .AsNoTracking()
             .AsSplitQuery()
             .Where(br => br.ConfirmedAt != null && br.ConfirmedAt >= startDate && br.ConfirmedAt <= endDate)
-            .OrderBy(br => br.ConfirmedAt)
+            .GroupBy(br => br.ConfirmedAt)
+            .Select(g => new
+            {
+                Date = g.Key,
+                Count = g.Count()
+            })
             .ToListAsync();
         
         var totalDays = (endDate - startDate).Days + 1;
         var borrowCounts = Enumerable.Repeat(0, totalDays).ToList();
         var total = 0;
         
-        foreach (var dayIndex in query.Select(request => (request.ConfirmedAt!.Value - startDate).Days))
+        foreach (var record in query)
         {
-            borrowCounts[dayIndex]++;
-            total++;
+            var date = record.Date!.Value.Date;
+            var index = (date - startDate).Days;
+            
+            if (index < 0 || index >= totalDays) continue;
+            
+            borrowCounts[index] = record.Count;
+            total += record.Count;
         }
         
         return new BorrowCountStatDto
@@ -37,5 +46,27 @@ public class StatisticService(LibraryDbContext dbContext) : IStatisticService
             DailyCounts = borrowCounts,
             Total =  total
         };
+    }
+
+    public async Task<IEnumerable<MemberBorrowCountStatDto>> GetTopMembersByBorrowCount(DateTime startDate, DateTime endDate, int topN = 5)
+    {
+        startDate = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
+        endDate = DateTime.SpecifyKind(endDate.Date, DateTimeKind.Utc);
+
+        var query = await dbContext.BorrowRequests
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(br => br.ConfirmedAt != null && br.ConfirmedAt >= startDate && br.ConfirmedAt <= endDate)
+            .GroupBy(br => new { br.MemberId, br.Member!.fullName })
+            .Select(g => new MemberBorrowCountStatDto
+            {
+                MemberName = g.Key.fullName ?? "Unknown",
+                BorrowCount = g.Count()
+            })
+            .OrderByDescending(dto => dto.BorrowCount)
+            .Take(topN)
+            .ToListAsync();
+
+        return query;
     }
 }
