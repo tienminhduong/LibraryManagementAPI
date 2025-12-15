@@ -10,7 +10,8 @@ namespace LibraryManagementAPI.Controllers
     [ApiController]
     [Authorize(Policy = Policies.AdminOnly)]
     [Route("api/member")]
-    public class MemberController(IBorrowRequestService service) : ControllerBase
+    public class MemberController(IBorrowRequestService service,
+        IAccountService accountService) : ControllerBase
     {
         [HttpGet("member-overdue")]
         public async Task<IActionResult> GetAllMemberOverdue(int pageNumber = 1, int pageSize = 20)
@@ -20,6 +21,13 @@ namespace LibraryManagementAPI.Controllers
                 return Ok(res);
             else
                 return BadRequest(res);
+        }
+
+        [HttpPost("ban")]
+        public async Task<IActionResult> BanMember(Guid accountMemberId)
+        {
+            var res = await accountService.BanAccount(accountMemberId);
+            return res ? NoContent() : BadRequest("Failed to ban the account.");
         }
     }
 }

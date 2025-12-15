@@ -100,7 +100,10 @@ namespace LibraryManagementAPI.Services
             return Response<string>.Success("Password reset successful.");
         }
         
-        
+        public async Task<bool> BanAccount(Guid accountId)
+        {
+            return await accountRepository.UpdateAccountStatus(accountId, false);
+        }
 
         private BaseInfo? MapInfoDtoToEntity(BaseInfoDto infoDto, Role role)
         {

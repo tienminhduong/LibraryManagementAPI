@@ -14,5 +14,6 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task<Account?> GetAccountAsync(string username);
         Task<bool> ChangePasswordAsync(Guid accountId, string oldPassword, string newHashedPassword);
         LibraryDbContext GetDbContext();
+        Task<bool> UpdateAccountStatus(Guid accountId, bool status);
     }
 }

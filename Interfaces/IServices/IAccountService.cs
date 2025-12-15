@@ -8,5 +8,6 @@ namespace LibraryManagementAPI.Interfaces.IServices
         Task<Response<string>> Login(string userName, string password);
         Task<Response<string>> Register(CreateAccountDto createAccountDto);
         Task<Response<string>> ResetPassword(string userEmail, string newPassword);
+        Task<bool> BanAccount(Guid accountId);
     }
 }
