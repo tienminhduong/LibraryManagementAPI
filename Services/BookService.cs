@@ -210,9 +210,15 @@ public class BookService(
         return bookImport.id;
     }
 
-    public async Task<PagedResponse<BookImportDto>> GetImportHistoryAsync(int pageNumber = 1, int pageSize = 20)
+    public async Task<PagedResponse<BookImportDto>> GetImportHistoryAsync(
+        string? supplierName = null,
+        string? staffName = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        int pageNumber = 1, int pageSize = 20)
     {
-        var history = await bookImportRepository.GetImportHistoryAsync(pageNumber, pageSize);
+        var history = await bookImportRepository
+            .GetImportHistoryAsync(supplierName, staffName, startDate, endDate, pageNumber, pageSize);
         return PagedResponse<BookImportDto>.MapFrom(history, mapper);
     }
 

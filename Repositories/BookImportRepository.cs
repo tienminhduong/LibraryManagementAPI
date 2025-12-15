@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq.Expressions;
 using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
@@ -15,14 +16,31 @@ public class BookImportRepository(LibraryDbContext dbContext) : IBookImportRepos
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task<PagedResponse<BookImport>> GetImportHistoryAsync(int pageNumber, int pageSize)
+    public async Task<PagedResponse<BookImport>> GetImportHistoryAsync(
+        string? supplierName = null,
+        string? staffName = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        int pageNumber = 1, int pageSize = 20)
     {
         var query = dbContext.BookImports
             .Include(import => import.supplier)
             .Include(import => import.staff)
             .Include(import => import.BookImportDetails)!
                 .ThenInclude(details => details.book)
-            .AsQueryable();
+            .AsSplitQuery();
+        
+        if (!string.IsNullOrEmpty(supplierName))
+            query = query.Where(import => import.supplier != null &&
+                                      EF.Functions.ILike(import.supplier.name, $"%{supplierName}%"));
+        if (!string.IsNullOrEmpty(staffName))
+            query = query.Where(import => import.staff != null && import.staff.fullName != null &&
+                                      EF.Functions.ILike(import.staff.fullName, $"%{staffName}%"));
+        if (startDate.HasValue)
+            query = query.Where(import => import.importDate >= startDate.Value);
+        if (endDate.HasValue)
+            query = query.Where(import => import.importDate <= endDate.Value);
+        
         return await  PagedResponse<BookImport>.FromQueryable(query, pageNumber, pageSize);
     }
 

@@ -110,9 +110,15 @@ public class BookController(IBookService bookService,
     }
 
     [HttpGet("import")]
-    public async Task<ActionResult> GetImportHistory(int pageNumber = 1, int pageSize = 20)
+    public async Task<ActionResult> GetImportHistory(
+        string? supplierName = null,
+        string? staffName = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        int pageNumber = 1, int pageSize = 20)
     {
-        var histroy = await bookService.GetImportHistoryAsync(pageNumber, pageSize);
+        var histroy =
+            await bookService.GetImportHistoryAsync(supplierName, staffName, startDate, endDate, pageNumber, pageSize);
         return Ok(histroy);
     }
 

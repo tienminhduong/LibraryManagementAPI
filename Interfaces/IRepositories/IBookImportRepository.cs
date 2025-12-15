@@ -17,5 +17,6 @@ public interface IBookImportRepository
     Task<bool> ImportBookAsync(BookImport bookImport);
     Task AddImportDetailAsync(BookImportDetail bookImportDetail);
     Task AddBookImportAsync(BookImport bookImport);
-    Task<PagedResponse<BookImport>> GetImportHistoryAsync(int pageNumber, int pageSize);
+    Task<PagedResponse<BookImport>> GetImportHistoryAsync(string? supplierName = null, string? staffName = null,
+        DateTime? startDate = null, DateTime? endDate = null, int pageNumber = 1, int pageSize = 20);
 }
