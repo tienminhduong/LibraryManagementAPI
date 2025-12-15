@@ -1,4 +1,5 @@
-﻿using LibraryManagementAPI.Entities;
+﻿using LibraryManagementAPI.Authorization;
+using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Extensions;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
@@ -11,7 +12,7 @@ namespace LibraryManagementAPI.Controllers
     [ApiController]
     [Route("api/profile")]
     [Authorize]
-    public class ProfileController(IProfileService profileService) : ControllerBase
+    public class ProfileController(IProfileService profileService, IInfoRepository infoRepo) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> GetUserProfile()
@@ -111,6 +112,33 @@ namespace LibraryManagementAPI.Controllers
                     throw new ArgumentOutOfRangeException();
             }    
             return Unauthorized(new { message = "Unauthorized role." });
+        }
+
+        /// <summary>
+        /// Admin gets user profile by account ID
+        /// </summary>
+        [HttpGet("user/{accountId}")]
+        [Authorize(Policy = Policies.AdminOnly)]
+        public async Task<IActionResult> GetUserProfileById(Guid accountId)
+        {
+            var info = await infoRepo.GetByAccountIdAsync(accountId);
+            if (info == null)
+                return NotFound(new { message = "User not found." });
+
+            switch (info)
+            {
+                case AdminInfo:
+                    var adminRes = await profileService.GetAdminProfileByAccountIdAsync(accountId);
+                    return adminRes.isSuccess ? Ok(adminRes.data) : NotFound(new { message = adminRes.errorMessage });
+                case StaffInfo:
+                    var staffRes = await profileService.GetStaffProfileByAccountIdAsync(accountId);
+                    return staffRes.isSuccess ? Ok(staffRes.data) : NotFound(new { message = staffRes.errorMessage });
+                case MemberInfo:
+                    var memberRes = await profileService.GetMemberProfileByAccountIdAsync(accountId);
+                    return memberRes.isSuccess ? Ok(memberRes.data) : NotFound(new { message = memberRes.errorMessage });
+                default:
+                    return BadRequest(new { message = "Invalid user type." });
+            }
         }
 
         private Role TypeRoleMap(string role)

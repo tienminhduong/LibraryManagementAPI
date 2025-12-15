@@ -1,6 +1,8 @@
 ﻿using LibraryManagementAPI.Authorization;
+using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Exceptions;
 using LibraryManagementAPI.Extensions;
+using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.Utility;
@@ -16,7 +18,8 @@ namespace LibraryManagementAPI.Controllers;
 [Route("api/books")]
 public class BookController(IBookService bookService,
                             IRecommendationService recommendationService,
-                            ILogger logger) : ControllerBase
+                            ILogger logger,
+                            IInfoRepository infoRepository) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BookDto>>> GetAllBooks([FromQuery] Guid? categoryId, int pageNumber = 1, int pageSize = 20)
@@ -71,9 +74,19 @@ public class BookController(IBookService bookService,
     {
         try
         {
-            var staffId = User.GetUserId();
+            var accountId = User.GetUserId();
+            var role = User.GetUserRole();
+            if (role != "Staff")
+                return Unauthorized("Only staff can import books");
+
+            var staffInfo = await infoRepository.GetInfoByAccountIdAsync(accountId, Role.Staff);
+            if (staffInfo == null)
+                return Unauthorized("Staff info not found");
+
+            var staffId = staffInfo.id;
             var id = await bookService.ImportBooks(createBookImportDto, staffId);
-            return CreatedAtAction(nameof(GetBookImportById), new { id });
+            // Use named route to ensure URL generation succeeds
+            return CreatedAtRoute("GetBookImportById", new { id }, null);
         }
         catch (ArgumentNullException exception)
         {
@@ -85,7 +98,7 @@ public class BookController(IBookService bookService,
         }
     }
 
-    [HttpGet("import/{id}")]
+    [HttpGet("import/{id}", Name = "GetBookImportById")]
     public async Task<ActionResult> GetBookImportById(Guid id)
     {
         var bookImport = await bookService.GetImportHistoryByIdAsync(id);
