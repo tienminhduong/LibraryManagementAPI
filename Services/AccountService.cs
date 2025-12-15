@@ -32,7 +32,13 @@ namespace LibraryManagementAPI.Services
                 var isPasswordValid = hasher.VerifyPassword(password, account.passwordHash);
                 if (!isPasswordValid)
                 {
-                    return Response<string>.Failure("Invalid password.");
+                    return Response<string>.Failure("Invalid username or password.");
+                }
+
+                // check if account is active
+                if (!account.isActive)
+                {
+                    return Response<string>.Failure("Account is banned.");
                 }
 
                 // get info
