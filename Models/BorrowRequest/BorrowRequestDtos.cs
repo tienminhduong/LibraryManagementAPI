@@ -130,4 +130,29 @@ namespace LibraryManagementAPI.Models.BorrowRequest
         public int TotalBooks { get; set; }
         public string OverallStatus { get; set; } = string.Empty; // All Pending, All Borrowed, Mixed, etc.
     }
+
+    /// <summary>
+    /// DTO for querying borrow requests with filters
+    /// </summary>
+    public class GetBorrowRequestsDto
+    {
+        public BorrowRequestStatusFilter? Status { get; set; }
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+    }
+
+    /// <summary>
+    /// Enum for filtering borrow requests by status
+    /// Used in query parameters to avoid path-based filtering
+    /// </summary>
+    public enum BorrowRequestStatusFilter
+    {
+        Pending = 0,
+        Borrowed = 1,
+        Overdue = 2,
+        Returned = 3,
+        OverdueReturned = 4,
+        Rejected = 5,
+        Cancelled = 6
+    }
 }
