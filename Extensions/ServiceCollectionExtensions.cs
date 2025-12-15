@@ -82,6 +82,8 @@ public static class ServiceCollectionExtensions
         
         // Register background service for auto-updating borrow request statuses
         services.AddHostedService<BorrowRequestStatusUpdaterService>();
+
+        services.AddHttpClient<IExternalRecommendationClient, ExternalRecommendationClient>();
     }
 
     public static void AddUtilityServices(IServiceCollection services)

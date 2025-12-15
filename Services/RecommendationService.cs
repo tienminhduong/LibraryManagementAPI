@@ -5,6 +5,7 @@ using LibraryManagementAPI.Models.Book;
 using LibraryManagementAPI.Models.BorrowRequest;
 using LibraryManagementAPI.Models.Pagination;
 using LibraryManagementAPI.Models.Train;
+using LibraryManagementAPI.Models.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.ML;
@@ -21,20 +22,26 @@ namespace LibraryManagementAPI.Services
         private readonly IMapper _mapper;
         private List<Guid> bookIds;
         private readonly IBookRepository repository;
+        private readonly IExternalRecommendationClient _client;
 
         public RecommendationService(
             PredictionEnginePool<BookRating, BookRatingPrediction> predictionEnginePool,
             IMemoryCache cache,
             IMapper mapper,
-            IBookRepository repository)
+            IBookRepository repository,
+            IExternalRecommendationClient client)
         {
             _predictionEnginePool = predictionEnginePool;
             _cache = cache;
             _mapper = mapper;
             this.repository = repository;
+            _client = client;
         }
 
-        public async Task<Response<List<BookDto>>> GetRecommendedBooksForUser(Guid memberId, int pageNumber = 1, int pageSize = 20)
+        public async Task<Response<List<BookDto>>> GetRecommendedBooksForUser(Guid? memberId, 
+            int pageNumber = 1, 
+            int pageSize = 20,
+            float alpha = 0.6f)
         {
             // check cache first
             var cacheKey = $"RecommendedBooks_{memberId}_{pageNumber}_{pageSize}";
@@ -44,46 +51,16 @@ namespace LibraryManagementAPI.Services
                     return cachedResponse;
             }
 
-            GetAllBookIds();
-            var recommendations = new List<BookIdAndPrediction>();
+            // lay id cua sach recommend
+            var recommendedBookIds = await _client.GetRecommendedBookIdsForMemberAsync(
+                memberId??Guid.Empty,
+                pageNumber,
+                pageSize,
+                alpha);
 
-            // danh gia rating cua moi cuon sach
-            foreach (var bookId in bookIds)
-            {
-
-                var input = new BookRating
-                {
-                    MemberId = memberId.ToString(),
-                    BookId = bookId.ToString()
-                };
-
-                // Preload the prediction engine pool
-                var prediction = _predictionEnginePool.Predict(input);
-                if (prediction != null)
-                {
-                    var res = new BookIdAndPrediction
-                    {
-                        bookId = bookId,
-                        prediction = prediction
-                    };
-                    recommendations.Add(res);
-                }
-            }
-
-            // Sap xep
-            recommendations.Sort((p1, p2) => p2.prediction.Score.CompareTo(p1.prediction.Score));
-
-            var fromIndex = (pageNumber - 1) * pageSize;
-            var toIndex = pageNumber * pageSize;
-            var numberOfBook = bookIds.Count;
-
-
-            var bookIdsPage = new List<Guid>();
-            for (int i = fromIndex; i < Math.Min(toIndex, numberOfBook); i++)
-            {
-                var id = recommendations[i].bookId;
-                bookIdsPage.Add(id);
-            }
+            var bookIdsPage = recommendedBookIds
+                .Select(b => Guid.Parse(b.bookId))
+                .ToList();
 
             // lay thong tin sach
             var books = await repository.GetBooksAsync(bookIdsPage);
