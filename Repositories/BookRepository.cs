@@ -143,6 +143,7 @@ public class BookRepository(LibraryDbContext dbContext) : IBookRepository
     {
         var books = dbContext.Books
             .AsNoTracking()
+            .OrderBy(b => b.Title)
             .Include(b => b.Authors)
             .Include(b => b.BookCategories)
             .Include(b => b.Publisher)
