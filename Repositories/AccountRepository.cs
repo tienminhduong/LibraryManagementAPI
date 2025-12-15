@@ -124,5 +124,16 @@ namespace LibraryManagementAPI.Repositories
         {
             return db;
         }
+
+        public async Task<bool> UpdateAccountStatus(Guid accountId, bool status)
+        {
+            var account = await db.Accounts.FindAsync(accountId);
+            if (account == null)
+                return false;
+
+            account.isActive = status;
+            await db.SaveChangesAsync();
+            return true;
+        }
     }
 }

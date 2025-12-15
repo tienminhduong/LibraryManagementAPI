@@ -161,7 +161,7 @@ public class BookController(IBookService bookService,
         var memberId = info?.id;
 
         var res = await recommendationService.GetRecommendedBooksForUser(memberId, pageNumber, pageSize, alpha);
-        if (res.isSuccess)
+        if (res != null)
         {
             return Ok(res);
         }
@@ -257,7 +257,7 @@ public class BookController(IBookService bookService,
         {
             var topBooks = await bookService.GetTopBookByTimeAsync(from, to, pageNumber, pageSize);
             
-            if(topBooks.isSuccess)
+            if(topBooks != null)
             {
                 return Ok(topBooks);
             }

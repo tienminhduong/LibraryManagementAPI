@@ -38,14 +38,14 @@ namespace LibraryManagementAPI.Services
             _client = client;
         }
 
-        public async Task<Response<List<BookDto>>> GetRecommendedBooksForUser(Guid? memberId, 
+        public async Task<PagedResponse<BookDto>> GetRecommendedBooksForUser(Guid? memberId, 
             int pageNumber = 1, 
             int pageSize = 20,
             float alpha = 0.6f)
         {
             // check cache first
             var cacheKey = $"RecommendedBooks_{memberId}_{pageNumber}_{pageSize}";
-            if (_cache.TryGetValue(cacheKey, out Response<List<BookDto>>? cachedResponse))
+            if (_cache.TryGetValue(cacheKey, out PagedResponse<BookDto>? cachedResponse))
             {
                 if(cachedResponse != null)
                     return cachedResponse;
@@ -65,10 +65,14 @@ namespace LibraryManagementAPI.Services
             // lay thong tin sach
             var books = await repository.GetBooksAsync(bookIdsPage);
             var result = _mapper.Map<List<BookDto>>(books);
+            var res = new PagedResponse<BookDto>(
+                pageNumber,
+                pageSize,
+                result,
+                recommendedBookIds.Count);
             // cache trong 30 phut
-            var response = Response<List<BookDto>>.Success(result);
-            _cache.Set(cacheKey, response, TimeSpan.FromMinutes(30));
-            return response;
+            _cache.Set(cacheKey, res, TimeSpan.FromMinutes(30));
+            return res;
         }
 
         private void GetAllBookIds()

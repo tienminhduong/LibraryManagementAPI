@@ -71,15 +71,15 @@ namespace LibraryManagementAPI.Services
                 }
                 var adminInfo = (AdminInfo)res;
 
-                if (!string.IsNullOrEmpty(updateRequest.fullName))
+                if (updateRequest.fullName != null)
                 {
                     adminInfo.fullName = updateRequest.fullName;
                 }
-                if (!string.IsNullOrEmpty(updateRequest.email))
+                if (updateRequest.email != null)
                 {
                     adminInfo.email = updateRequest.email;
                 }
-                if (!string.IsNullOrEmpty(updateRequest.phoneNumber))
+                if (updateRequest.phoneNumber != null)
                 {
                     adminInfo.phoneNumber = updateRequest.phoneNumber;
                 }
@@ -103,23 +103,23 @@ namespace LibraryManagementAPI.Services
                 }
                 var memberInfo = (MemberInfo)res;
 
-                if (!string.IsNullOrEmpty(updateRequest.fullName))
+                if (updateRequest.fullName != null)
                 {
                     memberInfo.fullName = updateRequest.fullName;
                 }
-                if (!string.IsNullOrEmpty(updateRequest.email))
+                if (updateRequest.email != null)
                 {
                     memberInfo.email = updateRequest.email;
                 }
-                if (!string.IsNullOrEmpty(updateRequest.phoneNumber))
+                if (updateRequest.phoneNumber != null)
                 {
                     memberInfo.phoneNumber = updateRequest.phoneNumber;
                 }
-                if (!string.IsNullOrEmpty(updateRequest.address))
+                if (updateRequest.address != null)
                 {
                     memberInfo.address = updateRequest.address;
                 }
-                if (!string.IsNullOrEmpty(updateRequest.imageUrl))
+                if (updateRequest.imageUrl != null)
                 {
                     memberInfo.imageUrl = updateRequest.imageUrl;
                 }
@@ -143,15 +143,15 @@ namespace LibraryManagementAPI.Services
                 }
                 var staffInfo = (StaffInfo)res;
 
-                if (!string.IsNullOrEmpty(updateRequest.fullName))
+                if (updateRequest.fullName != null)
                 {
                     staffInfo.fullName = updateRequest.fullName;
                 }
-                if (!string.IsNullOrEmpty(updateRequest.email))
+                if (updateRequest.email != null)
                 {
                     staffInfo.email = updateRequest.email;
                 }
-                if (!string.IsNullOrEmpty(updateRequest.phoneNumber))
+                if (updateRequest.phoneNumber != null)
                 {
                     staffInfo.phoneNumber = updateRequest.phoneNumber;
                 }
