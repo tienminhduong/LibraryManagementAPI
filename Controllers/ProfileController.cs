@@ -3,6 +3,7 @@ using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Extensions;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IServices;
+using LibraryManagementAPI.Models.Account;
 using LibraryManagementAPI.Models.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,10 @@ namespace LibraryManagementAPI.Controllers
     [ApiController]
     [Route("api/profile")]
     [Authorize]
-    public class ProfileController(IProfileService profileService, IInfoRepository infoRepo) : ControllerBase
+    public class ProfileController(
+        IProfileService profileService,
+        IInfoRepository infoRepo,
+        IAccountRepository accountRepository) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> GetUserProfile()
@@ -73,6 +77,18 @@ namespace LibraryManagementAPI.Controllers
             }    
             return Unauthorized(new { message = "Unauthorized role." });
 
+        }
+
+        [HttpPut("change-password")]
+        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto updatePasswordDto)
+        {
+            var accountId = User.GetUserId();
+            var result = await accountRepository
+                .ChangePasswordAsync(accountId, updatePasswordDto.OldPassword, updatePasswordDto.NewPassword);
+            
+            if (result)
+                return Ok(new { message = "Password updated successfully." });
+            return BadRequest(new { message = "Wrong old password" });
         }
         
         [HttpPut]

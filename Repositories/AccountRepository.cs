@@ -1,11 +1,12 @@
 ﻿using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
+using LibraryManagementAPI.Interfaces.IUtility;
 using LibraryManagementAPI.Models.Pagination;
 
 namespace LibraryManagementAPI.Repositories
 {
-    public class AccountRepository(LibraryDbContext db) : IAccountRepository
+    public class AccountRepository(LibraryDbContext db, IHasherPassword hasherPassword) : IAccountRepository
     {
         public async Task AddAccountAsync(Account loginInfo, BaseInfo info)
         {
@@ -87,6 +88,22 @@ namespace LibraryManagementAPI.Repositories
             {
                 throw new Exception("An error occurred while retrieving the login info.", ex);
             }
+        }
+
+        public async Task<bool> ChangePasswordAsync(Guid accountId, string oldPassword, string newHashedPassword)
+        {
+            var account = await db.Accounts.FindAsync(accountId);
+            if (account == null)
+                return false;
+            
+            var checkOldPassword = hasherPassword.VerifyPassword(oldPassword, account.passwordHash);
+            if (!checkOldPassword)
+                return false;
+            
+            // TODO: Bug ne
+            account.passwordHash = hasherPassword.HashPassword(newHashedPassword);
+            await db.SaveChangesAsync();
+            return true;
         }
 
         public Task UpdateAccountAsync(Account loginInfo)
