@@ -568,14 +568,5 @@ namespace LibraryManagementAPI.Services
                            request.Status == BorrowRequestStatus.OverdueReturned
             };
         }
-
-        public async Task<Response<PagedResponse<LateReturnedUserDto>>> GetInfoOverdueForMemberAsync(int pageNumber = 1,
-            int pageSize = 20)
-        {
-            var paged = await borrowRequestRepo.GetBorrowCountForMemberAsync(pageNumber, pageSize);
-            if(paged == null)
-                return Response<PagedResponse<LateReturnedUserDto>>.Failure("Could not retrieve late returns.");
-            return Response<PagedResponse<LateReturnedUserDto>>.Success(paged);
-        }
     }
 }

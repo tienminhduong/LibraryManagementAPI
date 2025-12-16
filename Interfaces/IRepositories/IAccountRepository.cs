@@ -1,6 +1,7 @@
 ﻿using LibraryManagementAPI.Context;
 using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Models.Pagination;
+using LibraryManagementAPI.Repositories;
 
 namespace LibraryManagementAPI.Interfaces.IRepositories
 {
@@ -15,5 +16,7 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task<bool> ChangePasswordAsync(Guid accountId, string oldPassword, string newHashedPassword);
         LibraryDbContext GetDbContext();
         Task<bool> UpdateAccountStatus(Guid accountId, bool status);
+        Task<PagedResponse<InFoAccountBorrow>>
+            GetInfoBorrowForMemberAccountAsync(string? keyword, int pageNumber = 1, int pageSize = 20);
     }
 }

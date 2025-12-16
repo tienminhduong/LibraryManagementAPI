@@ -3,6 +3,7 @@ using LibraryManagementAPI.Entities;
 using LibraryManagementAPI.Interfaces.IRepositories;
 using LibraryManagementAPI.Interfaces.IUtility;
 using LibraryManagementAPI.Models.Pagination;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Repositories
 {
@@ -135,5 +136,73 @@ namespace LibraryManagementAPI.Repositories
             await db.SaveChangesAsync();
             return true;
         }
+
+        public async Task<PagedResponse<InFoAccountBorrow>> 
+            GetInfoBorrowForMemberAccountAsync(string? keyword, int pageNumber = 1, int pageSize = 20)
+        {
+            var resultQuery = db.Accounts
+    .AsNoTracking()
+    .Where(a => a.role == Role.Member &&
+    (string.IsNullOrEmpty(keyword)
+             || EF.Functions.ILike(a.info.fullName, $"%{keyword}%")))
+    .Select(a => new InFoAccountBorrow
+    {
+        accountId = a.id,
+        isActive = a.isActive,
+        fullName = ((MemberInfo)a.info).fullName ?? "",
+        email = ((MemberInfo)a.info).email ?? "",
+
+        // Member chưa mượn → COUNT = 0
+        totalBorrowRequests = db.BorrowRequests.Count(br => br.MemberId == a.id),
+
+        totalNotReturnOverdues = db.BorrowRequests.Count(br =>
+            br.Status == BorrowRequestStatus.Overdue &&
+            br.MemberId == a.id
+        ),
+
+        totalReturnOverdues = db.BorrowRequests.Count(br =>
+            br.Status == BorrowRequestStatus.OverdueReturned &&
+            br.MemberId == a.id
+        )
+    })
+    .OrderBy(ib => ib.totalNotReturnOverdues);
+
+
+            var pagedResult = await PagedResponse<InFoAccountBorrow>.FromQueryable(
+                resultQuery.AsNoTracking(),
+                pageNumber: pageNumber,
+                pageSize: pageSize);
+
+            return pagedResult;
+
+        }
+    }
+
+    public class InFoAccountBorrow
+    {
+        public Guid accountId { get; set; }
+        public bool isActive { get; set; }
+        public string fullName { get; set; } = "";
+        public string email { get; set; } = "";
+        public int totalBorrowRequests { get; set; }
+        public int totalNotReturnOverdues { get; set; }
+        public int totalReturnOverdues { get; set; }
+    }
+
+    public class BorrowStatistics
+    {
+        public Guid? MemberId { get; set; }
+        public int TotalBorrowRequests { get; set; }
+        public int TotalNotReturnOverdues { get; set; }
+        public int TotalReturnOverdues { get; set; }
+    }
+
+    public class InfoAccount
+    {
+        //public AccountActive accountActive;
+        public Guid Id { get; set; }
+        public bool IsActive { get; set; }
+        public string FullName { get; set; }
+        public string Email { get; set; }
     }
 }

@@ -5,6 +5,8 @@ using LibraryManagementAPI.Interfaces.IServices;
 using LibraryManagementAPI.Interfaces.IUtility;
 using LibraryManagementAPI.Models.Account;
 using LibraryManagementAPI.Models.Info;
+using LibraryManagementAPI.Models.Pagination;
+using LibraryManagementAPI.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagementAPI.Services
@@ -164,5 +166,12 @@ namespace LibraryManagementAPI.Services
         //{
         //    using (var transaction = await )
         //}
+
+        public async Task<PagedResponse<InFoAccountBorrow>> GetInfoAccountBorrow(string? keyword,int pageNumber = 1,
+            int pageSize = 20)
+        {
+            var res = await accountRepository.GetInfoBorrowForMemberAccountAsync(keyword, pageNumber, pageSize);
+            return res;
+        }
     }
 }

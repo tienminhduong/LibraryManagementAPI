@@ -38,7 +38,5 @@ namespace LibraryManagementAPI.Interfaces.IServices
         Task<PagedResponse<BorrowRequestDto>> GetOverdueReturnedRequestsPagedAsync(int pageNumber = 1, int pageSize = 20);
         
         Task<ReturnBookResultDto> ReturnBookAsync(ReturnBookDto dto, Guid staffAccountId);
-        Task<Response<PagedResponse<LateReturnedUserDto>>> GetInfoOverdueForMemberAsync(int pageNumber = 1,
-            int pageSize = 20);
     }
 }
