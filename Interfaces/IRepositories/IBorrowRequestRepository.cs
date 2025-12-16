@@ -20,7 +20,5 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         Task Delete(Guid id);
         Task<BorrowRequest?> GetByBookCopyIdAsync(Guid bookCopyId);
         Task<BorrowRequest?> GetByQrCodeAsync(string qrCode);
-        Task<PagedResponse<LateReturnedUserDto>> GetBorrowCountForMemberAsync(int pageNumber = 1,
-            int pageSize = 20);
     }
 }

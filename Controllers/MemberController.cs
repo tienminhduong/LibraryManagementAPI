@@ -10,17 +10,18 @@ namespace LibraryManagementAPI.Controllers
     [ApiController]
     [Authorize(Policy = Policies.AdminOnly)]
     [Route("api/member")]
-    public class MemberController(IBorrowRequestService service,
+    public class MemberController(
         IAccountService accountService) : ControllerBase
     {
         [HttpGet("member-overdue")]
         public async Task<IActionResult> GetAllMemberOverdue(int pageNumber = 1, int pageSize = 20)
         {
-            var res = await service.GetInfoOverdueForMemberAsync(pageNumber, pageSize);
-            if (res.isSuccess)
-                return Ok(res);
-            else
-                return BadRequest(res);
+            var res = await accountService.GetInfoAccountBorrow(pageNumber, pageSize);
+            if(res == null)
+            {
+                return NotFound("No overdue members found.");
+            }
+            return Ok(res);
         }
 
         [HttpPost("ban")]
