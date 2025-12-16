@@ -138,57 +138,13 @@ namespace LibraryManagementAPI.Repositories
         }
 
         public async Task<PagedResponse<InFoAccountBorrow>> 
-            GetInfoBorrowForMemberAccountAsync(int pageNumber = 1, int pageSize = 20)
+            GetInfoBorrowForMemberAccountAsync(string? keyword, int pageNumber = 1, int pageSize = 20)
         {
-            //var memberProfiles =
-            //                from acc in db.Accounts.AsNoTracking()
-            //                where acc.role == Role.Member
-            //                join info in db.MemberInfos
-            //                    on acc.id equals info.loginId
-            //                select new InfoAccount
-            //                {
-            //                    Id = acc.id,
-            //                    IsActive = acc.isActive,
-            //                    FullName = info.fullName ?? "",
-            //                    Email = info.email ?? ""
-            //                };
-
-            //var borrowStatistics =
-            //                from br in db.BorrowRequests
-            //                group br by br.MemberId
-            //                into g
-            //                select new BorrowStatistics
-            //                {
-            //                    MemberId = g.Key,
-
-            //                    TotalBorrowRequests = g.Count(),
-
-            //                    TotalNotReturnOverdues = g.Count(br =>
-            //                        br.Status == BorrowRequestStatus.Overdue),
-
-            //                    TotalReturnOverdues = g.Count(br =>
-            //                        br.Status == BorrowRequestStatus.OverdueReturned)
-            //                };
-
-            //var resultQuery =
-            //            from mp in memberProfiles
-            //            join bs in borrowStatistics
-            //                on mp.Id equals bs.MemberId
-            //                into bsg
-            //            from bs in bsg.DefaultIfEmpty()   // LEFT JOIN
-            //            select new InFoAccountBorrow
-            //            {
-            //                accountId = mp.Id,
-            //                isActive = mp.IsActive,
-            //                fullName = mp.FullName,
-            //                email = mp.Email,
-            //                totalBorrowRequests = bs != null ? bs.TotalBorrowRequests : 0,
-            //                totalNotReturnOverdues = bs != null ? bs.TotalNotReturnOverdues : 0,
-            //                totalReturnOverdues = bs != null ? bs.TotalReturnOverdues : 0
-            //            };
             var resultQuery = db.Accounts
     .AsNoTracking()
-    .Where(a => a.role == Role.Member)
+    .Where(a => a.role == Role.Member &&
+    (string.IsNullOrEmpty(keyword)
+             || EF.Functions.ILike(a.info.fullName, $"%{keyword}%")))
     .Select(a => new InFoAccountBorrow
     {
         accountId = a.id,

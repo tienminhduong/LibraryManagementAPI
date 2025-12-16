@@ -14,9 +14,9 @@ namespace LibraryManagementAPI.Controllers
         IAccountService accountService) : ControllerBase
     {
         [HttpGet("member-overdue")]
-        public async Task<IActionResult> GetAllMemberOverdue(int pageNumber = 1, int pageSize = 20)
+        public async Task<IActionResult> GetAllMemberOverdue(string? keyword=null, int pageNumber = 1, int pageSize = 20)
         {
-            var res = await accountService.GetInfoAccountBorrow(pageNumber, pageSize);
+            var res = await accountService.GetInfoAccountBorrow(keyword, pageNumber, pageSize);
             if(res == null)
             {
                 return NotFound("No overdue members found.");

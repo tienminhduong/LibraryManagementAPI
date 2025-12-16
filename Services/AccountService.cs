@@ -167,10 +167,10 @@ namespace LibraryManagementAPI.Services
         //    using (var transaction = await )
         //}
 
-        public async Task<PagedResponse<InFoAccountBorrow>> GetInfoAccountBorrow(int pageNumber = 1,
+        public async Task<PagedResponse<InFoAccountBorrow>> GetInfoAccountBorrow(string? keyword,int pageNumber = 1,
             int pageSize = 20)
         {
-            var res = await accountRepository.GetInfoBorrowForMemberAccountAsync(pageNumber, pageSize);
+            var res = await accountRepository.GetInfoBorrowForMemberAccountAsync(keyword, pageNumber, pageSize);
             return res;
         }
     }

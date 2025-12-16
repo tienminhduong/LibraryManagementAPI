@@ -17,6 +17,6 @@ namespace LibraryManagementAPI.Interfaces.IRepositories
         LibraryDbContext GetDbContext();
         Task<bool> UpdateAccountStatus(Guid accountId, bool status);
         Task<PagedResponse<InFoAccountBorrow>>
-            GetInfoBorrowForMemberAccountAsync(int pageNumber = 1, int pageSize = 20);
+            GetInfoBorrowForMemberAccountAsync(string? keyword, int pageNumber = 1, int pageSize = 20);
     }
 }
